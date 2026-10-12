@@ -1,0 +1,26 @@
+Certificate was added to keystore
+All SDK package licenses accepted.
+
+yes: standard output: Broken pipe
+
+openjdk version "21.0.8" 2025-07-15 LTS
+OpenJDK Runtime Environment Temurin-21.0.8+9 (build 21.0.8+9-LTS)
+OpenJDK 64-Bit Server VM Temurin-21.0.8+9 (build 21.0.8+9-LTS, mixed mode, sharing)
+javac 21.0.8
+
+------------------------------------------------------------
+Gradle 8.13
+------------------------------------------------------------
+
+Build time:    2025-02-25 09:22:14 UTC
+Revision:      073314332697ba45c16c0a0ce1891fa6794179ff
+
+Kotlin:        2.0.21
+Groovy:        3.0.22
+Ant:           Apache Ant(TM) version 1.10.15 compiled on August 25 2024
+Launcher JVM:  21.0.8 (Eclipse Adoptium 21.0.8+9-LTS)
+Daemon JVM:    /workspace/toolchains/jdk-21.0.8+9 (no JDK specified, using current Java home)
+OS:            Linux 6.18.44 amd64
+
+Toolchain installed. Run: source scripts/env.sh; ./gradlew :core:test :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+Release/R8 is a separate known-blocked gate: ./gradlew :app:assembleRelease

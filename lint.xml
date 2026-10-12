@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- Fixed compatibility baseline; upgrading JDBC jre8 to jre11 is not an Android fix. -->
+    <issue id="NewerVersionAvailable" severity="ignore" />
+    <!-- Reviewed upstream optional TRUST-mode manager; our mandatory StrictTlsPlugin never
+         selects it. Exact artifact only. Hostname and untrusted-CA integration regressions
+         must stay enabled; do not apply this exception to app code or other driver versions. -->
+    <issue id="TrustAllX509TrustManager">
+        <ignore regexp=".*mariadb-java-client-3\.5\.10\.jar.*" />
+    </issue>
+</lint>

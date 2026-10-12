@@ -1,0 +1,9 @@
+# Only for an explicitly authorized, isolated loopback fixture.
+# Copy outside tracked source, chmod 600, fill locally; never commit the real copy.
+# MySQL fixture configuration is generated automatically by scripts/test-mysql-local.sh.
+kind=SQL_SERVER
+host=localhost
+port=1433
+database=synthetic
+username=datasail
+password=

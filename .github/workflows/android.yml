@@ -1,0 +1,53 @@
+name: Android verification
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install pinned Android toolchain
+        run: bash scripts/setup-cloud.sh
+      - name: Test, lint and build Debug and instrumentation APKs
+        shell: bash
+        run: |
+          source scripts/env.sh
+          ./gradlew :core:test :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
+      - name: MySQL TLS and synthetic probes (JVM, not Android)
+        run: bash scripts/test-mysql-local.sh
+      - name: Preserve real artifacts and reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: DataSail-V0.1.0-build-${{ github.run_number }}
+          if-no-files-found: error
+          path: |
+            app/build/outputs/apk/
+            app/build/reports/
+            core/build/reports/tests/
+            core/build/test-results/
+  release-r8-gate:
+    # Deliberately opt-in and failing until driver Android API gaps are resolved.
+    # No continue-on-error, no -dontwarn blanket. This is a release blocker.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: bash scripts/setup-cloud.sh
+      - name: Verify shrinker compatibility
+        run: |
+          source scripts/env.sh
+          ./gradlew :app:assembleRelease --console=plain
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: DataSail-release-r8-evidence
+          path: |
+            app/build/outputs/mapping/release/
+            app/build/outputs/apk/release/
