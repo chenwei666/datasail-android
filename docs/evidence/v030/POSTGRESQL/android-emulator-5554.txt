@@ -1,0 +1,8 @@
+
+com.example.datasail.JdbcWorkspaceDeviceTest:..
+
+Time: 74.707
+
+OK (2 tests)
+
+

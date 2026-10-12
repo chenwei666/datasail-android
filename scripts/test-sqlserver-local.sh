@@ -10,7 +10,7 @@ cleanup() {
   adb shell run-as com.example.datasail rm -f files/fixture.properties files/fixture-ca.pem >/dev/null 2>&1 || true
   if [[ -n "${port:-}" ]]; then adb reverse --remove "tcp:$port" >/dev/null 2>&1 || true; fi
  fi
- docker rm -f "$container" >/dev/null 2>&1 || true; rm -rf "$fixture"; }
+ docker rm -fv "$container" >/dev/null 2>&1 || true; rm -rf "$fixture"; }
 trap cleanup EXIT
 chmod 700 "$fixture"
 mkdir -m 755 "$fixture/tls"

@@ -1,0 +1,102 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:processIntegrationTestResources NO-SOURCE
+> Task :core:compileIntegrationTestKotlin
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:jdbcWorkspaceTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+JdbcWorkspaceIntegrationTest > serverEnforcesReadonlyBeyondSyntaxAndCannotPoisonNextTransaction PASSED
+
+JdbcWorkspaceIntegrationTest > rejectsWriteSyntaxAndExecutableComments PASSED
+
+JdbcWorkspaceIntegrationTest > browsingPreservesTypesAndPaginationAndClosesTransactions PASSED
+
+JdbcWorkspaceIntegrationTest > rejectsWrongHostnameUntrustedCaAndWrongPassword PASSED
+
+BUILD SUCCESSFUL in 2s
+8 actionable tasks: 3 executed, 5 up-to-date
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+32797
+
+com.example.datasail.JdbcWorkspaceDeviceTest:
+Error in timeoutAndCancellationCloseResourcesWithoutReplay(com.example.datasail.JdbcWorkspaceDeviceTest):
+org.postgresql.util.PSQLException: Connection attempt timed out.
+	at org.postgresql.Driver$ConnectTask.getResult(Driver.java:386)
+	at org.postgresql.Driver.connect(Driver.java:311)
+	at com.example.datasail.core.JdbcConnector.connect$lambda$0(JdbcConnector.kt:26)
+	at com.example.datasail.core.JdbcConnector.$r8$lambda$ZDZSgq10LRf4eXvAZjU1ku6O_DU(Unknown Source:0)
+	at com.example.datasail.core.JdbcConnector$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.core.Credentials.usePassword(Model.kt:49)
+	at com.example.datasail.core.JdbcConnector.connect(JdbcConnector.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$20$connect(JdbcWorkspaceDeviceTest.kt:49)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$20(JdbcWorkspaceDeviceTest.kt:51)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$KZhgVUZ-1-wWVo7xorQUpkqCEqE(Unknown Source:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda3.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay(JdbcWorkspaceDeviceTest.kt:48)
+
+Error in tlsIdentityAndWorkbenchReadOnArt(com.example.datasail.JdbcWorkspaceDeviceTest):
+java.lang.AssertionError: expected:<TLS> but was:<NETWORK>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt$lambda$12(JdbcWorkspaceDeviceTest.kt:33)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$qFYWQ-fx4Af9GUiiWFlHUhMXtBA(Unknown Source:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda4.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt(JdbcWorkspaceDeviceTest.kt:28)
+
+
+Time: 38.713
+There were 2 failures:
+1) timeoutAndCancellationCloseResourcesWithoutReplay(com.example.datasail.JdbcWorkspaceDeviceTest)
+org.postgresql.util.PSQLException: Connection attempt timed out.
+	at org.postgresql.Driver$ConnectTask.getResult(Driver.java:386)
+	at org.postgresql.Driver.connect(Driver.java:311)
+	at com.example.datasail.core.JdbcConnector.connect$lambda$0(JdbcConnector.kt:26)
+	at com.example.datasail.core.JdbcConnector.$r8$lambda$ZDZSgq10LRf4eXvAZjU1ku6O_DU(Unknown Source:0)
+	at com.example.datasail.core.JdbcConnector$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.core.Credentials.usePassword(Model.kt:49)
+	at com.example.datasail.core.JdbcConnector.connect(JdbcConnector.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$20$connect(JdbcWorkspaceDeviceTest.kt:49)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$20(JdbcWorkspaceDeviceTest.kt:51)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$KZhgVUZ-1-wWVo7xorQUpkqCEqE(Unknown Source:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda3.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay(JdbcWorkspaceDeviceTest.kt:48)
+2) tlsIdentityAndWorkbenchReadOnArt(com.example.datasail.JdbcWorkspaceDeviceTest)
+java.lang.AssertionError: expected:<TLS> but was:<NETWORK>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt$lambda$12(JdbcWorkspaceDeviceTest.kt:33)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$qFYWQ-fx4Af9GUiiWFlHUhMXtBA(Unknown Source:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda4.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt(JdbcWorkspaceDeviceTest.kt:28)
+
+FAILURES!!!
+Tests run: 2,  Failures: 2
+
+

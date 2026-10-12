@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.JdbcWorkspaceIntegrationTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-12T15:16:25.640Z" hostname="10651f2473f2" time="0.902">
+  <properties/>
+  <testcase name="serverEnforcesReadonlyBeyondSyntaxAndCannotPoisonNextTransaction" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.556"/>
+  <testcase name="unusualIdentifiersAreQuotedAndExactMetadataDoesNotMatchWildcards" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.058"/>
+  <testcase name="rejectsWriteSyntaxAndExecutableComments" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.044"/>
+  <testcase name="browsingPreservesTypesAndPaginationAndClosesTransactions" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.092"/>
+  <testcase name="rejectsWrongHostnameUntrustedCaAndWrongPassword" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.149"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

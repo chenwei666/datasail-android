@@ -1,0 +1,43 @@
+/usr/sbin/mysqld  Ver 8.4.6 for Linux on x86_64 (MySQL Community Server - GPL)
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileIntegrationTestKotlin UP-TO-DATE
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:processIntegrationTestResources NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:integrationTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+DatabaseIntegrationTest > real cancellation stays unknown instead of claiming server stopped PASSED
+
+DatabaseIntegrationTest > certificate hostname mismatch is rejected PASSED
+
+DatabaseIntegrationTest > invalid credentials fail authentication PASSED
+
+DatabaseIntegrationTest > real driver enforces query timeout PASSED
+
+DatabaseIntegrationTest > server confirms encrypted session PASSED
+
+DatabaseIntegrationTest > real server synthetic values round trip and connection closes PASSED
+
+> Task :core:untrustedTlsTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+UntrustedCertificateTest > untrusted CA is rejected before credentials can authenticate PASSED
+
+BUILD SUCCESSFUL in 6s
+9 actionable tasks: 3 executed, 6 up-to-date

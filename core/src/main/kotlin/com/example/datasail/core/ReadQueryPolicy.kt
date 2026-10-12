@@ -4,8 +4,11 @@ package com.example.datasail.core
 object ReadQueryPolicy {
     private val forbidden = setOf("INTO", "INSERT", "UPDATE", "DELETE", "MERGE", "DROP", "ALTER", "CREATE",
         "TRUNCATE", "EXEC", "EXECUTE", "GRANT", "REVOKE", "DENY", "DBCC", "BACKUP", "RESTORE", "USE", "SET",
-        "OPENROWSET", "OPENQUERY", "OPENDATASOURCE", "BULK", "NEXT", "WAITFOR", "SHUTDOWN", "KILL", "GO")
-    fun validate(sql: String): String {
+        "OPENROWSET", "OPENQUERY", "OPENDATASOURCE", "BULK", "NEXT", "WAITFOR", "SHUTDOWN", "KILL", "GO", "OUTFILE", "DUMPFILE", "LOAD_FILE", "GET_LOCK", "RELEASE_LOCK")
+    fun validate(sql: String, kind: DatabaseKind = DatabaseKind.SQL_SERVER): String {
+        if (kind != DatabaseKind.SQL_SERVER && (sql.contains("\\") || sql.contains("/*!") || sql.contains("/*M!", true) || sql.contains('$')))
+            throw WorkspaceRejected("本版不支持反斜线转义、可执行注释或美元引用，请使用标准 SQL 引用")
+        val mysql = kind in setOf(DatabaseKind.MYSQL, DatabaseKind.MARIADB)
         if (sql.isBlank() || sql.length > 16000) throw WorkspaceRejected("请输入不超过 16000 字符的单条 SELECT")
         val tokens = mutableListOf<String>()
         var i = 0
@@ -15,6 +18,7 @@ object ReadQueryPolicy {
             when {
                 c.isWhitespace() -> i++
                 c == '-' && sql.getOrNull(i + 1) == '-' -> {
+                    if (mysql && sql.getOrNull(i + 2)?.isWhitespace() == false) throw WorkspaceRejected("MySQL 行注释需要空白分隔")
                     i += 2; while (i < sql.length && sql[i] != '\n') i++
                 }
                 c == '/' && sql.getOrNull(i + 1) == '*' -> {
@@ -28,7 +32,7 @@ object ReadQueryPolicy {
                 }
                 ended -> throw WorkspaceRejected("本版只允许一条 SELECT，不支持批次或多语句")
                 c == ';' -> { ended = true; i++ }
-                c == '\'' || c == '"' || c == '[' -> {
+                c == '\'' || c == '"' || (c == '[' && kind == DatabaseKind.SQL_SERVER) || (c == '`' && mysql) -> {
                     val closing = if (c == '[') ']' else c
                     i++; var closed = false
                     while (i < sql.length) {

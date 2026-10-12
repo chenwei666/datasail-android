@@ -5,7 +5,7 @@ source "$(dirname "$0")/env.sh"
 cd "$DATASAIL_ROOT"
 fixture="$(mktemp -d "$DATASAIL_ROOT/.local-mysql.XXXXXX")"
 container="datasail-mysql-$RANDOM-$$"
-cleanup() { docker rm -f "$container" >/dev/null 2>&1 || true; rm -rf "$fixture"; }
+cleanup() { docker rm -fv "$container" >/dev/null 2>&1 || true; rm -rf "$fixture"; }
 trap cleanup EXIT
 chmod 700 "$fixture"
 openssl req -x509 -newkey rsa:2048 -nodes -keyout "$fixture/ca-key.pem" -out "$fixture/ca.pem" -days 2 -subj '/CN=DataSail temporary test CA' >/dev/null 2>&1

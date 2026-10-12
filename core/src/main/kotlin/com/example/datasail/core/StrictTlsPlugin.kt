@@ -2,7 +2,6 @@ package com.example.datasail.core
 
 import org.mariadb.jdbc.Configuration
 import org.mariadb.jdbc.HostAddress
-import org.mariadb.jdbc.client.tls.HostnameVerifier
 import org.mariadb.jdbc.export.ExceptionFactory
 import org.mariadb.jdbc.plugin.TlsSocketPlugin
 import java.security.KeyStore
@@ -25,6 +24,8 @@ class StrictTlsPlugin : TlsSocketPlugin {
     }
     override fun getKeyManager(conf: Configuration, exceptionFactory: ExceptionFactory): Array<KeyManager>? = null
     override fun verify(host: String, sslSession: SSLSession, serverThreadId: Long) {
-        HostnameVerifier.verify(host, sslSession.peerCertificates.first() as X509Certificate, serverThreadId)
+        val certificate = sslSession.peerCertificates.firstOrNull() as? X509Certificate
+        if (certificate == null || !SqlServerTrustManager.matchesSan(host, certificate.subjectAlternativeNames))
+            throw javax.net.ssl.SSLPeerUnverifiedException("Server SAN identity mismatch")
     }
 }

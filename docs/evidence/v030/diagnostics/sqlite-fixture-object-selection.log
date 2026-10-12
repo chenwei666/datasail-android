@@ -1,0 +1,19 @@
+
+com.example.datasail.SqliteDeviceTest:
+Error in importedCopyBrowsesQueriesPreservesTypesAndNeverModifiesSource(com.example.datasail.SqliteDeviceTest):
+java.lang.IllegalArgumentException: List has more than one element.
+	at kotlin.collections.CollectionsKt___CollectionsKt.single(_Collections.kt:618)
+	at com.example.datasail.SqliteDeviceTest.importedCopyBrowsesQueriesPreservesTypesAndNeverModifiesSource(SqliteDeviceTest.kt:32)
+.
+
+Time: 0.908
+There was 1 failure:
+1) importedCopyBrowsesQueriesPreservesTypesAndNeverModifiesSource(com.example.datasail.SqliteDeviceTest)
+java.lang.IllegalArgumentException: List has more than one element.
+	at kotlin.collections.CollectionsKt___CollectionsKt.single(_Collections.kt:618)
+	at com.example.datasail.SqliteDeviceTest.importedCopyBrowsesQueriesPreservesTypesAndNeverModifiesSource(SqliteDeviceTest.kt:32)
+
+FAILURES!!!
+Tests run: 2,  Failures: 1
+
+

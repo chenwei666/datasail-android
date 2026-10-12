@@ -15,6 +15,7 @@ class UpgradeTest {
         assertEquals("synthetic", saved.database)
         assertEquals("fixture", saved.username)
         assertEquals("1433", saved.port)
+        assertEquals(com.example.datasail.core.DatabaseKind.SQL_SERVER, saved.kind)
         assertNull(saved.ca)
         assertEquals(ConnectionEnvironment.PRODUCTION, saved.profile(context).environment)
     }

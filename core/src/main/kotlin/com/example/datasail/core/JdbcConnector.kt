@@ -16,7 +16,9 @@ class JdbcConnector : SqlConnector {
     override fun connect(profile: ConnectionProfile, credentials: Credentials): Connection {
         val driver: Driver = when (profile.kind) {
             DatabaseKind.SQL_SERVER -> com.microsoft.sqlserver.jdbc.SQLServerDriver()
-            DatabaseKind.MYSQL -> org.mariadb.jdbc.Driver()
+            DatabaseKind.MYSQL, DatabaseKind.MARIADB -> org.mariadb.jdbc.Driver()
+            DatabaseKind.POSTGRESQL -> org.postgresql.Driver()
+            DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 使用 Android 本地文件连接")
         }
         val properties = safeProperties(profile)
         return credentials.usePassword { password ->
@@ -29,7 +31,9 @@ class JdbcConnector : SqlConnector {
     companion object {
         internal fun url(profile: ConnectionProfile): String = when (profile.kind) {
             DatabaseKind.SQL_SERVER -> "jdbc:sqlserver://${profile.host}:${profile.port}"
-            DatabaseKind.MYSQL -> "jdbc:mariadb://${profile.host}:${profile.port}/${profile.database}"
+            DatabaseKind.MYSQL, DatabaseKind.MARIADB -> "jdbc:mariadb://${profile.host}:${profile.port}/${profile.database}"
+            DatabaseKind.POSTGRESQL -> "jdbc:postgresql://${profile.host}:${profile.port}/${profile.database}"
+            DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 不使用 JDBC")
         }
         internal fun safeProperties(profile: ConnectionProfile) = Properties().apply {
             setProperty("user", profile.username)
@@ -40,6 +44,19 @@ class JdbcConnector : SqlConnector {
                 setProperty("trustStorePassword", "changeit")
             }
             when (profile.kind) {
+                DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 不使用 JDBC")
+                DatabaseKind.POSTGRESQL -> {
+                    setProperty("sslmode", "verify-full")
+                    setProperty("sslfactory", PostgreSqlTlsFactory::class.java.name)
+                    setProperty("datasailTlsHost", profile.host)
+                    setProperty("connectTimeout", "15")
+                    setProperty("socketTimeout", "15")
+                    setProperty("loginTimeout", "30")
+                    setProperty("cancelSignalTimeout", "3")
+                    setProperty("maxResultBuffer", "8M")
+                    setProperty("readOnlyMode", "always")
+                    setProperty("ApplicationName", "DataSail")
+                }
                 DatabaseKind.SQL_SERVER -> {
                     setProperty("databaseName", profile.database)
                     setProperty("authentication", "SqlPassword")
@@ -56,10 +73,10 @@ class JdbcConnector : SqlConnector {
                     setProperty("maxResultBuffer", "8M")
                     setProperty("applicationName", "DataSail")
                 }
-                DatabaseKind.MYSQL -> {
+                DatabaseKind.MYSQL, DatabaseKind.MARIADB -> {
                     setProperty("sslMode", "verify-full")
                     setProperty("tlsSocketType", "DATASAIL_VERIFIED")
-                    setProperty("connectTimeout", "5000")
+                    setProperty("connectTimeout", "15000")
                     setProperty("socketTimeout", "15000")
                     setProperty("allowLocalInfile", "false")
                     setProperty("allowMultiQueries", "false")
@@ -73,7 +90,9 @@ class JdbcConnector : SqlConnector {
 internal object DriverLogging {
     // Hold strong logger references; JUL otherwise permits them to be garbage-collected.
     private val sqlServerLogger = java.util.logging.Logger.getLogger("com.microsoft.sqlserver.jdbc")
+    private val postgresLogger = java.util.logging.Logger.getLogger("org.postgresql")
     fun disableRawMessages() {
+        postgresLogger.level = java.util.logging.Level.OFF
         System.setProperty("mariadb.logging.disable", "true")
         sqlServerLogger.level = java.util.logging.Level.OFF
     }

@@ -8,11 +8,11 @@ import java.sql.Types
 import java.util.UUID
 
 /** Owned by WorkspaceRunner's single worker. UI code never receives JDBC objects. */
-class SqlServerSession(private val connection: Connection, val profile: ConnectionProfile,
-    private val statementChanged: (Statement?) -> Unit = {}, private val now: () -> Long = System::currentTimeMillis) : AutoCloseable {
-    val id: String = UUID.randomUUID().toString()
-    var catalog: String = profile.database; private set
-    var writable: Boolean = false; private set
+class SqlServerSession(private val connection: Connection, override val profile: ConnectionProfile,
+    private val statementChanged: (Statement?) -> Unit = {}, private val now: () -> Long = System::currentTimeMillis) : SqlWorkspaceSession {
+    override val id: String = UUID.randomUUID().toString()
+    override var catalog: String = profile.database; private set
+    override var writable: Boolean = false; private set
     private var currentPage: ResultPage? = null
     private var pending: Plan? = null
     private var closed = false
@@ -27,9 +27,9 @@ class SqlServerSession(private val connection: Connection, val profile: Connecti
             finally { statementChanged(null) }
         }
     }
-    fun catalogs(): List<String> = names("SELECT name FROM sys.databases WHERE HAS_DBACCESS(name)=1 AND state=0 ORDER BY name")
-    fun schemas(): List<String> = names("SELECT name FROM sys.schemas WHERE schema_id<16384 ORDER BY name")
-    fun switchCatalog(name: String) {
+    override fun catalogs(): List<String> = names("SELECT name FROM sys.databases WHERE HAS_DBACCESS(name)=1 AND state=0 ORDER BY name")
+    override fun schemas(): List<String> = names("SELECT name FROM sys.schemas WHERE schema_id<16384 ORDER BY name")
+    override fun switchCatalog(name: String) {
         if (name !in catalogs()) throw WorkspaceRejected("数据库不在当前账号可访问列表中")
         invalidate(); writable = false
         try {
@@ -42,12 +42,12 @@ class SqlServerSession(private val connection: Connection, val profile: Connecti
             throw error
         }
     }
-    fun setWritable(enabled: Boolean) {
+    override fun setWritable(enabled: Boolean) {
         if (enabled && profile.environment != ConnectionEnvironment.TEST) throw WorkspaceRejected("生产连接在 V0.2.0 中保持只读")
         pending = null
         writable = enabled
     }
-    fun tables(schema: String): List<TableRef> {
+    override fun tables(schema: String): List<TableRef> {
         invalidate()
         return query("SELECT s.name,o.name,o.object_id,o.type FROM sys.objects o JOIN sys.schemas s ON o.schema_id=s.schema_id WHERE o.is_ms_shipped=0 AND o.type IN ('U','V') AND s.name=? ORDER BY o.name", listOf(schema)) { rows ->
             val result = mutableListOf<TableRef>()
@@ -58,7 +58,7 @@ class SqlServerSession(private val connection: Connection, val profile: Connecti
             result
         }
     }
-    fun describe(table: TableRef): TableSchema {
+    override fun describe(table: TableRef): TableSchema {
         if (table.catalog != catalog) throw WorkspaceRejected("表不属于当前数据库")
         val verified = query("SELECT s.name,o.name,o.type FROM sys.objects o JOIN sys.schemas s ON o.schema_id=s.schema_id WHERE o.object_id=? AND o.type IN ('U','V')", listOf(table.objectId)) { rows ->
             rows.next() && rows.getString(1) == table.schema && rows.getString(2) == table.name && (rows.getString(3).trim() == "V") == table.view
@@ -90,7 +90,7 @@ class SqlServerSession(private val connection: Connection, val profile: Connecti
         val triggers = query("SELECT COUNT(*) FROM sys.triggers WHERE parent_id=? AND is_disabled=0", listOf(table.objectId)) { it.next(); it.getInt(1) > 0 }
         return TableSchema(table, columns, triggers)
     }
-    fun page(table: TableRef, offset: Int = 0): ResultPage {
+    override fun page(table: TableRef, offset: Int): ResultPage {
         invalidate()
         require(offset in 0..1_000_000)
         val schema = describe(table)
@@ -100,16 +100,16 @@ class SqlServerSession(private val connection: Connection, val profile: Connecti
         val sql = if (schema.keys.isEmpty()) "SELECT TOP (101) $columns FROM ${table.qualified}"
             else "SELECT $columns FROM ${table.qualified}$order OFFSET ? ROWS FETCH NEXT 101 ROWS ONLY"
         val params = if (schema.keys.isEmpty()) emptyList() else listOf(offset)
-        val result = query(sql, params, 101) { readPage(it, offset, schema) }
+        val result = query(sql, params, 101) { JdbcResultReader.read(it, offset, schema) }
         currentPage = result
         return result
     }
-    fun select(sql: String): ResultPage {
+    override fun select(sql: String): ResultPage {
         invalidate()
         val checked = ReadQueryPolicy.validate(sql)
-        return query(checked, limit = 101) { readPage(it, 0, null) }.also { currentPage = it }
+        return query(checked, limit = 101) { JdbcResultReader.read(it, 0, null) }.also { currentPage = it }
     }
-    fun preview(kind: MutationKind, rowIndex: Int?, inputs: Map<String, CellInput>): MutationPreview {
+    override fun preview(kind: MutationKind, rowIndex: Int?, inputs: Map<String, CellInput>): MutationPreview {
         pending = null
         if (!writable) throw WorkspaceRejected("连接处于只读模式")
         val page = currentPage ?: throw WorkspaceRejected("请先浏览目标表")
@@ -159,8 +159,8 @@ class SqlServerSession(private val connection: Connection, val profile: Connecti
         pending = Plan(preview, schema, parameters.toList())
         return preview
     }
-    fun discardPreview() { pending = null }
-    fun confirm(token: String): MutationResult {
+    override fun discardPreview() { pending = null }
+    override fun confirm(token: String): MutationResult {
         val plan = pending ?: throw WorkspaceRejected("确认已失效，请重新预览")
         pending = null // Single use, including failure and unknown outcome. Never replay.
         if (!writable || plan.preview.token != token || now() > plan.preview.expiresAtMillis) throw WorkspaceRejected("确认已失效，请重新预览")
@@ -199,7 +199,7 @@ class SqlServerSession(private val connection: Connection, val profile: Connecti
             return MutationResult(MutationStatus.ROLLED_BACK, "提交失败，事务已回滚：${failure.description}")
         }
     }
-    fun isClosed() = closed
+    override fun isClosed() = closed
     private fun invalidate() { pending = null; currentPage = null }
     override fun close() {
         closed = true; writable = false; invalidate()
@@ -221,45 +221,6 @@ class SqlServerSession(private val connection: Connection, val profile: Connecti
         statement.maxRows = limit
         params.forEachIndexed { index, value -> statement.setObject(index + 1, value) }
         statement.executeQuery().use(block)
-    }
-    private fun readPage(rows: ResultSet, offset: Int, schema: TableSchema?): ResultPage {
-        val meta = rows.metaData
-        val columnCount = minOf(meta.columnCount, 64)
-        val columns = (1..columnCount).map { ResultColumn(meta.getColumnLabel(it), meta.getColumnTypeName(it), meta.getColumnType(it)) }
-        val values = mutableListOf<List<DbValue>>()
-        var remainingChars = 262_144
-        var more = false
-        while (rows.next()) {
-            if (values.size == 100 || remainingChars <= 0) { more = true; break }
-            values += columns.mapIndexed { index, column ->
-                val value = when (column.jdbcType) {
-                    Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT -> rows.getLong(index + 1).let { if (rows.wasNull()) DbValue.Null else DbValue.Integer(it) }
-                    Types.NUMERIC, Types.DECIMAL -> rows.getBigDecimal(index + 1)?.let(DbValue::Decimal) ?: DbValue.Null
-                    Types.BIT, Types.BOOLEAN -> rows.getBoolean(index + 1).let { if (rows.wasNull()) DbValue.Null else DbValue.Bool(it) }
-                    Types.DATE, Types.TIME, Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE, -155 ->
-                        rows.getString(index + 1)?.let(DbValue::Temporal) ?: DbValue.Null
-                    Types.FLOAT, Types.REAL, Types.DOUBLE -> rows.getString(index + 1)?.let(DbValue::Approximate) ?: DbValue.Null
-                    Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY -> rows.getBinaryStream(index + 1)?.use { stream ->
-                        val buffer = ByteArray(257); var count = 0
-                        while (count < buffer.size) { val n = stream.read(buffer, count, buffer.size - count); if (n < 0) break; count += n }
-                        if (count > 256) DbValue.Unavailable("二进制超过 256 字节，未加载") else DbValue.Binary(buffer.copyOf(count))
-                    } ?: DbValue.Null
-                    Types.OTHER, Types.JAVA_OBJECT, Types.SQLXML, Types.ARRAY, Types.STRUCT -> DbValue.Unavailable("类型 ${column.typeName} 未加载")
-                    else -> rows.getCharacterStream(index + 1)?.use { reader ->
-                        val limit = minOf(2048, remainingChars.coerceAtLeast(0))
-                        val buffer = CharArray(limit + 1); var count = 0
-                        while (count < buffer.size) { val n = reader.read(buffer, count, buffer.size - count); if (n < 0) break; count += n }
-                        remainingChars -= count
-                        if (count > limit) DbValue.Unavailable("长值超出读取预算") else {
-                            val text = String(buffer, 0, count)
-                            DbValue.Text(text)
-                        }
-                    } ?: DbValue.Null
-                }
-                value
-            }
-        }
-        return ResultPage(columns, values, more, offset, schema, schema?.keys?.isNotEmpty() == true)
     }
     private fun bindValue(statement: PreparedStatement, index: Int, parameter: Param) {
         when (val value = parameter.value) {

@@ -4,6 +4,7 @@ java { sourceCompatibility = JavaVersion.VERSION_1_8; targetCompatibility = Java
 dependencies {
     implementation(project(path = ":sqlserver-android", configuration = "profile"))
     implementation(libs.mariadb)
+    implementation(libs.postgresql)
     testImplementation(libs.junit)
 }
 tasks.test { useJUnit(); testLogging { events("passed", "skipped", "failed") } }
@@ -17,7 +18,7 @@ tasks.register<Test>("integrationTest") {
     testClassesDirs = integrationTest.output.classesDirs
     classpath = integrationTest.runtimeClasspath
     useJUnit()
-    exclude("**/UntrustedCertificateTest*")
+    exclude("**/UntrustedCertificateTest*", "**/JdbcWorkspaceIntegrationTest*")
     val fixture = providers.environmentVariable("DATASAIL_TEST_CONFIG")
     val trust = providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE")
     doFirst {
@@ -79,4 +80,17 @@ tasks.register<JavaExec>("driverCompatibilityReport") {
         args = listOf(evidence.absolutePath, layout.buildDirectory.file("reports/driver-audit.txt").get().asFile.absolutePath) +
             (configurations.runtimeClasspath.get().files.filter { it.name.startsWith("mssql-jdbc-") || it.name.startsWith("mariadb-java-client-") } + auditOriginal.files).map { it.absolutePath }
     }
+}
+
+tasks.register<Test>("jdbcWorkspaceTest") {
+    testClassesDirs = integrationTest.output.classesDirs
+    classpath = integrationTest.runtimeClasspath
+    useJUnit()
+    include("**/JdbcWorkspaceIntegrationTest*")
+    doFirst {
+        systemProperty("datasail.test.config", providers.environmentVariable("DATASAIL_TEST_CONFIG").get())
+        systemProperty("datasail.test.trust", providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE").get())
+    }
+    testLogging { events("passed", "skipped", "failed") }
+    outputs.upToDateWhen { false }
 }

@@ -11,12 +11,13 @@ data class SessionSnapshot(val catalog: String?, val writable: Boolean, val conn
 data class SessionReply<T>(val result: Result<T>, val session: SessionSnapshot)
 
 /** One bounded worker owns the session. Cancellation invalidates all old callbacks and approvals. */
-class WorkspaceRunner(private val connector: SqlConnector = JdbcConnector()) : AutoCloseable {
+class WorkspaceRunner(private val connector: SqlConnector = JdbcConnector(),
+    private val localFactory: ((ConnectionProfile) -> SqlWorkspaceSession)? = null) : AutoCloseable {
     private val worker = ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, ArrayBlockingQueue(1))
     private val control = ThreadPoolExecutor(2, 2, 0, TimeUnit.SECONDS, ArrayBlockingQueue(4))
     private val statement = AtomicReference<Statement?>(null)
-    private val connection = AtomicReference<Connection?>(null)
-    private var session: SqlServerSession? = null // worker only
+    private val connection = AtomicReference<AutoCloseable?>(null)
+    private var session: SqlWorkspaceSession? = null // worker only
     private var generation = 0L
     private var busy = false
     private var closed = false
@@ -24,9 +25,18 @@ class WorkspaceRunner(private val connector: SqlConnector = JdbcConnector()) : A
     fun connect(profile: ConnectionProfile, credentials: Credentials, done: (Result<Unit>) -> Unit): Boolean {
         val accepted = submit(done) {
             session?.close(); session = null
+            if (profile.kind == DatabaseKind.SQLITE) {
+                credentials.close()
+                session = (localFactory ?: throw WorkspaceRejected("本地文件连接不可用"))(profile)
+                connection.set(session)
+                return@submit
+            }
             val raw = credentials.use { connector.connect(profile, it) }
             connection.set(raw)
-            try { session = SqlServerSession(raw, profile, statement::set) }
+            try { session = when (profile.kind) {
+                DatabaseKind.SQL_SERVER -> SqlServerSession(raw, profile, statement::set)
+                else -> JdbcBrowseSession(raw, profile, statement::set)
+            } }
             catch (error: Throwable) { raw.close(); throw error }
         }
         // Accepted credentials are owned by the queued operation, never by UI state.
@@ -34,11 +44,11 @@ class WorkspaceRunner(private val connector: SqlConnector = JdbcConnector()) : A
         return accepted
     }
 
-    fun <T> execute(done: (SessionReply<T>) -> Unit, operation: (SqlServerSession) -> T): Boolean = submit({ result ->
+    fun <T> execute(done: (SessionReply<T>) -> Unit, operation: (SqlWorkspaceSession) -> T): Boolean = submit({ result ->
         val current = session?.takeUnless { it.isClosed() }
         done(SessionReply(result, SessionSnapshot(current?.catalog, current?.writable == true, current != null)))
     }) {
-        val current = session ?: throw WorkspaceRejected("请先连接 SQL Server")
+        val current = session ?: throw WorkspaceRejected("请先连接数据库")
         if (current.isClosed()) throw WorkspaceRejected("连接已失效，请手动重新连接")
         operation(current)
     }
@@ -67,7 +77,7 @@ class WorkspaceRunner(private val connector: SqlConnector = JdbcConnector()) : A
         generation++
         val oldStatement = statement.getAndSet(null)
         val oldConnection = connection.getAndSet(null)
-        control { try { oldStatement?.cancel() } catch (_: Exception) { } }
+        control { try { (oldConnection as? SqlWorkspaceSession)?.cancel(); oldStatement?.cancel() } catch (_: Exception) { } }
         control { try { oldConnection?.close() } catch (_: Exception) { } }
         // Ordered behind current work; a new connect cannot overtake disposal.
         try { worker.execute { session?.close(); session = null } }

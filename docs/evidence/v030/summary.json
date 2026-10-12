@@ -1,0 +1,23 @@
+{
+  "jvmTests": {
+    "core-unit": 31,
+    "driver-profile": 11,
+    "app-unit": 3,
+    "mysql-probes": 6,
+    "mysql-untrusted": 1,
+    "sqlserver-integration": 15,
+    "MYSQL": 5,
+    "MARIADB": 5,
+    "POSTGRESQL": 5
+  },
+  "jvmTotal": 82,
+  "deviceTests": {
+    "emulator-5554": 14,
+    "emulator-5556": 14
+  },
+  "deviceTotal": 28,
+  "release": "failed",
+  "releaseMissingClasses": 142,
+  "physicalDevices": "not run",
+  "notes": "JVM engine suites counted once per engine; fixture reruns not added again."
+}

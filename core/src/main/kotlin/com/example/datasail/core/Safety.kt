@@ -22,8 +22,9 @@ object Failures {
             } == true -> ErrorKind.TLS
             chain.any { it is UnknownHostException } -> ErrorKind.DNS
             chain.any { it is SQLTimeoutException || it is SocketTimeoutException } -> ErrorKind.TIMEOUT
+            sql?.sqlState == "08001" && sql.message == "Connection attempt timed out." -> ErrorKind.TIMEOUT
             state == "HYT00" || state == "HYT01" -> ErrorKind.TIMEOUT
-            state == "HY008" || state == "70100" -> ErrorKind.CANCELLED
+            state == "HY008" || state == "70100" || state == "57014" -> ErrorKind.CANCELLED
             state?.startsWith("28") == true || sql?.errorCode in setOf(18452, 18456, 18487, 18488) -> ErrorKind.AUTHENTICATION
             state == "42501" || sql?.errorCode in setOf(229, 1142, 1143) -> ErrorKind.PERMISSION
             chain.any { it is SQLFeatureNotSupportedException || it is LinkageError } -> ErrorKind.UNSUPPORTED

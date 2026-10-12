@@ -11,10 +11,10 @@ android {
         applicationId = "com.example.datasail"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.2.2"
+        versionCode = 5
+        versionName = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArguments["notClass"] = "com.example.datasail.SqlServerDeviceTest,com.example.datasail.UpgradeTest"
+        testInstrumentationRunnerArguments["notClass"] = "com.example.datasail.SqlServerDeviceTest,com.example.datasail.JdbcWorkspaceDeviceTest,com.example.datasail.UpgradeTest"
     }
     buildTypes {
         release {

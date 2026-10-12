@@ -1,0 +1,174 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileIntegrationTestKotlin UP-TO-DATE
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:processIntegrationTestResources NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:jdbcWorkspaceTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+JdbcWorkspaceIntegrationTest > serverEnforcesReadonlyBeyondSyntaxAndCannotPoisonNextTransaction PASSED
+
+JdbcWorkspaceIntegrationTest > unusualIdentifiersAreQuotedAndExactMetadataDoesNotMatchWildcards PASSED
+
+JdbcWorkspaceIntegrationTest > rejectsWriteSyntaxAndExecutableComments PASSED
+
+JdbcWorkspaceIntegrationTest > browsingPreservesTypesAndPaginationAndClosesTransactions PASSED
+
+JdbcWorkspaceIntegrationTest > rejectsWrongHostnameUntrustedCaAndWrongPassword PASSED
+
+BUILD SUCCESSFUL in 2s
+8 actionable tasks: 2 executed, 6 up-to-date
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+32804
+
+com.example.datasail.JdbcWorkspaceDeviceTest:
+Error in timeoutAndCancellationCloseResourcesWithoutReplay(com.example.datasail.JdbcWorkspaceDeviceTest):
+java.sql.SQLNonTransientConnectionException: (conn=18) Connection timeout: connectTimeout (5000ms) reached during authentication phase with localhost:32804
+	at org.mariadb.jdbc.export.ExceptionFactory.createException(ExceptionFactory.java:320)
+	at org.mariadb.jdbc.export.ExceptionFactory.create(ExceptionFactory.java:378)
+	at org.mariadb.jdbc.client.impl.StandardClient.authenticationHandler(StandardClient.java:543)
+	at org.mariadb.jdbc.client.impl.StandardClient.handleAuthentication(StandardClient.java:440)
+	at org.mariadb.jdbc.client.impl.StandardClient.setupConnection(StandardClient.java:191)
+	at org.mariadb.jdbc.client.impl.StandardClient.<init>(StandardClient.java:159)
+	at org.mariadb.jdbc.Driver$$ExternalSyntheticLambda1.apply(D8$$SyntheticClass:0)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:61)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:90)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:28)
+	at com.example.datasail.core.JdbcConnector.connect$lambda$0(JdbcConnector.kt:26)
+	at com.example.datasail.core.JdbcConnector.$r8$lambda$ZDZSgq10LRf4eXvAZjU1ku6O_DU(Unknown Source:0)
+	at com.example.datasail.core.JdbcConnector$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.core.Credentials.usePassword(Model.kt:50)
+	at com.example.datasail.core.JdbcConnector.connect(JdbcConnector.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$25$connect(JdbcWorkspaceDeviceTest.kt:51)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$25(JdbcWorkspaceDeviceTest.kt:53)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$SzoxeKZZwj_mR6jpCIi7t6ENIfc(Unknown Source:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay(JdbcWorkspaceDeviceTest.kt:50)
+
+Error in tlsIdentityAndWorkbenchReadOnArt(com.example.datasail.JdbcWorkspaceDeviceTest):
+java.lang.AssertionError: unexpected exception type thrown; expected:<java.lang.Exception> but was:<java.lang.NoClassDefFoundError>
+	at org.junit.Assert.assertThrows(Assert.java:1020)
+	at org.junit.Assert.assertThrows(Assert.java:981)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt$lambda$17(JdbcWorkspaceDeviceTest.kt:32)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$g9Cd7UOplhS7j5T_o8L1oAysGuk(Unknown Source:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda2.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt(JdbcWorkspaceDeviceTest.kt:28)
+	... 31 trimmed
+Caused by: java.lang.NoClassDefFoundError: Failed resolution of: Ljavax/naming/ldap/LdapName;
+	at org.mariadb.jdbc.client.tls.HostnameVerifier.extractCommonName(HostnameVerifier.java:110)
+	at org.mariadb.jdbc.client.tls.HostnameVerifier.verify(HostnameVerifier.java:300)
+	at com.example.datasail.core.StrictTlsPlugin.verify(StrictTlsPlugin.kt:28)
+	at org.mariadb.jdbc.client.impl.StandardClient.verifyHostname(StandardClient.java:321)
+	at org.mariadb.jdbc.client.impl.StandardClient.handleSSLConnection(StandardClient.java:245)
+	at org.mariadb.jdbc.client.impl.StandardClient.setupConnection(StandardClient.java:181)
+	at org.mariadb.jdbc.client.impl.StandardClient.<init>(StandardClient.java:159)
+	at org.mariadb.jdbc.Driver$$ExternalSyntheticLambda1.apply(D8$$SyntheticClass:0)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:61)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:90)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:28)
+	at com.example.datasail.core.JdbcConnector.connect$lambda$0(JdbcConnector.kt:26)
+	at com.example.datasail.core.JdbcConnector.$r8$lambda$ZDZSgq10LRf4eXvAZjU1ku6O_DU(Unknown Source:0)
+	at com.example.datasail.core.JdbcConnector$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.core.Credentials.usePassword(Model.kt:50)
+	at com.example.datasail.core.JdbcConnector.connect(JdbcConnector.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt$lambda$17$connection(JdbcWorkspaceDeviceTest.kt:29)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt$lambda$17$lambda$5(JdbcWorkspaceDeviceTest.kt:32)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$yOeM33QWPr5et8QLJEhhhLQEaq8(Unknown Source:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda6.run(D8$$SyntheticClass:0)
+	at org.junit.Assert.assertThrows(Assert.java:1001)
+	... 38 more
+Caused by: java.lang.ClassNotFoundException: Didn't find class "javax.naming.ldap.LdapName" on path: DexPathList[[zip file "/system/framework/android.test.runner.jar", zip file "/system/framework/android.test.mock.jar", zip file "/system/framework/android.test.base.jar", zip file "/data/app/~~12eVAi0vlb0nMSZZ5eYqLw==/com.example.datasail.test-doBTDxiAlTTr9c8iOKvi8g==/base.apk", zip file "/data/app/~~KE4BVI3rndKOOkvhq6p3NQ==/com.example.datasail--it8fV19t_WSUXoCP2dGGw==/base.apk"],nativeLibraryDirectories=[/data/app/~~12eVAi0vlb0nMSZZ5eYqLw==/com.example.datasail.test-doBTDxiAlTTr9c8iOKvi8g==/lib/x86_64, /data/app/~~KE4BVI3rndKOOkvhq6p3NQ==/com.example.datasail--it8fV19t_WSUXoCP2dGGw==/lib/x86_64, /data/app/~~12eVAi0vlb0nMSZZ5eYqLw==/com.example.datasail.test-doBTDxiAlTTr9c8iOKvi8g==/base.apk!/lib/x86_64, /data/app/~~KE4BVI3rndKOOkvhq6p3NQ==/com.example.datasail--it8fV19t_WSUXoCP2dGGw==/base.apk!/lib/x86_64, /system/lib64, /system_ext/lib64]]
+	at dalvik.system.BaseDexClassLoader.findClass(BaseDexClassLoader.java:207)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:379)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:312)
+	... 59 more
+
+
+Time: 39.075
+There were 2 failures:
+1) timeoutAndCancellationCloseResourcesWithoutReplay(com.example.datasail.JdbcWorkspaceDeviceTest)
+java.sql.SQLNonTransientConnectionException: (conn=18) Connection timeout: connectTimeout (5000ms) reached during authentication phase with localhost:32804
+	at org.mariadb.jdbc.export.ExceptionFactory.createException(ExceptionFactory.java:320)
+	at org.mariadb.jdbc.export.ExceptionFactory.create(ExceptionFactory.java:378)
+	at org.mariadb.jdbc.client.impl.StandardClient.authenticationHandler(StandardClient.java:543)
+	at org.mariadb.jdbc.client.impl.StandardClient.handleAuthentication(StandardClient.java:440)
+	at org.mariadb.jdbc.client.impl.StandardClient.setupConnection(StandardClient.java:191)
+	at org.mariadb.jdbc.client.impl.StandardClient.<init>(StandardClient.java:159)
+	at org.mariadb.jdbc.Driver$$ExternalSyntheticLambda1.apply(D8$$SyntheticClass:0)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:61)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:90)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:28)
+	at com.example.datasail.core.JdbcConnector.connect$lambda$0(JdbcConnector.kt:26)
+	at com.example.datasail.core.JdbcConnector.$r8$lambda$ZDZSgq10LRf4eXvAZjU1ku6O_DU(Unknown Source:0)
+	at com.example.datasail.core.JdbcConnector$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.core.Credentials.usePassword(Model.kt:50)
+	at com.example.datasail.core.JdbcConnector.connect(JdbcConnector.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$25$connect(JdbcWorkspaceDeviceTest.kt:51)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$25(JdbcWorkspaceDeviceTest.kt:53)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$SzoxeKZZwj_mR6jpCIi7t6ENIfc(Unknown Source:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay(JdbcWorkspaceDeviceTest.kt:50)
+2) tlsIdentityAndWorkbenchReadOnArt(com.example.datasail.JdbcWorkspaceDeviceTest)
+java.lang.AssertionError: unexpected exception type thrown; expected:<java.lang.Exception> but was:<java.lang.NoClassDefFoundError>
+	at org.junit.Assert.assertThrows(Assert.java:1020)
+	at org.junit.Assert.assertThrows(Assert.java:981)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt$lambda$17(JdbcWorkspaceDeviceTest.kt:32)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$g9Cd7UOplhS7j5T_o8L1oAysGuk(Unknown Source:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda2.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt(JdbcWorkspaceDeviceTest.kt:28)
+	... 31 trimmed
+Caused by: java.lang.NoClassDefFoundError: Failed resolution of: Ljavax/naming/ldap/LdapName;
+	at org.mariadb.jdbc.client.tls.HostnameVerifier.extractCommonName(HostnameVerifier.java:110)
+	at org.mariadb.jdbc.client.tls.HostnameVerifier.verify(HostnameVerifier.java:300)
+	at com.example.datasail.core.StrictTlsPlugin.verify(StrictTlsPlugin.kt:28)
+	at org.mariadb.jdbc.client.impl.StandardClient.verifyHostname(StandardClient.java:321)
+	at org.mariadb.jdbc.client.impl.StandardClient.handleSSLConnection(StandardClient.java:245)
+	at org.mariadb.jdbc.client.impl.StandardClient.setupConnection(StandardClient.java:181)
+	at org.mariadb.jdbc.client.impl.StandardClient.<init>(StandardClient.java:159)
+	at org.mariadb.jdbc.Driver$$ExternalSyntheticLambda1.apply(D8$$SyntheticClass:0)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:61)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:90)
+	at org.mariadb.jdbc.Driver.connect(Driver.java:28)
+	at com.example.datasail.core.JdbcConnector.connect$lambda$0(JdbcConnector.kt:26)
+	at com.example.datasail.core.JdbcConnector.$r8$lambda$ZDZSgq10LRf4eXvAZjU1ku6O_DU(Unknown Source:0)
+	at com.example.datasail.core.JdbcConnector$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.core.Credentials.usePassword(Model.kt:50)
+	at com.example.datasail.core.JdbcConnector.connect(JdbcConnector.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt$lambda$17$connection(JdbcWorkspaceDeviceTest.kt:29)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt$lambda$17$lambda$5(JdbcWorkspaceDeviceTest.kt:32)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$yOeM33QWPr5et8QLJEhhhLQEaq8(Unknown Source:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda6.run(D8$$SyntheticClass:0)
+	at org.junit.Assert.assertThrows(Assert.java:1001)
+	... 38 more
+Caused by: java.lang.ClassNotFoundException: Didn't find class "javax.naming.ldap.LdapName" on path: DexPathList[[zip file "/system/framework/android.test.runner.jar", zip file "/system/framework/android.test.mock.jar", zip file "/system/framework/android.test.base.jar", zip file "/data/app/~~12eVAi0vlb0nMSZZ5eYqLw==/com.example.datasail.test-doBTDxiAlTTr9c8iOKvi8g==/base.apk", zip file "/data/app/~~KE4BVI3rndKOOkvhq6p3NQ==/com.example.datasail--it8fV19t_WSUXoCP2dGGw==/base.apk"],nativeLibraryDirectories=[/data/app/~~12eVAi0vlb0nMSZZ5eYqLw==/com.example.datasail.test-doBTDxiAlTTr9c8iOKvi8g==/lib/x86_64, /data/app/~~KE4BVI3rndKOOkvhq6p3NQ==/com.example.datasail--it8fV19t_WSUXoCP2dGGw==/lib/x86_64, /data/app/~~12eVAi0vlb0nMSZZ5eYqLw==/com.example.datasail.test-doBTDxiAlTTr9c8iOKvi8g==/base.apk!/lib/x86_64, /data/app/~~KE4BVI3rndKOOkvhq6p3NQ==/com.example.datasail--it8fV19t_WSUXoCP2dGGw==/base.apk!/lib/x86_64, /system/lib64, /system_ext/lib64]]
+	at dalvik.system.BaseDexClassLoader.findClass(BaseDexClassLoader.java:207)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:379)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:312)
+	... 59 more
+
+FAILURES!!!
+Tests run: 2,  Failures: 2
+
+

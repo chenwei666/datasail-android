@@ -1,30 +1,26 @@
-# V0.2.2 实际驱动兼容矩阵
+# V0.3.0 驱动与能力矩阵
 
-日期：2026-10-12。JVM、模拟器、真机分别记录，全部驱动仍为实验性。
+当前实际实现五种连接类型；下表区分功能实现与测试证据。完整验收命令和系统范围见 TEST_REPORT。
 
-| 项目 | SQL Server | MySQL |
-|---|---|---|
-| artifact | com.microsoft.sqlserver:mssql-jdbc | org.mariadb.jdbc:mariadb-java-client |
-| 版本 / 许可 | 13.6.0.jre8-datasail.1（基于微软 13.6.0.jre8）/ MIT | 3.5.10 / LGPL-2.1-or-later |
-| 服务端 | SQL Server 2022 CU16 Developer，隔离容器 | MySQL Community 8.4.6，隔离容器 |
-| 认证 | SQL 账号；JVM/Android 实测 | caching_sha2_password；JVM 实测 |
-| 严格 TLS | 平台链校验 + SqlServerTrustManager SAN 校验；系统或连接专用 CA | verify-full + StrictTlsPlugin；系统或连接专用 CA |
-| JVM 连接/类型/错误证书/错误账号 | 通过 | 通过 |
-| JVM 超时/取消 | 通过；取消仍标 UNKNOWN | 通过；SLEEP 超时返回中断标记 |
-| JVM 工作台/写入/冲突/回滚 | 15 个集成测试通过；丢失提交确认故障注入返回 UNKNOWN | 本版未实现 |
-| Android 8/11 x86_64 严格 TLS、表读取、增改删 | 软件模拟器通过，包含不受信 CA / 错误主机名拒绝和并发冲突 | 未执行数据库实连 |
-| Android 8/11 超时/取消 | 通过；客户端关闭且没有重连，取消仍为 UNKNOWN | 未执行 |
-| Android JDBC 入口类加载 | 通过 | 通过；不等于实连 |
-| Debug D8 | 通过 | 通过 |
-| Release/R8 | 同一构建失败：仍有缺失平台/可选 API | 同一构建失败 |
-| Android 真机 / arm64 | 未执行 | 未执行 |
+| 引擎 | 驱动 | 工作台实现 | 图形写入 | 特有约束 |
+|---|---|---|---|---|
+| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.1 / MIT | 库、Schema、表/视图、字段、分页、SELECT | 测试环境安全单行确认 | 现有保护保持，生产只读 |
+| MySQL | MariaDB Connector/J 3.5.10 / LGPL-2.1-or-later | 库、表/视图、字段、主键分页、SELECT | 未开放 | 每操作服务器只读事务；无符号 BIGINT 用精确 Decimal |
+| MariaDB | 同上，独立服务器验收 | 同上 | 未开放 | 不以复用驱动推断兼容 |
+| PostgreSQL | pgjdbc 42.7.14 / BSD-2-Clause | Schema、表/视图、字段、主键分页、SELECT | 未开放 | 一连接一库；参数化系统目录绕开 Android 缺少的 closeOnCompletion |
+| SQLite | Android 系统 SQLiteDatabase | 文件副本、表/视图、字段、主键分页、SELECT | 未开放 | 64 MiB、一致性非 WAL 副本、OPEN_READONLY |
 
-Android：API26 / Android 8 与 API30 / Android 11 AOSP x86_64，软件 TCG，无 KVM。确切 build、最终命令和结果见 TEST_REPORT 与 docs/evidence/v022。JVM：Linux x86_64 / Temurin 21.0.8+9。
+本轮实测：SQL Server 15 项 JVM/每系统 2 项设备；MySQL/MariaDB/PostgreSQL 各 5 项 JVM/每系统各 2 项设备；SQLite 每系统 2 项设备。全部通过。另有 MySQL 原探针 7 项、单元 45 项、每系统 UI/升级 4 项。总计 82 项 JVM 与 28 项设备测试，见 summary.json。
 
-SQL Server 镜像：`mcr.microsoft.com/mssql/server@sha256:45a1a9d13ca5574cf8e0fe4ae73ab77248b66d9c3132ac9658fb6c16dd72a8af`。MySQL 镜像：`mysql@sha256:869218921e61d6c3c89820955d63cca42971f0e3e6c1e2792247bbd944ebc6e9`。临时端口只映射到 127.0.0.1；不使用业务账号。
+所有网络连接均校验证书链与主机身份；SQL Server、PostgreSQL 通过严格 TrustManager，MySQL/MariaDB 通过 StrictTlsPlugin 的平台链校验与共享 SAN 匹配器。支持连接专用公共 CA；拒绝 CN-only，无信任全部或明文回退。新增网络引擎连接预算 15 秒，PostgreSQL 总登录预算 30 秒，socket 15 秒、工作台语句 10 秒。
 
-Android 初次可信 TLS 连接暴露 `javax.naming.ldap.LdapName` 缺失；通过微软公开 `trustManagerClass` 扩展实现严格证书链与 SAN 校验后通过实连。不添加信任全部证书逻辑，也不声称修复 R8 所有缺失路径。只含 CN 的证书拒绝。
+服务端固定镜像：
 
-未支持：Windows/Kerberos/Entra、Always Encrypted、实例发现、IPv6、mTLS、其它数据库工作台。MariaDB 服务器未因复用驱动而被宣称已验证。硬断网、服务端取消后的最终请求状态、混淆 Release、真机性能仍需独立验收。
+- SQL Server 2022 CU16 Developer：`mcr.microsoft.com/mssql/server@sha256:45a1a9d13ca5574cf8e0fe4ae73ab77248b66d9c3132ac9658fb6c16dd72a8af`
+- MySQL 8.4.6：`mysql@sha256:869218921e61d6c3c89820955d63cca42971f0e3e6c1e2792247bbd944ebc6e9`
+- MariaDB 11.8.9：`mariadb@sha256:6422478cb8e159f080fb1d8ccf65101e26fe51385787fde7d16c3b165a331f15`
+- PostgreSQL 18.3：`postgres@sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db`
 
-V0.2.1 API26 初测 TLS 报 `Socket closed`，ADB 端口映射不能修复。引入固定 Conscrypt 2.7.0 engine socket 后，SQL Server 严格 TLS 正负例、读写冲突及超时/取消实连通过。测试同时断言 SSLContext 使用 DataSailTLS，而 TrustManagerFactory 保留平台 provider。APK 的 TLS provider 变化未通过 JVM 测试冒充验证；MySQL Android 仍未实连。
+JVM 使用 Temurin 21.0.8+9；设备是 Android 8/API26 与 Android 11/API30 AOSP x86_64 软件模拟器。真机、arm64、云认证、其它服务器版本尚无验证。Release/R8 仍失败，不将 Debug 验收冒充混淆发行兼容。
+
+其它引擎见 DATABASE_SCOPE，全部仍为规划项目。下一批优先 Redis/Valkey、MongoDB、Elasticsearch/OpenSearch、ClickHouse；Oracle、Db2、国产及兼容协议数据库逐项接入，不能将协议相似推断为已支持。

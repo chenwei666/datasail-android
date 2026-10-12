@@ -10,17 +10,18 @@ data class TableRef(val catalog: String, val schema: String, val name: String, v
 data class ColumnDef(val name: String, val jdbcType: Int, val typeName: String, val nullable: Boolean,
     val size: Int, val scale: Int, val identity: Boolean, val generated: Boolean, val primaryKeyOrder: Int = 0,
     val hasDefault: Boolean = false) {
-    val rowVersion get() = typeName.equals("timestamp", true) || typeName.equals("rowversion", true)
+    val rowVersion get() = typeName.equals("rowversion", true) || (typeName.equals("timestamp", true) && jdbcType == Types.BINARY)
     val editable get() = !identity && !generated && !rowVersion && jdbcType in EDITABLE_TYPES
     companion object {
         val EDITABLE_TYPES = setOf(Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR,
             Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.DECIMAL, Types.NUMERIC, Types.BIT, Types.BOOLEAN)
     }
 }
-data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val hasTriggers: Boolean) {
+data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val hasTriggers: Boolean, val readOnlyOverride: String? = null) {
     val keys get() = columns.filter { it.primaryKeyOrder > 0 }.sortedBy { it.primaryKeyOrder }
     val version get() = columns.firstOrNull { it.rowVersion }
     val readOnlyReason: String? get() = when {
+        readOnlyOverride != null -> readOnlyOverride
         table.view -> "视图只读"
         keys.isEmpty() -> "没有主键，不能安全定位单行"
         hasTriggers -> "存在启用的 DML 触发器，本版禁止图形编辑以避免未知副作用"

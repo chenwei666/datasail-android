@@ -3,7 +3,8 @@ package com.example.datasail.core
 import java.math.BigDecimal
 
 enum class DatabaseKind(val label: String, val defaultPort: Int) {
-    SQL_SERVER("SQL Server", 1433), MYSQL("MySQL（MariaDB 驱动）", 3306)
+    SQL_SERVER("SQL Server", 1433), MYSQL("MySQL", 3306), MARIADB("MariaDB", 3306),
+    POSTGRESQL("PostgreSQL", 5432), SQLITE("SQLite", 0)
 }
 enum class TlsPolicy { VERIFY_IDENTITY }
 enum class ConnectionEnvironment(val label: String) { TEST("测试"), PRODUCTION("生产（本版只读）") }
@@ -29,10 +30,13 @@ class ConnectionProfile(
     val trustStore: TrustStoreSpec? = null,
 ) {
     init {
-        require(host.length in 1..253 && host.matches(Regex("[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?"))) { "主机仅支持 DNS 名称或 IPv4，不可填连接串" }
-        require(port in 1..65535) { "端口范围为 1–65535" }
+        if (kind != DatabaseKind.SQLITE) {
+            require(host.length in 1..253 && host.matches(Regex("[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?"))) { "主机仅支持 DNS 名称或 IPv4，不可填连接串" }
+            require(port in 1..65535) { "端口范围为 1–65535" }
+            require(username.isNotBlank() && username.length <= 128) { "请填写有效用户名" }
+        }
+        if (kind == DatabaseKind.SQLITE) require(database.matches(Regex("[a-f0-9]{64}"))) { "请先导入 SQLite 文件" }
         require(database.length in 1..128 && database.all { it.isLetterOrDigit() || it == '_' || it == '-' }) { "技术验证版库名仅支持字母、数字、下划线和连字符" }
-        require(username.isNotBlank() && username.length <= 128) { "请填写有效用户名" }
     }
     override fun toString() = "ConnectionProfile(${kind.name}, details=[REDACTED])"
 }

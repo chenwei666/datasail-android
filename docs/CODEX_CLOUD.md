@@ -18,7 +18,7 @@ ADB 本身仍需要用户主目录中的 `.android` 目录；本次已创建，�
 
 运行应用需要 Android 设备或模拟器，Android 11 是首要目标。本机无 `/dev/kvm`，本轮安装 API30 x86_64 系统镜像并用软件模拟启动，已执行 SQL Server Android 实连。模拟器是临时运行进程，恢复环境后需重新启动。核心开发/构建无需常驻服务器。
 
-仅在运行实连测试时启动 `scripts/test-mysql-local.sh` 或 `scripts/test-sqlserver-local.sh`；需要 Docker 与 openssl，脚本建立只绑定 loopback 的临时数据库 并自动停止。不要把该进程视为随快照持久化。应用 TLS 使用系统或连接明确选择的 CA；云端 Java 下载代理信任配置不打包进 APK。
+仅在运行实连测试时启动 `scripts/test-mysql-local.sh` 、`scripts/test-sqlserver-local.sh` 或 `scripts/test-jdbc-workspace-local.sh MYSQL|MARIADB|POSTGRESQL`；需要 Docker 与 openssl，脚本建立只绑定 loopback 的临时数据库 并自动停止。不要把该进程视为随快照持久化。应用 TLS 使用系统或连接明确选择的 CA；云端 Java 下载代理信任配置不打包进 APK。
 
 网络需求：Google SDK/Maven、Maven Central、Gradle/GitHub 发行资产已通过已有 package_managers 预设访问。官方说明页面所需 `developer.android.com`、`learn.microsoft.com`、`docs.gradle.org`、`mariadb.com` 以及 SQL Server 镜像实际重定向域名 `centralus.data.mcr.microsoft.com` 已记录为环境草稿新增域名；保存草稿不等于当前网络已生效。
 

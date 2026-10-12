@@ -35,7 +35,7 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
     } }) { padding -> Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("数舟", style = MaterialTheme.typography.headlineMedium)
-            Text("DataSail · V0.2.2 · SQL Server 实验性工作台")
+            Text("DataSail · V0.3.0 · 多数据库实验性工作台")
             Text("${state.target} / ${state.catalog} / ${state.schema}\n${if (state.production) "生产" else "测试"} · ${if (state.writable) "可写" else "只读"} · ${if (state.connected) "已连接" else "未连接"}", style = MaterialTheme.typography.labelMedium)
             Text(state.message, style = MaterialTheme.typography.bodySmall)
             if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -49,8 +49,9 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
                 else -> {
                     Text("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。")
                     Text("Android 8.0 为最低构建目标；各系统实测范围见交付测试报告。密码不持久化，进入后台会断开连接，不自动重试。")
-                    Text("SQL Server：mssql-jdbc 13.6.0.jre8（MIT）\nMySQL 探针：MariaDB Connector/J 3.5.10（LGPL-2.1-or-later）")
-                    Text("AI、收藏及其它数据库工作台尚未实现。SQL 过滤不是授权边界，生产连接请使用数据库只读账号。")
+                    Text("SQL Server：mssql-jdbc 13.6.0.jre8（MIT）\nMySQL / MariaDB：MariaDB Connector/J 3.5.10（LGPL-2.1-or-later）\nPostgreSQL：pgjdbc 42.7.14（BSD-2-Clause）")
+                    Text("AI、收藏尚未实现；新增数据库当前只读。SQL 过滤不是授权边界，生产连接请使用数据库只读账号。")
+                    DatabaseSupport()
                     val probeState by probe.state.collectAsStateWithLifecycle()
                     ProbeForm(probe, probeState)
                 }
@@ -80,15 +81,25 @@ private fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
         lifecycle.addObserver(observer); onDispose { lifecycle.removeObserver(observer) }
     }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> uri?.let { model.importCa(it) { hash -> draft = draft.copy(ca = hash); authorized = false } } }
+    val sqlitePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> uri?.let { model.importSqlite(it) { id -> draft = draft.copy(database = id); authorized = false } } }
     Text("已保存连接（仅元数据）", style = MaterialTheme.typography.titleMedium)
     saved.forEach { connection -> Row {
-        TextButton(onClick = { draft = connection; password = ""; authorized = false }) { Text(connection.name) }
+        TextButton(onClick = { draft = connection; password = ""; authorized = false }) { Text("${connection.name} · ${connection.kind.label}") }
         TextButton(onClick = { draft = connection.copy(id = UUID.randomUUID().toString(), name = connection.name + " 副本"); password = ""; authorized = false }) { Text("复制") }
         TextButton(onClick = { model.delete(connection.id); if (draft.id == connection.id) draft = SavedConnection() }) { Text("删除") }
     } }
     TextButton(onClick = { draft = SavedConnection(); password = ""; authorized = false }) { Text("新建连接") }
     fun change(value: SavedConnection) { draft = value; authorized = false }
+    Choice("数据库类型", DatabaseKind.entries.map { it.label }, draft.kind.label, !state.busy) { label ->
+        val kind = DatabaseKind.entries.first { it.label == label }
+        change(draft.copy(kind = kind, port = kind.defaultPort.toString(), database = if ((kind == DatabaseKind.SQLITE) != (draft.kind == DatabaseKind.SQLITE)) "" else draft.database)); password = ""
+    }
     OutlinedTextField(draft.name, { change(draft.copy(name = it)) }, label = { Text("连接名称") }, singleLine = true)
+    if (draft.kind == DatabaseKind.SQLITE) {
+        Text("选择已导出的完整 SQLite 文件（≤64 MiB，非 WAL 模式）。应用保存只读副本。")
+        TextButton(onClick = { sqlitePicker.launch("*/*") }) { Text("选择 SQLite 文件") }
+        Text(if (draft.database.matches(Regex("[a-f0-9]{64}"))) "已选择副本" else "尚未选择文件")
+    } else {
     OutlinedTextField(draft.host, { change(draft.copy(host = it)) }, label = { Text("服务器 DNS / IPv4") }, singleLine = true)
     OutlinedTextField(draft.port, { change(draft.copy(port = it)) }, label = { Text("端口") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
     OutlinedTextField(draft.database, { change(draft.copy(database = it)) }, label = { Text("数据库") }, singleLine = true)
@@ -99,23 +110,24 @@ private fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
     Text("仅导入你已核对来源和指纹的 CA；它可为此连接签发受信任证书。")
     Row { TextButton(onClick = { picker.launch("*/*") }) { Text("选择 CA 证书") }
         TextButton(onClick = { change(draft.copy(ca = null)) }) { Text("恢复系统 CA") } }
+    }
     Row { Checkbox(authorized, { authorized = it }); Text("我已获准访问上述目标；权限由数据库账号控制。") }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedButton(onClick = { model.save(draft) }) { Text("保存配置") }
-        Button(enabled = authorized && password.isNotEmpty() && !state.busy, onClick = { val secret = password.toCharArray(); password = ""; model.connect(draft, secret) }) { Text("连接") }
+        Button(enabled = authorized && (draft.kind == DatabaseKind.SQLITE || password.isNotEmpty()) && !state.busy, onClick = { val secret = password.toCharArray(); password = ""; model.connect(draft, secret) }) { Text("连接") }
     }
 }
 
 @Composable
 private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState) {
-    if (!state.connected) { Text("请在连接页登录 SQL Server。MySQL 仍仅提供设置页中的固定探针。"); return }
+    if (!state.connected) { Text("请在连接页选择数据库并连接，然后浏览表或执行查询。"); return }
     var search by remember { mutableStateOf("") }
     var sql by remember { mutableStateOf("SELECT 1 AS 示例") }
     var selected by remember(state.result) { mutableStateOf<Int?>(null) }
     var editing by remember(state.result) { mutableStateOf<MutationKind?>(null) }
     Choice("数据库", state.catalogs, state.catalog, !state.busy, model::switchCatalog)
     Choice("Schema", state.schemas, state.schema, !state.busy, model::tables)
-    Row { Switch(state.writable, { model.writable(it) }, enabled = !state.busy && !state.production); Text("允许本次测试会话写入（单行确认）") }
+    Row { Switch(state.writable, { model.writable(it) }, enabled = !state.busy && !state.production && state.kind == DatabaseKind.SQL_SERVER); Text("允许本次测试会话写入（单行确认）") }
     OutlinedTextField(search, { search = it }, label = { Text("筛选表 / 视图") }, singleLine = true)
     // Object chooser remains bounded; data rows are limited by the core to 100.
     val matching = state.tables.filter { it.name.contains(search, ignoreCase = true) }
@@ -194,4 +206,18 @@ private fun EditForm(schema: TableSchema, page: ResultPage, kind: MutationKind, 
             }
         }
     }, confirmButton = { Button(onClick = { preview(inputs.filterKeys { it in included }) }) { Text("预览变更") } }, dismissButton = { TextButton(onClick = dismiss) { Text("取消") } })
+}
+
+@Composable
+private fun DatabaseSupport() {
+    var search by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+    TextButton(onClick = { expanded = !expanded }) { Text("数据库支持范围") }
+    if (expanded) {
+        Text("统一管理关系型、文档、键值、搜索等数据库是产品目标。规划中的数据库尚不能连接；兼容协议不代表已经通过验收。")
+        OutlinedTextField(search, { search = it }, label = { Text("搜索数据库名称 / 类型") }, singleLine = true)
+        DatabaseCatalog.targets.filter { it.name.contains(search, true) || it.family.contains(search, true) }.forEach {
+            Text("${it.name} · ${it.family}\n${it.capability}")
+        }
+    }
 }

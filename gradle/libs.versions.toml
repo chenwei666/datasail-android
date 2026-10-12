@@ -9,11 +9,13 @@ lifecycle = "2.9.2"
 coroutines = "1.10.2"
 mssql = "13.6.0.jre8"
 mariadb = "3.5.10"
+postgresql = "42.7.14"
 junit = "4.13.2"
 android-test = "1.2.1"
 test-runner = "1.6.2"
 
 [libraries]
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 conscrypt = { module = "org.conscrypt:conscrypt-android", version.ref = "conscrypt" }
 asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm-tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }

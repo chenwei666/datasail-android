@@ -14,9 +14,9 @@ import kotlinx.coroutines.withContext
 // All JDBC work is dispatched to one bounded worker; UI only holds immutable snapshots.
 data class WorkspaceUiState(val busy: Boolean = false, val connected: Boolean = false,
     val target: String = "未连接", val catalog: String = "—", val schema: String = "—", val writable: Boolean = false,
-    val production: Boolean = false, val catalogs: List<String> = emptyList(), val schemas: List<String> = emptyList(),
+    val kind: DatabaseKind = DatabaseKind.SQL_SERVER, val production: Boolean = false, val catalogs: List<String> = emptyList(), val schemas: List<String> = emptyList(),
     val tables: List<TableRef> = emptyList(), val result: ResultPage? = null, val preview: MutationPreview? = null,
-    val message: String = "请选择已授权的 SQL Server 连接；默认只读。")
+    val message: String = "请选择已授权的数据库连接；默认只读。")
 // Operation completion is authoritative even when a later step in that operation failed.
 internal fun WorkspaceUiState.withSession(actual: SessionSnapshot): WorkspaceUiState {
     val targetChanged = catalog != actual.catalog || !actual.connected
@@ -28,8 +28,8 @@ internal fun WorkspaceUiState.withSession(actual: SessionSnapshot): WorkspaceUiS
         preview = null)
 }
 class WorkspaceViewModel(application: Application) : AndroidViewModel(application) {
-    private val runner = WorkspaceRunner()
     private val store = ConnectionStore(application)
+    private val runner = WorkspaceRunner(localFactory = { profile -> SqliteBrowseSession(store.sqliteFile(profile.database), profile) })
     private val mutable = MutableStateFlow(WorkspaceUiState())
     val state = mutable.asStateFlow()
     private val connections = MutableStateFlow<List<SavedConnection>>(emptyList())
@@ -54,6 +54,10 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         catch (_: Exception) { message("保存失败，原配置保留；最多保存 100 个连接") }
         finally { saving = false }
     } }
+    fun importSqlite(uri: Uri, done: (String) -> Unit) { viewModelScope.launch {
+        try { val id = withContext(Dispatchers.IO) { store.importSqlite(uri) }; done(id); message("SQLite 一致性副本已导入；原文件保持不变") }
+        catch (_: Exception) { message("导入失败：需要不超过 64 MiB、已导出为非 WAL 模式的完整 SQLite 文件") }
+    } }
     fun importCa(uri: Uri, done: (String) -> Unit) { viewModelScope.launch {
         try { val fingerprint = withContext(Dispatchers.IO) { store.importCa(uri) }; done(fingerprint); message("CA 已导入，请核对 SHA-256 指纹；仅用于选择它的连接") }
         catch (_: Exception) { message("导入失败：需要有效的 X.509 CA 证书，文件不超过 64 KiB") }
@@ -64,8 +68,8 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             password.fill('\u0000'); message("连接信息无效，请检查主机、端口、库名和用户名"); return
         }
         val credentials = Credentials(password); password.fill('\u0000')
-        mutable.value = WorkspaceUiState(busy = true, target = "${profile.host}:${profile.port}", catalog = profile.database,
-            production = connection.production, message = "正在校验 TLS 并登录…")
+        mutable.value = WorkspaceUiState(busy = true, target = if (profile.kind == DatabaseKind.SQLITE) "SQLite · ${connection.name}" else "${profile.kind.label} · ${profile.host}:${profile.port}", catalog = if (profile.kind == DatabaseKind.SQLITE) "main" else profile.database,
+            kind = profile.kind, production = connection.production, message = if (profile.kind == DatabaseKind.SQLITE) "正在打开只读副本…" else "正在校验 TLS 并登录…")
         val ticket = ++epoch
         val accepted = runner.connect(profile, credentials) { result -> viewModelScope.launch {
             if (ticket != epoch) return@launch
@@ -95,7 +99,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         copy(preview = null, result = null, connected = connected && it.status != MutationStatus.UNKNOWN,
             writable = writable && it.status != MutationStatus.UNKNOWN, message = it.message)
     }
-    private fun <T> execute(operation: (SqlServerSession) -> T, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
+    private fun <T> execute(operation: (SqlWorkspaceSession) -> T, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
         if (mutable.value.busy) return
         mutable.value = mutable.value.copy(busy = true, preview = null)
         val ticket = epoch

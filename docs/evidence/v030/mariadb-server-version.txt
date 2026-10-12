@@ -1,0 +1,1 @@
+mariadbd  Ver 11.8.9-MariaDB-ubu2404 for debian-linux-gnu on x86_64 (mariadb.org binary distribution)

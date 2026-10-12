@@ -62,7 +62,7 @@ class ProbeRunner(private val connector: SqlConnector = JdbcConnector()) : AutoC
                         val started = System.nanoTime()
                         try {
                             val sleepInterrupted = statement.executeQuery(delaySql(profile.kind)).use { result ->
-                                profile.kind == DatabaseKind.MYSQL && result.next() && result.getInt(1) == 1
+                                profile.kind in setOf(DatabaseKind.MYSQL, DatabaseKind.MARIADB) && result.next() && result.getInt(1) == 1
                             }
                             val elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
                             // MySQL SLEEP returns 1 on interruption when it is the only expression;
@@ -146,7 +146,9 @@ class ProbeRunner(private val connector: SqlConnector = JdbcConnector()) : AutoC
         private val DECIMAL = BigDecimal("1234567890123456.12345678")
         internal fun delaySql(kind: DatabaseKind) = when (kind) {
             DatabaseKind.SQL_SERVER -> "WAITFOR DELAY '00:00:10'; SELECT 1"
-            DatabaseKind.MYSQL -> "SELECT SLEEP(10)"
+            DatabaseKind.MYSQL, DatabaseKind.MARIADB -> "SELECT SLEEP(10)"
+            DatabaseKind.POSTGRESQL -> "SELECT pg_sleep(10)"
+            DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 不提供网络探针")
         }
         private fun basic(kind: DatabaseKind, statement: Statement, checks: MutableList<ProbeCheck>) {
             val text = if (kind == DatabaseKind.SQL_SERVER) "N'$UNICODE'" else "'$UNICODE'"

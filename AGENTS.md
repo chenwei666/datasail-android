@@ -12,7 +12,7 @@
 - APK 内直连数据库；禁止以网页套壳、Termux、Linux/KeX 或强制中转后端替代核心需求。
 - 不需要 Root、无障碍、悬浮窗权限。不得修改用户设备 Root 或系统配置。
 - 最低 Android 8.0 / API 26 是拟定目标，Android 11 为重点验收环境；未通过兼容性测试不得宣传已支持。
-- 第一优先级 SQL Server、MySQL；随后 MariaDB、PostgreSQL、SQLite。其它引擎分阶段验收。
+- 用户最新目标是通用主流数据库工具：保留 SQL Server，持续新增其它引擎。按 docs/DATABASE_SCOPE.md 分组接入并独立验收，不能将规划清单或协议兼容推断当作实测支持。
 - AI 可关闭，未设置 AI 服务不得影响数据库基本操作。
 
 ## 2. 开始任务前

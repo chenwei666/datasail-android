@@ -55,7 +55,7 @@ internal fun ProbeForm(model: ProbeViewModel, state: ProbeUiState) {
     var error by remember { mutableStateOf<String?>(null) }
     Text("数据库驱动验证", style = MaterialTheme.typography.titleLarge)
     Text("仅测试环境 · 固定只读探针 · Schema：不适用\n仅连接你明确授权的隔离测试库，不访问业务表。")
-    DatabaseKind.entries.forEach { option ->
+    DatabaseKind.entries.filter { it in setOf(DatabaseKind.SQL_SERVER, DatabaseKind.MYSQL, DatabaseKind.MARIADB) }.forEach { option ->
         FilterChip(selected = kind == option, enabled = !state.busy, onClick = {
             kind = option; port = option.defaultPort.toString(); authorized = false
         }, label = { Text(option.label) })

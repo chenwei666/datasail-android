@@ -7,5 +7,9 @@
          must stay enabled; do not apply this exception to app code or other driver versions. -->
     <issue id="TrustAllX509TrustManager">
         <ignore regexp=".*mariadb-java-client-3\.5\.10\.jar.*" />
+        <!-- pgjdbc NonValidatingTM and SingleCertTrustManager are upstream optional factories.
+             JdbcConnector fixes sslfactory=PostgreSqlTlsFactory and sslmode=verify-full;
+             callers cannot supply properties. Real CA/hostname negative tests are mandatory. -->
+        <ignore regexp=".*postgresql-42\.7\.14\.jar.*" />
     </issue>
 </lint>

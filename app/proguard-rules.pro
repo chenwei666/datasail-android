@@ -5,3 +5,6 @@
 -keepattributes Signature,InnerClasses,EnclosingMethod
 
 -keep class com.example.datasail.core.SqlServerTrustManager { public <init>(java.lang.String); public *; }
+
+-keep class com.example.datasail.core.PostgreSqlTlsFactory { public <init>(java.util.Properties); }
+-keep class org.postgresql.Driver { public <init>(); }
