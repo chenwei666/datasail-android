@@ -80,7 +80,7 @@ for src, dst in [("CHANGELOG.md", "更新说明.md"), ("docs/TEST_REPORT.md", "�
     shutil.copy2(source / src, staging / dst)
 reports = staging / "docs/verification"
 reports.mkdir()
-suites = [(name, ROOT / "core/build/test-results" / name) for name in ["test", "integrationTest", "untrustedTlsTest", "sqlServerTest", "jdbcWorkspaceTest", "keyValueTest"]]
+suites = [(name, ROOT / "core/build/test-results" / name) for name in ["test", "integrationTest", "untrustedTlsTest", "sqlServerTest", "jdbcWorkspaceTest", "keyValueTest", "mongoTest"]]
 suites.append(("app-unit", ROOT / "app/build/test-results/testDebugUnitTest"))
 suites.append(("driver-profile", ROOT / "sqlserver-android/build/test-results/test"))
 for name, folder in suites:
@@ -104,7 +104,7 @@ manifest = {
     "signing": {"type": "local debug only", "certificateSha256": fingerprint.group(1)},
     "toolchain": {"jdk": "Temurin 21.0.8+9", "agp": "8.13.0", "gradle": "8.13", "kotlin": "2.2.10", "composeBom": "2025.08.01", "compileSdk": 36, "minSdk": 26, "buildTools": "36.0.0"},
     "androidTlsProvider": "Conscrypt 2.7.0, engine sockets, platform trust manager",
-    "drivers": {"mssql-jdbc": "13.6.0.jre8", "mariadb-java-client": "3.5.10", "postgresql": "42.7.14", "sqlite": "Android platform", "redis-valkey": "DataSail bounded RESP2/TLS implementation"},
+    "drivers": {"mssql-jdbc": "13.6.0.jre8", "mariadb-java-client": "3.5.10", "postgresql": "42.7.14", "mongodb-driver-sync": "5.6.5", "android-sasl-api": "Apache Harmony 02970cb7227a335edd2c8457ebdde0195a735733 (two unmodified API types)", "sqlite": "Android platform", "redis-valkey": "DataSail bounded RESP2/TLS implementation"},
     "sqlServerAndroidProfile": {"version": profile_lock["profile"], "jarSha256": sha(profile_jar), "upstreamSourceSha256": profile_lock["sourceSha256"], "patchSha256": sha(ROOT / "sqlserver-android/patches/android-platform.patch")},
     "verification": verification, "devices": devices,
     "limitations": ["Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence", "New engines are read-only; other catalog entries are planned and cannot connect", "Release/R8 fails on missing APIs; no release APK"],

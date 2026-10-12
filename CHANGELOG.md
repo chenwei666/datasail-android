@@ -1,5 +1,15 @@
 # 更新说明
 
+## V0.5.0 — 2026-10-12（versionCode 7，MongoDB 文档工作台）
+
+- 新增 MongoDB 直连 TLS / SCRAM-SHA-256、集合列表、受限 JSON 筛选与服务器游标分页。文档使用 canonical Extended JSON，保留 ObjectId、Int64、Decimal128、日期、二进制和 NULL；超限文档明确标记未展开。
+- 独立文档会话及有界工作线程；关闭已借出的 TLS socket 来联动取消，超时断开，无自动读写重试。只提供固定只读操作，不接受脚本、聚合或管理命令。
+- 游标按每次读取计时，避免用户阅读页面后耗尽默认游标寿命；新增停留 11 秒再翻页的实连回归。切换页面回到顶部并收起键盘。
+- 首页增加认证数据库；连接元数据 schema 3，兼容 schema 1/2，保留原包名、签名和收藏。SQL 收藏与文档工作台隔离。
+- 修复 Android 缺少 SASL API 导致 SCRAM 登录失败：加入两份固定 Apache Harmony API 源码，保留官方驱动认证算法并校验上游文件；会话构造失败也会清理凭据。登录独立采用 30 秒预算，读取仍为 10 秒驱动超时/12 秒整页截止。
+- 固定 MongoDB Java Driver 5.6.5（Apache-2.0），核对来源和校验；排除仅适用于 Java records 的可选编码模块及 GraalVM 构建元数据，未压制 R8 缺失类型。
+- 新增真实 MongoDB 8.0.32 TLS 夹具、共享 JVM/ART 合约、文档 UI 流程及上一版覆盖升级验证。实际测试结果与发行限制见 TEST_REPORT。
+
 ## V0.4.0 — 2026-10-12（versionCode 6，移动工作流与键值数据库）
 
 - 新增 Redis / Valkey 独立 RESP2/TLS 会话和工作台：SCAN、字节键、类型/TTL、字符串/列表/哈希/集合/有序集合/Stream 预览；严格 CA/SAN、响应预算、截止时间、取消关闭，无写命令和自动重试。两种服务器独立验收。

@@ -5,7 +5,9 @@ import java.math.BigDecimal
 enum class DatabaseKind(val label: String, val defaultPort: Int) {
     SQL_SERVER("SQL Server", 1433), MYSQL("MySQL", 3306), MARIADB("MariaDB", 3306),
     POSTGRESQL("PostgreSQL", 5432), SQLITE("SQLite", 0),
-    REDIS("Redis", 6379), VALKEY("Valkey", 6379);
+    REDIS("Redis", 6379), VALKEY("Valkey", 6379), MONGODB("MongoDB", 27017);
+    val isDocument: Boolean get() = this == MONGODB
+    val isSql: Boolean get() = !isKeyValue && !isDocument
     val isKeyValue: Boolean get() = this == REDIS || this == VALKEY
 }
 enum class TlsPolicy { VERIFY_IDENTITY }
@@ -30,6 +32,7 @@ class ConnectionProfile(
     val tls: TlsPolicy = TlsPolicy.VERIFY_IDENTITY,
     val environment: ConnectionEnvironment = ConnectionEnvironment.TEST,
     val trustStore: TrustStoreSpec? = null,
+    val authDatabase: String = "admin",
 ) {
     init {
         if (kind != DatabaseKind.SQLITE) {
@@ -37,6 +40,7 @@ class ConnectionProfile(
             require(port in 1..65535) { "端口范围为 1–65535" }
             require(username.isNotBlank() && username.length <= 128) { "请填写有效用户名" }
         }
+        if (kind.isDocument) require(authDatabase.length in 1..128 && authDatabase.all { it.isLetterOrDigit() || it == '_' || it == '-' }) { "请填写认证数据库" }
         if (kind.isKeyValue) require(database.matches(Regex("0|[1-9][0-9]{0,4}")) && database.toInt() <= 65535) { "数据库编号范围为 0–65535；实际范围由服务器配置决定" }
         if (kind == DatabaseKind.SQLITE) require(database.matches(Regex("[a-f0-9]{64}"))) { "请先导入 SQLite 文件" }
         require(database.length in 1..128 && database.all { it.isLetterOrDigit() || it == '_' || it == '-' }) { "技术验证版库名仅支持字母、数字、下划线和连字符" }
@@ -83,7 +87,7 @@ data class SafeFailure(val kind: ErrorKind, val sqlState: String? = null, val ve
         ErrorKind.PERMISSION -> "权限不足"
         ErrorKind.TIMEOUT -> "操作超时，服务端执行结果需要核对"
         ErrorKind.CANCELLED -> "驱动报告已取消；仍需核对服务端状态"
-        ErrorKind.SQL -> "数据库返回 SQL 错误"
+        ErrorKind.SQL -> "数据库返回错误"
         ErrorKind.UNSUPPORTED -> "当前驱动或运行时不支持此能力"
         ErrorKind.INTERNAL -> "客户端错误，未记录敏感异常文本"
     }
@@ -94,5 +98,4 @@ data class ProbeReport(val state: ExecutionState, val checks: List<ProbeCheck>, 
 interface AiDraftProvider { suspend fun draft(request: ApprovedAiContext): SqlDraft }
 data class ApprovedAiContext(val dialect: DatabaseKind, val userApprovedText: String)
 data class SqlDraft(val sql: String, val explanation: String)
-interface DocumentConnector
 interface SearchConnector

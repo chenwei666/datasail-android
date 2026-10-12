@@ -12,10 +12,10 @@ android {
         applicationId = "com.example.datasail"
         minSdk = 26
         targetSdk = 36
-        versionCode = 6
-        versionName = "0.4.0"
+        versionCode = 7
+        versionName = "0.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArguments["notClass"] = "com.example.datasail.SqlServerDeviceTest,com.example.datasail.JdbcWorkspaceDeviceTest,com.example.datasail.UpgradeTest,com.example.datasail.KeyValueDeviceTest"
+        testInstrumentationRunnerArguments["notClass"] = "com.example.datasail.SqlServerDeviceTest,com.example.datasail.JdbcWorkspaceDeviceTest,com.example.datasail.UpgradeTest,com.example.datasail.KeyValueDeviceTest,com.example.datasail.MongoDeviceTest,com.example.datasail.MongoUiTest"
     }
     buildTypes {
         release {
@@ -26,11 +26,12 @@ android {
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_1_8; targetCompatibility = JavaVersion.VERSION_1_8 }
     buildFeatures { compose = true }
-    packaging { resources.excludes += setOf("META-INF/INDEX.LIST", "META-INF/DEPENDENCIES") }
+    packaging { resources.excludes += setOf("META-INF/INDEX.LIST", "META-INF/DEPENDENCIES", "META-INF/native-image/**") }
     lint { abortOnError = true; warningsAsErrors = true; lintConfig = rootProject.file("lint.xml") }
 }
 kotlin { jvmToolchain(21); compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8) } }
 dependencies {
+    runtimeOnly(project(":sasl-android"))
     implementation(libs.conscrypt)
     implementation(project(":core"))
     implementation(platform(libs.compose.bom))
@@ -45,5 +46,6 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test)
     androidTestImplementation(libs.android.test.junit)
     androidTestImplementation(libs.android.test.runner)
+    androidTestImplementation(libs.mongodb) { exclude(group = "org.mongodb", module = "bson-record-codec") }
     androidTestImplementation(project(path = ":sqlserver-android", configuration = "profile"))
 }

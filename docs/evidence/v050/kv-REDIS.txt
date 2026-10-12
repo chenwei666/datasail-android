@@ -1,0 +1,43 @@
+Synthetic fixture seeded; reader SET and DEL rejected by ACL.
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileIntegrationTestKotlin UP-TO-DATE
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:processIntegrationTestResources NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:keyValueTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+KeyValueIntegrationTest > readsAndBounds PASSED
+
+KeyValueIntegrationTest > deadlinesAndCancellation PASSED
+
+KeyValueIntegrationTest > strictIdentityAndAuthentication PASSED
+
+BUILD SUCCESSFUL in 22s
+8 actionable tasks: 2 executed, 6 up-to-date
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+32850
+
+com.example.datasail.KeyValueDeviceTest:...
+
+Time: 94.288
+
+OK (3 tests)

@@ -6,4 +6,4 @@ dependencyResolutionManagement {
     repositories { google(); mavenCentral() }
 }
 rootProject.name = "DataSail"
-include(":app", ":core", ":sqlserver-android")
+include(":app", ":core", ":sqlserver-android", ":sasl-android")

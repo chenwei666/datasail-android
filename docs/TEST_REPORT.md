@@ -1,57 +1,43 @@
-# V0.4.0 测试报告
+# V0.5.0 实际测试报告
 
-日期：2026-10-12。版本 0.4.0 / versionCode 6；包名 com.example.datasail、最低 API26、目标 API36。源码提交、签名和 APK 校验值见交付 manifest。仅使用本机隔离容器、临时 CA 与合成数据，没有接入业务数据库。
+日期：2026-10-12。versionName=0.5.0、versionCode=7；applicationId 与 Debug 签名延续 V0.4.0。阶段性实验版本，不是全数据库最终版。结果汇总与 APK 绑定见 `evidence/v050/summary.json`、`devices.json`。
 
-## 完成内容
+## 本轮交付
 
-保留 SQL Server、MySQL、MariaDB、PostgreSQL、SQLite，新增 Redis / Valkey 的独立 RESP2/TLS 键值工作台。首页提供连接卡片与搜索、按引擎填写参数、校验、证书设置、删除确认和连接后自动导航。SQL 工作台增加显式 SELECT 收藏、按引擎载入草稿及当前页 CSV 导出确认。新增引擎仍只读；SQL Server 保留已验证的受控单行编辑。
+新增 MongoDB 8.0.32 实连文档工作台：TLS/严格 CA+SAN、SCRAM-SHA-256、独立认证数据库、集合、受限 JSON 筛选、服务器游标分页、canonical Extended JSON。分页请求批次 25、显示最多 100；停留阅读不消耗下一页的客户端预算。超大文档明确未展开，无写入/脚本/聚合/任意管理命令。保留其它七种连接类型。
 
-修复连接配置/收藏的跨实例 AtomicFile 读写竞态，以及仅有 .bak 时未恢复已提交文件的问题。读写使用共享锁，文件大小分别限制 4/8 MB，读取失败禁止覆盖原配置。
+Android 实测发现官方驱动依赖缺失的 javax.security.sasl 类型；`sasl-android` 引入 Apache Harmony 两份未改动 API 类型，编译核对固定上游 SHA-256，许可证与通知打包并核对。认证实现仍为官方驱动，未提供假认证或放宽证书验证。JVM 使用 JDK API，ART 的真实正负认证验证才覆盖该适配。
 
-## 实际结果
+连接 schema 3 增加 authDatabase，旧 schema 1/2 兼容；SQL 收藏不接受文档引擎。页面切换重置滚动位置、收起键盘。会话构造失败清理凭据，证书失败在驱动丢失 cause 时仍保持安全分类。
 
-**94 项 JVM 测试通过；38 项 Android 仪器测试通过（API26 18 项，API30 20 项）。Debug 构建与 lint 通过。Release/R8 失败，143 项缺失类，没有 Release APK。最终计入的测试无失败或跳过。**
+## 命令与结果
 
-| 实际命令 / 范围 | 结果 |
-|---|---|
-| `./gradlew :sqlserver-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | 退出 0；driver 11、core 36、app 4 项单元测试；Debug 与测试 APK、lint 通过 |
-| `scripts/test-mysql-local.sh` | 退出 0；6 项集成探针 + 1 项不可信 CA 反例 |
-| `scripts/test-jdbc-workspace-local.sh MYSQL`，另用 MARIADB、POSTGRESQL | 均退出 0；各 5 项 JVM，真实服务器元数据、只读、类型、分页、TLS/认证回归 |
-| `DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5554 scripts/test-sqlserver-local.sh` | 退出 0；15 项 JVM + Android 11 上 2 项实连（读写/XML/冲突/超时/取消） |
-| `DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=… scripts/test-key-value-local.sh REDIS`，另用 VALKEY；分别选择两台模拟器 | 全部退出 0；每引擎 3 项 JVM，每引擎每系统 `OK (3 tests)`，共 6 项 JVM、12 项 Android；最终 APK 重跑通过 |
-| `ANDROID_SERIAL=… scripts/test-android-upgrade.sh --reset-synthetic-emulator`（两台分别） | 退出 0；每台 UI 3 + 升级 1。先装 V0.3.0/code5，写入 schema 2 合成连接，再覆盖安装 V0.4.0/code6，配置与生产只读策略保留 |
-| 两台分别 `adb shell am instrument -w -e class com.example.datasail.SqliteDeviceTest,com.example.datasail.ConnectionUiTest,com.example.datasail.QueryStoreTest,com.example.datasail.MobileWorkflowTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner` | 每台 `OK (8 tests)`；SQLite 2、首页 2、收藏/并发/恢复 3、移动工作流 1 |
-| `./gradlew :app:assembleRelease --console=plain` | 退出 1；R8 缺失 143 类，未加批量 dontwarn |
-| `bash -n` 新增/修改的测试脚本、`python3 -m py_compile scripts/archive-version.py`、`git diff --check` | 通过 |
+所有命令从仓库根目录执行，先 `export DATASAIL_TOOLS_DIR=/workspace/toolchains; source scripts/env.sh`。以下通过总数只按独立用例/引擎/设备计一次；诊断失败与重复运行不计入通过数。
 
-计数见 `docs/evidence/v040/summary.json`。同一引擎随设备测试重复执行的 JVM 套件只累计一次；失败的诊断轮次不算通过。R8 清单与 V0.3.0 原始文件逐字节相同；上一版文字中的 142 少计了首条带 ERROR 前缀的 Missing class，本轮统一按 143 条计数，不是新增缺失类。
+- `./gradlew :sqlserver-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain`：退出 0。核心 40、app 4、驱动 11 项，共 55 项；驱动源码未改动的测试任务可复用 Gradle 缓存。`sasl-android:verifyUpstream` 由编译依赖触发；同时校验 APK 内法律通知字节。
+- `scripts/test-mongo-local.sh`：3 项 JVM。205 文档 100/100/5 分页、第一页后停留 11 秒、ObjectId 精确筛选、长整数/Decimal128/日期/二进制/NULL、超限提示；错误 SAN/CA/密码/authSource、read 角色拒绝 INSERT；真实服务器 failCommand 阻塞触发超时与取消。控制连接的较长预算仅用于等待测试故障点退出，读取预算未放宽；登录单独设为 30 秒，UI 验收等待预算与实际登录预算匹配。
+- `scripts/test-mysql-local.sh`：7 项 JVM（其中未知 CA 反例 1 项）；`scripts/test-sqlserver-local.sh`：15 项 JVM。
+- `scripts/test-jdbc-workspace-local.sh MYSQL|MARIADB|POSTGRESQL`：各 5 项 JVM。
+- `scripts/test-key-value-local.sh REDIS|VALKEY`：各 3 项 JVM。
+- 合计 **101 项 JVM**，无失败/跳过计入通过数。
+- 两系统分别以 `DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=... scripts/test-mongo-local.sh` 执行：各 3 项共享合约和 1 项真实 Compose 流程。UI 从连接表单进入工作台，点集合、下一页、编辑筛选后禁用旧游标继续按钮，再查询精确文档。
+- `ANDROID_SERIAL=... scripts/test-android-upgrade.sh --reset-synthetic-emulator`：每系统 4 项（Smoke 3 + Upgrade 1）。安装 V0.4.0/code6、写入旧 schema 2 元数据和 schema 1 收藏，再覆盖 code7；校验配置、生产策略、收藏和文件标记，保存/读回自定义 MongoDB authDatabase。仅重置可丢弃模拟器。
+- 两系统另以 `adb shell am instrument -w -e class ...` 运行 ConnectionUiTest、QueryStoreTest、MobileWorkflowTest、SqliteDeviceTest：各 8 项。
+- API30 额外重复 Redis 3、Valkey 3、SQL Server 2 项真实网络测试。
+- 合计 **40 项 Android 检查**：API26 16 项、API30 24 项；MongoDB 两系统都是最终完整 4 项，不以 UI-only 诊断代替完整验收。
 
-两台设备均为无 KVM 的 x86_64 软件模拟器：Android 8/API26（OSR1.180418.004/4931640）、Android 11/API30（RSR1.210722.013.A2/10067904）。精确指纹见 devices.json。所有本轮设备日志均晚于最终 Debug APK 构建；最终 APK 校验值在 summary.json 中记录。最终 APK 的数据库网络实连范围为 Redis/Valkey 两系统与 SQL Server API30；MySQL/MariaDB/PostgreSQL 的两系统 Android 网络证据沿用 V0.3.0 的独立报告，**没有计作本轮设备测试**。本轮这三种引擎重新运行了 JVM 回归，驱动和协议路径未改动。
+真实证据在 `evidence/v050`；原始本轮 JVM XML、设备 instrumentation 输出、升级输出、构建日志和未通过的诊断均分别保留。finalApkSha256 与设备读取的已安装 base.apk 相同；归档脚本拒绝哈希不一致。六个旧 ZIP 的哈希重新核对，旧归档未覆盖。
 
-## 专项验证
+## 问题定位与限制
 
-- Redis 8.2.3 和 Valkey 8.1.5 使用各自固定镜像摘要，不用兼容协议推断支持。固定合成库有 212 个键、600 字段哈希、六类内容、UTF-8/二进制/含 CRLF 的键和超限字段；检查游标完整性、数值文字、TTL、空结果与关闭行为。
-- 服务器 reader ACL 拒绝 SET/DEL。APP 仅提供固定读命令；测试专用 pauser 账号的 CLIENT PAUSE 用于真实超时/取消注入，不进入主 APK。错误主机名、未知 CA、错误密码均拒绝；没有明文降级。
-- RESP 单 bulk、数组节点、嵌套深度、总响应预算在分配前检查；异常响应丢弃会话。取消登录的回归验证旧成功回调不能复活会话。
-- CSV 单元测试检查引号/换行、NULL/空值/反斜杠、精确数值与二进制展示、公式前缀防护、拒绝含未加载字段的页面。Android 工作流覆盖到导出预览/取消；**系统文件选择器的完整写出与第三方文件提供者未自动化验收**。
-- 首页实际运行数据库选型、条件表单、非法参数阻止连接、卡片搜索与删除确认；SQLite 实连后执行查询、收藏、载入草稿和导出确认。收藏不会自动执行 SQL。
-- Android 并发回归使用不同存储实例同时读写，验证最后提交保留；模拟中断写入只留下 .bak，验证恢复已提交的连接和收藏。连接元数据对全部七种类型往返，密码未写入文件。
+调试阶段分别发现并修复重复 GraalVM 资源打包冲突、测试 failpoint 返回数字类型/等待预算/重复 maxTimeMS 参数、Android 缺少 SASL API、异步 UI 断言/嵌套滚动定位，以及逐文档往返造成页面截止、带界面运行时登录预算过紧。保留 diagnostics，不将初始失败隐藏为一次通过。最后回归曾因宿主磁盘满导致 SQL Server 容器启动失败；清理已完成测试的 MongoDB 可重下载镜像缓存后重跑成功，源码/旧归档及不明数据卷未删除。游标超时模式也增加了实际停留后的分页验证。最初一文档一批改为 25，避免移动网络上百次往返；应用每页截止和内容预算仍保持。
 
-## 发现与修复
+`./gradlew :app:assembleRelease --console=plain` 仍退出 1，R8 报告 193 项缺失类（比 V0.4.0 增加 50 项，SASL 两个缺失类型已由固定 API 源码补齐）；未添加批量 dontwarn，没有 Release APK。新引擎的 Java 官方驱动不代表 Android 官方支持。
 
-初次界面测试夹具在 Activity recreate 后仍保留旧 ViewModel，且按文本选择数据库时同时匹配输入框；改为在 Activity 启动前准备夹具，并精确选择卡片，保留原有功能断言。随后删除确认测试暴露 AtomicFile 的跨实例并发竞态，修复共享锁与备份恢复，新增真实设备回归，两系统最终通过。原始失败输出保留在 `diagnostics/`，不作为通过证据。
+- 本轮 Android MySQL/MariaDB/PostgreSQL 网络测试未重复；V0.3.0 的设备证据是历史结果，本轮只重复其 JVM。Redis/Valkey 本轮仅 API30 重复，API26 设备证据来自 V0.4.0。
+- 设备为 AOSP API26/API30 x86_64 软件模拟器（具体 fingerprint 在 devices.json）；物理设备、arm64、弱网长期稳定性、云认证、MongoDB SRV/副本集/分片拓扑和其它服务器版本未验收。没有接入用户业务数据库。
+- MongoDB 仅单地址目标库只读；DocumentDB 等兼容品牌未验证。集合最多 200、每页 100 文档、单文档预览 32 KiB/8192 字、深度 24、节点 2048、页字符 262144；这些是应用预览预算，不是驱动网络缓冲或进程堆的硬上限。游标不是快照，服务端过期后需重新查询。
+- UI 显示失败不会自动重连重试。当前无文档写入、聚合或导出；SQL Server 以外的图形写入、AI 和全量导出仍未完成。CSV 的完整第三方系统文件提供者交互尚未自动化验收。
+- CI 配置已加入 MongoDB JVM 夹具；本轮仅本地执行，未声称 GitHub Actions、真机、归档源码重新构建或公开 Release 已完成。
 
-## 主要变更文件
-
-- `core/.../KeyValueSession.kt`、`KeyValueRunner.kt`：键值能力接口、严格 TLS、RESP 预算和生命周期。
-- `core/.../Model.kt`、`DatabaseCatalog.kt`、`JdbcConnector.kt`：类型、入口隔离与真实支持范围。
-- `app/.../ConnectionsScreen.kt`、`KeyValueScreen.kt`、`WorkspaceScreen.kt`、`WorkspaceViewModel.kt`：首页与独立工作台、导航和操作状态。
-- `app/.../ConnectionStore.kt`、`QueryStore.kt`、`QueryLibrary.kt`、`core/.../PageCsv.kt`：持久化恢复、收藏、明确范围的导出。
-- `core/src/fixture/.../KeyValueContract.kt`、相关 JVM/Android 测试、`scripts/test-key-value-local.sh`：真实服务与设备验证；CI 增加两引擎入口，尚未执行远程 CI。
-- `docs/PRODUCT_ACCEPTANCE.md`、ROADMAP、DATABASE_SCOPE、DRIVER_MATRIX、WORKSPACE：移动工具完成标准及当前能力边界。
-
-## 交付与剩余范围
-
-版本目录 `versions/V0.4.0/` 与 ZIP 包含独立源码、Debug/测试 APK、说明、报告、manifest 和逐文件 SHA-256。来自干净本地提交；原包名与本地 Debug 签名连续。V0.1.0、V0.2.0、V0.2.1、V0.2.2、V0.3.0 五份旧 ZIP 校验通过，未覆盖。没有推送仓库或发布正式 Release。
-
-当前不是“所有主流数据库最终版”。MongoDB、Elasticsearch/OpenSearch、ClickHouse、Oracle、Db2、国产/兼容协议及其它引擎尚待独立实现；新增引擎编辑、DDL、全量导入导出、AI、SSH/IPv6/云认证、集群、多版本服务端、物理/arm64 设备与 Release/R8 均有剩余工作。最小下一步是 MongoDB 集合/文档工作台及严格 TLS、类型、分页、取消的独立 JVM/Android 验收。完整完成标准见 PRODUCT_ACCEPTANCE。
+下一最小任务：Elasticsearch/OpenSearch 索引与搜索工作台，各服务独立实连；继续推进 R8 与物理设备门禁。可复用云启动说明见 CLOUD_START，保存草稿与发布/新任务恢复是不同步骤。

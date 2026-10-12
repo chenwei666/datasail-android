@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/apache/harmony",
+  "commit": "02970cb7227a335edd2c8457ebdde0195a735733",
+  "license": "Apache-2.0",
+  "modifications": "none; only two API types, no SASL provider or cryptographic implementation",
+  "sha256": {
+    "src/main/java/javax/security/sasl/SaslClient.java": "98a5cec20c84a1390c8182aa973ef071e477e211b5187399924131cd2364d3e8",
+    "src/main/java/javax/security/sasl/SaslException.java": "ceb084c18fa74961c3e6ccb5424cec3f01a9ee0528d32423ab1ae8c9a617fece",
+    "src/main/resources/META-INF/datasail-sasl/LICENSE": "9cc384aaf43ecb2d018c909af5479cc641d14307756201381fa289580e870d5c",
+    "src/main/resources/META-INF/datasail-sasl/NOTICE": "5196c87b2760be28594781f5ddde0814ca188f6deb57a37e97b4d5950a37bb2d"
+  }
+}

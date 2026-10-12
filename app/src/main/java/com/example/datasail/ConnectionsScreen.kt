@@ -25,6 +25,7 @@ internal fun SavedConnection.fieldErrors(): Map<String, String> = buildMap {
         if (!host.trim().matches(Regex("[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?")) || host.trim().length > 253) put("host", "填写 DNS 名称或 IPv4，不含协议或端口")
         if (port.toIntOrNull() !in 1..65535) put("port", "端口为 1–65535")
         if (username.isBlank() || username.length > 128) put("username", "请填写用户名")
+        if (kind.isDocument && (authDatabase.trim().length !in 1..128 || !authDatabase.trim().all { it.isLetterOrDigit() || it == '_' || it == '-' })) put("authDatabase", "填写认证数据库，通常为 admin")
         if (kind.isKeyValue) {
             if (!database.matches(Regex("0|[1-9][0-9]{0,4}")) || database.toIntOrNull() !in 0..65535) put("database", "填写数据库编号，通常为 0")
         } else if (database.trim().length !in 1..128 || !database.trim().all { it.isLetterOrDigit() || it == '_' || it == '-' }) put("database", "填写库名，仅支持字母、数字、下划线和连字符")
@@ -115,6 +116,10 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                 ConnectionField("端口", draft.port, errors["port"], Modifier.weight(1f), KeyboardType.Number) { change(draft.copy(port = it)); password = "" }
             }
             ConnectionField(if (draft.kind.isKeyValue) "数据库编号" else "数据库", draft.database, errors["database"], keyboard = if (draft.kind.isKeyValue) KeyboardType.Number else KeyboardType.Text) { change(draft.copy(database = it)) }
+            if (draft.kind.isDocument) {
+                ConnectionField("认证数据库", draft.authDatabase, errors["authDatabase"]) { change(draft.copy(authDatabase = it)); password = "" }
+                Text("单个服务器直连 · SCRAM-SHA-256 · 只读集合与文档", style = MaterialTheme.typography.bodySmall)
+            }
             ConnectionField(if (draft.kind.isKeyValue) "ACL 用户名" else "用户名", draft.username, errors["username"]) { change(draft.copy(username = it)); password = "" }
             OutlinedTextField(password, { password = it }, Modifier.fillMaxWidth(), label = { Text("密码（不保存）") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
             Row { Checkbox(draft.production, { change(draft.copy(production = it)) }); Text("生产环境（只读）") }

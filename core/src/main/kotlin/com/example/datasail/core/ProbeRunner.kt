@@ -148,6 +148,7 @@ class ProbeRunner(private val connector: SqlConnector = JdbcConnector()) : AutoC
             DatabaseKind.SQL_SERVER -> "WAITFOR DELAY '00:00:10'; SELECT 1"
             DatabaseKind.MYSQL, DatabaseKind.MARIADB -> "SELECT SLEEP(10)"
             DatabaseKind.POSTGRESQL -> "SELECT pg_sleep(10)"
+            DatabaseKind.MONGODB -> throw WorkspaceRejected("文档引擎使用独立工作台")
             DatabaseKind.REDIS, DatabaseKind.VALKEY -> throw WorkspaceRejected("键值引擎使用独立工作台")
             DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 不提供网络探针")
         }

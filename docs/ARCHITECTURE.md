@@ -1,4 +1,4 @@
-# V0.4.0 架构与边界
+# V0.5.0 架构与边界
 
 `app` 是 Compose / ViewModel / StateFlow 界面；`core` 是独立 JVM 模块，包含类型、错误、安全策略、固定 SQL 探针及多引擎 SQL 工作台会话。只有驱动适配器依赖具体 JDBC 库。Activity 不连接数据库。
 
@@ -44,3 +44,15 @@ schema=2 元数据追加 kind，schema=1 读入时默认为 SQL_SERVER；文件�
 `KeyValueSession` 与 `KeyValueRunner` 独立于 SQL 会话。固定 RESP2 命令在单个有界工作线程执行，操作截止时间关闭原始/TLS socket；取消增加代次，旧成功回调不能复活连接。解析前检查长度、节点、深度和整体预算。连接使用相同严格链/SAN 信任管理器，不加入新运行时驱动依赖。
 
 `ConnectionsScreen` 管理卡片/选型/表单，`KeyValueScreen` 提供专用浏览。`QueryStore` 为 AtomicFile schema 1、显式 SELECT 收藏，读取失败时禁止覆盖。连接与收藏各自使用进程内共享锁串行化跨实例读写；只有 .bak 时仍调用 AtomicFile 恢复，连接配置/收藏文件分别限制 4/8 MB。`PageCsv` 只序列化经确认的有界页面；系统文件选择器回调在顶层持有导出快照，生命周期断开不会丢失已确认的导出内容。保存草稿不会执行任何 SQL。
+
+## V0.5.0 文档能力
+
+MongoSession / DocumentRunner / DocumentScreen 独立于 SQL 与键值路径。驱动固定使用 SINGLE topology、一个池连接、SCRAM-SHA-256、严格链/SAN 和 endpoint identification，无 URI 拼接或任意参数，无 retryReads/retryWrites。ClosingTlsContext 包装经验证的 SSLContext，仅登记创建的 socket；取消先关闭已借用与空闲 socket，再释放客户端。登录总预算 30 秒，连接/选服/socket 各 15 秒；后续读操作覆盖为驱动预算 10 秒、总截止 12 秒、服务器 find/list 上限 8 秒；单线程任务，旧会话回调由 generation/epoch 丢弃。驱动 DNS 阻塞不保证立刻返回，但结果不再交付。
+
+find 游标使用 ITERATION 超时模式，用户阅读页面的空闲时间不消耗下一页的客户端预算（仍受服务器游标闲置过期约束）。请求每批最多 25 文档、每页最多 100 文档；RawBsonDocument 超过 32 KiB 不解码预览，JSON 超过 8192 字、深度 24、节点 2048 或页累计 262144 字即明确未展开。驱动仍会读取服务器允许的单文档/消息缓冲，此处是应用预览预算，不是网络字节或进程堆硬上限。集合列表上限 200，超过则失败而非静默漏列。服务器游标空闲可过期，不持有用户写事务，不承诺结果快照。
+
+筛选最大 8000 字，解析前检查嵌套、拒绝非 JSON 引号/构造调用；解析后仅放行比较、包含、存在、逻辑操作符，拒绝脚本/正则/表达式。数据库 read 角色才是权限边界。应用无管理命令入口；测试源中的 failCommand 管理功能不编入 APK。
+
+连接元数据 schema 3 添加 authDatabase，旧 schema 1/2 默认 admin；后续写入 schema 3，AtomicFile 及共享锁保护保持。QueryStore/ReadQueryPolicy 只接受 SQL 家族。密码仅在内存；驱动凭据副本随客户端生命周期释放，JVM String 不保证擦除。
+
+Android 缺少 Java SE SASL 接口；`sasl-android` 仅提供来源固定且未改动的 Apache Harmony SaslClient/SaslException 两个 API 类型，作为 app runtime 依赖。不是 SASL 算法重写，也不加载 provider；官方 MongoDB 驱动自己的 SCRAM 实现与服务端签名验证保持原样。GSSAPI/通用 Sasl 仍不支持，JVM 的通过不能代替 ART 认证验证。

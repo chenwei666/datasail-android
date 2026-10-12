@@ -48,3 +48,13 @@ V0.3.0 Android 首次 MySQL 证书错误反例暴露上游 HostnameVerifier 的 
 ## V0.4.0 键值协议
 
 Redis / Valkey 使用自有 Apache-2.0 的 RESP2/TLS 实现，不打包服务器代码或第三方 Redis 驱动。协议参考：https://redis.io/docs/latest/develop/reference/protocol-spec/ 与 https://valkey.io/topics/protocol/ 。测试服务器分别使用 Redis 8.2.3 Alpine 和 Valkey 8.1.5 Alpine 的固定镜像摘要，许可证遵循各服务器上游；服务器仅是隔离测试工具，不在 APK 内分发。所有现有运行时依赖版本保持不变。
+
+## V0.5.0 MongoDB
+
+固定 `org.mongodb:mongodb-driver-sync`、`mongodb-driver-core`、`bson` 5.6.5，Apache-2.0；源码与许可证来源 [MongoDB Java Driver r5.6.5](https://github.com/mongodb/mongo-java-driver/tree/r5.6.5)。许可证保存在 `docs/licenses/MongoDB-Java-5.6.5-LICENSE.txt`。选择固定 5.6 维护线进行本版验证，未声称使用最新主版本。JAR/POM/source JAR 均经 Maven Central HTTPS 官方 SHA-1 对照，再将 SHA-256 写入依赖验证及 `docs/evidence/v050/mongo-artifacts.json`；新增 netty-bom 4.1.87.Final 仅依赖管理 POM，并非引入 Netty 运行时。
+
+主动排除 `bson-record-codec`（Java records 不适用于本版 Android 文档模型），没有引入 Netty、云认证、加密、Unix socket、压缩扩展。驱动默认 BSON registry 的可选探测仍可能引用缺失 API，Release 门禁单独记录；不使用批量 dontwarn。APK 排除 `META-INF/native-image/**` GraalVM 构建配置，解决两个依赖重复资源；不删除许可证或运行代码。官方 Java 驱动不提供本项目的 Android 兼容承诺，须以独立 ART 实测为准。
+
+MongoDB Community 8.0.32 服务端仅用于隔离测试（SSPL）；镜像 `mongo@sha256:d0d926f94df099bff534b7ee5b5986458131a22489dfff8664509af0c1e2ca9c`，不打包进 APK。测试专用管理员/failpoint 命令仅在测试源码。
+
+Android SASL API 补充模块 `sasl-android`：只包含 Apache Harmony 的未修改 `SaslClient` 接口与 `SaslException`，固定提交 `02970cb7227a335edd2c8457ebdde0195a735733`（Apache-2.0）；原始源码、LICENSE、NOTICE 和 SHA-256 锁文件纳入仓库，每次编译校验，许可通知随模块资源打包。模块没有认证算法或 SASL provider；SCRAM 仍完全由 MongoDB 官方驱动实现，不提供空实现/假成功。仅 app runtime 引入，JVM 使用自身 SASL API，因此必须以 ART 真实正负认证验证模块。

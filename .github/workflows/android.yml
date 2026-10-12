@@ -34,11 +34,13 @@ jobs:
           for engine in REDIS VALKEY; do
             bash scripts/test-key-value-local.sh "$engine"
           done
+      - name: MongoDB TLS and document workspace (JVM)
+        run: bash scripts/test-mongo-local.sh
       - name: Preserve real artifacts and reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: DataSail-V0.4.0-build-${{ github.run_number }}
+          name: DataSail-V0.5.0-build-${{ github.run_number }}
           if-no-files-found: error
           path: |
             app/build/outputs/apk/
@@ -46,7 +48,7 @@ jobs:
             app/build/test-results/
             core/build/reports/tests/
             core/build/test-results/
-            docs/evidence/v040/*/TEST-*.xml
+            docs/evidence/v050/*/TEST-*.xml
             sqlserver-android/build/test-results/
   release-r8-gate:
     # Deliberately opt-in and failing until driver Android API gaps are resolved.

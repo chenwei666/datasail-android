@@ -6,6 +6,7 @@ object ReadQueryPolicy {
         "TRUNCATE", "EXEC", "EXECUTE", "GRANT", "REVOKE", "DENY", "DBCC", "BACKUP", "RESTORE", "USE", "SET",
         "OPENROWSET", "OPENQUERY", "OPENDATASOURCE", "BULK", "NEXT", "WAITFOR", "SHUTDOWN", "KILL", "GO", "OUTFILE", "DUMPFILE", "LOAD_FILE", "GET_LOCK", "RELEASE_LOCK")
     fun validate(sql: String, kind: DatabaseKind = DatabaseKind.SQL_SERVER): String {
+        if (!kind.isSql) throw WorkspaceRejected("此引擎不支持 SQL 查询")
         if (kind != DatabaseKind.SQL_SERVER && (sql.contains("\\") || sql.contains("/*!") || sql.contains("/*M!", true) || sql.contains('$')))
             throw WorkspaceRejected("本版不支持反斜线转义、可执行注释或美元引用，请使用标准 SQL 引用")
         val mysql = kind in setOf(DatabaseKind.MYSQL, DatabaseKind.MARIADB)

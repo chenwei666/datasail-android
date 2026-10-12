@@ -27,7 +27,7 @@ class QueryStore(context: Context) {
         require(values.size <= 100)
         val rows = JSONArray()
         values.forEach { query ->
-            require(query.name.isNotBlank() && query.name.length <= 80 && !query.kind.isKeyValue)
+            require(query.name.isNotBlank() && query.name.length <= 80 && query.kind.isSql)
             ReadQueryPolicy.validate(query.sql, query.kind)
             rows.put(JSONObject().put("id", query.id).put("name", query.name).put("kind", query.kind.name).put("sql", query.sql))
         }

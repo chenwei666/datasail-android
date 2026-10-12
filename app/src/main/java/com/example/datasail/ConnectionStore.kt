@@ -16,10 +16,11 @@ import java.util.UUID
 /** Only metadata and explicitly imported public CA certificates; never passwords. */
 data class SavedConnection(val id: String = UUID.randomUUID().toString(), val name: String = "",
     val host: String = "", val port: String = "1433", val database: String = "", val username: String = "",
-    val production: Boolean = false, val ca: String? = null, val kind: DatabaseKind = DatabaseKind.SQL_SERVER) {
+    val production: Boolean = false, val ca: String? = null, val kind: DatabaseKind = DatabaseKind.SQL_SERVER,
+    val authDatabase: String = "admin") {
     fun profile(context: Context) = ConnectionProfile(kind, host.trim(), port.toIntOrNull() ?: 0,
         database.trim(), username, environment = if (production) ConnectionEnvironment.PRODUCTION else ConnectionEnvironment.TEST,
-        trustStore = ca?.let { require(it.matches(Regex("[a-f0-9]{64}"))); TrustStoreSpec(File(context.filesDir, "ca/$it.p12").path) })
+        authDatabase = authDatabase.trim(), trustStore = ca?.let { require(it.matches(Regex("[a-f0-9]{64}"))); TrustStoreSpec(File(context.filesDir, "ca/$it.p12").path) })
 }
 class ConnectionStore(private val context: Context) {
     companion object { private val metadataLock = Any() }
@@ -28,13 +29,13 @@ class ConnectionStore(private val context: Context) {
     private fun loadLocked(): List<SavedConnection> {
         if (!file.baseFile.exists() && !File(file.baseFile.path + ".bak").exists()) return emptyList()
         val root = file.openRead().use { input -> require(input.channel.size() <= 4000000); JSONObject(input.bufferedReader().readText()) }
-        require(root.getInt("schema") in 1..2)
+        require(root.getInt("schema") in 1..3)
         val rows = root.getJSONArray("connections"); require(rows.length() <= 100)
         return (0 until rows.length()).map { index -> rows.getJSONObject(index).let { row ->
             SavedConnection(row.getString("id"), row.getString("name"), row.getString("host"), row.getString("port"),
                 row.getString("database"), row.getString("username"), row.getBoolean("production"),
                 row.optString("ca").ifEmpty { null },
-                if (root.getInt("schema") == 1) DatabaseKind.SQL_SERVER else DatabaseKind.valueOf(row.getString("kind")))
+                if (root.getInt("schema") == 1) DatabaseKind.SQL_SERVER else DatabaseKind.valueOf(row.getString("kind")), row.optString("authDatabase", "admin"))
         } }
     }
     fun save(connections: List<SavedConnection>) = synchronized(metadataLock) { saveLocked(connections) }
@@ -42,10 +43,10 @@ class ConnectionStore(private val context: Context) {
         require(connections.size <= 100)
         val rows = JSONArray()
         connections.forEach { c -> rows.put(JSONObject().apply {
-            put("kind", c.kind.name); put("id", c.id); put("name", c.name); put("host", c.host); put("port", c.port)
+            put("authDatabase", c.authDatabase); put("kind", c.kind.name); put("id", c.id); put("name", c.name); put("host", c.host); put("port", c.port)
             put("database", c.database); put("username", c.username); put("production", c.production); put("ca", c.ca ?: "")
         }) }
-        val encoded = JSONObject().put("schema", 2).put("connections", rows).toString().toByteArray()
+        val encoded = JSONObject().put("schema", 3).put("connections", rows).toString().toByteArray()
         require(encoded.size <= 4000000)
         val out = file.startWrite()
         try { out.write(encoded); file.finishWrite(out) }

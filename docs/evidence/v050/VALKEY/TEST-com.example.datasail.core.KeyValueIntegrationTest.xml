@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.KeyValueIntegrationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-12T18:25:36.417Z" hostname="10651f2473f2" time="21.658">
+  <properties/>
+  <testcase name="readsAndBounds" classname="com.example.datasail.core.KeyValueIntegrationTest" time="0.355"/>
+  <testcase name="deadlinesAndCancellation" classname="com.example.datasail.core.KeyValueIntegrationTest" time="16.588"/>
+  <testcase name="strictIdentityAndAuthentication" classname="com.example.datasail.core.KeyValueIntegrationTest" time="4.714"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

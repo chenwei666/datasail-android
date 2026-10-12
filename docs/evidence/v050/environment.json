@@ -1,0 +1,11 @@
+{
+  "savedFields": [
+    "start_skill"
+  ],
+  "status": "saved",
+  "requiresPublish": true,
+  "publishedByThisTask": false,
+  "freshTaskRestorationVerified": false,
+  "startupInstructionsSha256": "f1db9674b23b3e17c2e0d41b38f70e1fb7aca65f63a02dcc8f91e00f4b82b9dd",
+  "mongoImageCache": "Removed after successful MongoDB verification to free vfs space; test script pulls its pinned digest when needed"
+}

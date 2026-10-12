@@ -26,6 +26,10 @@ import java.util.UUID
 internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
     val state by model.state.collectAsStateWithLifecycle()
     var page by remember { mutableStateOf("连接") }
+    val contentScroll = rememberScrollState()
+    val focus = androidx.compose.ui.platform.LocalFocusManager.current
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    LaunchedEffect(page) { focus.clearFocus(); keyboard?.hide(); contentScroll.scrollTo(0) }
     LaunchedEffect(state.connected) { if (state.connected) page = "工作台" }
     var exportPreview by remember { mutableStateOf<Pair<String, ResultPage>?>(null) }
     var exportSnapshot by remember { mutableStateOf<ResultPage?>(null) }
@@ -42,14 +46,14 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
     } }) { padding -> Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("数舟", style = MaterialTheme.typography.headlineMedium)
-            Text("DataSail · V0.4.0 · 多数据库实验性工作台")
+            Text("DataSail · V0.5.0 · 多数据库实验性工作台")
             Text("${state.target} / ${state.catalog} / ${state.schema}\n${if (state.production) "生产" else "测试"} · ${if (state.writable) "可写" else "只读"} · ${if (state.connected) "已连接" else "未连接"}", style = MaterialTheme.typography.labelMedium)
             Text(state.message, style = MaterialTheme.typography.bodySmall)
             if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
             if (state.connected || state.busy) TextButton(onClick = model::disconnect) { Text("取消 / 断开连接") }
         }
         HorizontalDivider()
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.weight(1f).verticalScroll(contentScroll).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             when (page) {
                 "连接" -> Connections(model, state)
                 "工作台" -> Workbench(model, state) { exportPreview = state.target + " / " + state.catalog to it }
@@ -57,7 +61,7 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
                 else -> {
                     Text("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。")
                     Text("Android 8.0 为最低构建目标；各系统实测范围见交付测试报告。密码不持久化，进入后台会断开连接，不自动重试。")
-                    Text("SQL Server：mssql-jdbc 13.6.0.jre8（MIT）\nMySQL / MariaDB：MariaDB Connector/J 3.5.10（LGPL-2.1-or-later）\nPostgreSQL：pgjdbc 42.7.14（BSD-2-Clause）")
+                    Text("SQL Server：mssql-jdbc 13.6.0.jre8（MIT）\nMySQL / MariaDB：MariaDB Connector/J 3.5.10（LGPL-2.1-or-later）\nPostgreSQL：pgjdbc 42.7.14（BSD-2-Clause）\nMongoDB：Java Driver 5.6.5（Apache-2.0）")
                     Text("AI 尚未实现；新增数据库当前只读。SQL 过滤不是授权边界，生产连接请使用数据库只读账号。")
                     DatabaseSupport()
                     val probeState by probe.state.collectAsStateWithLifecycle()
@@ -84,6 +88,7 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
 @Composable
 private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export: (ResultPage) -> Unit) {
     if (!state.connected) { Text("请在连接页选择数据库并连接，然后浏览表或执行查询。"); return }
+    if (state.kind.isDocument) { DocumentWorkbench(model, state); return }
     if (state.kind.isKeyValue) { KeyValueWorkbench(model, state); return }
     var search by remember { mutableStateOf("") }
     val sql by model.draftSql.collectAsStateWithLifecycle()

@@ -1,0 +1,175 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:processResources UP-TO-DATE
+> Task :core:processTestResources NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :core:compileKotlin
+> Task :core:compileJava NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :app:checkDebugAarMetadata
+> Task :core:jar
+> Task :core:compileTestKotlin
+> Task :core:compileTestJava NO-SOURCE
+> Task :core:testClasses UP-TO-DATE
+
+> Task :core:test
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+DocumentPolicyTest > closedTlsRegistryRejectsLateSockets PASSED
+
+DocumentPolicyTest > filterAllowsTypedComparisonsAndRejectsExecutionAndDeepInput PASSED
+
+DocumentPolicyTest > canonicalPreviewPreservesTypesAndExplicitlyRejectsLargeValues PASSED
+
+MultiDatabaseTest > postgresLoginTimeoutIsNotMisreportedAsNetworkFailure PASSED
+
+MultiDatabaseTest > timestampsAreNotSqlServerRowversionsAcrossEngines PASSED
+
+MultiDatabaseTest > cleanupFailureCannotMaskQueryTimeout PASSED
+
+MultiDatabaseTest > dialectGateRejectsExecutableCommentsAndAmbiguousQuotes PASSED
+
+MultiDatabaseTest > postgresRequiresStrictTlsWithoutReconnectOrPasswordPersistence PASSED
+
+PageCsvTest > quotingNullBinaryAndExactNumbersRemainDistinct PASSED
+
+PageCsvTest > spreadsheetFormulasAreNeutralizedAndIncompleteValuesCannotExport PASSED
+
+ProbeRunnerTest > success checks actual returned values and closes all resources PASSED
+
+ProbeRunnerTest > close failure cannot masquerade as disconnected success PASSED
+
+ProbeRunnerTest > TLS connection failure never reports success or retries PASSED
+
+ProbeRunnerTest > cancel invokes driver cancel and close and reports unknown without retry PASSED
+
+ProbeRunnerTest > late cancellation cannot overwrite a terminal result PASSED
+
+ProbeRunnerTest > type corruption must fail instead of reporting success PASSED
+
+ProbeRunnerTest > closed runner rejects new work and destroys supplied credentials PASSED
+
+RespReaderTest > cancellationDuringHandshakeDisposesConnectionAndSuppressesLateSuccess PASSED
+
+RespReaderTest > binaryIdentityAndProtocolErrorsStaySafe PASSED
+
+RespReaderTest > rejectsUnboundedAndMalformedFramesBeforeAllocation PASSED
+
+SafetyTest > credentials are copied closed and redacted PASSED
+
+SafetyTest > driver raw log output is disabled before connection PASSED
+
+SafetyTest > nested certificate errors take precedence and exception text is never logged PASSED
+
+SafetyTest > connection strings cannot inject options through host or database PASSED
+
+SafetyTest > both drivers require verified TLS and disallow risky options PASSED
+
+SafetyTest > values preserve null empty string leading zero decimal and binary ownership PASSED
+
+SafetyTest > error classes remain distinct PASSED
+
+SafetyTest > MariaDB hostname mismatch without nested cause is safely classified PASSED
+
+WorkspaceRunnerTest > connect owns credentials and closes them after login PASSED
+
+WorkspaceRunnerTest > closed runner cannot retain credentials or create sessions PASSED
+
+WorkspaceRunnerTest > disconnect during login disposes late connection and never delivers stale success PASSED
+
+WorkspaceRunnerTest > successful operation that closes connection cannot report a live session PASSED
+
+WorkspaceSafetyTest > query gate handles strings comments and escaped identifiers PASSED
+
+WorkspaceSafetyTest > invalid ranges precision scale and nullability reject before SQL PASSED
+
+WorkspaceSafetyTest > identifier quoting cannot introduce a statement PASSED
+
+WorkspaceSafetyTest > views triggers unsupported keys and tables without keys stay read only PASSED
+
+WorkspaceSafetyTest > query gate rejects write forms batches and ambiguous syntax PASSED
+
+WorkspaceSafetyTest > SAN identity does not fall back to CN or match wrong hosts PASSED
+
+WorkspaceSafetyTest > typed inputs distinguish null empty text leading zeros and exact decimal PASSED
+
+> Task :app:processDebugNavigationResources
+> Task :app:compileDebugNavigationResources
+> Task :app:generateDebugResValues
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:mergeDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:javaPreCompileDebug
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest
+> Task :app:preDebugAndroidTestBuild SKIPPED
+> Task :app:generateDebugAndroidTestResValues
+> Task :app:extractProguardFiles
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:processDebugResources
+> Task :app:checkDebugDuplicateClasses
+> Task :app:desugarDebugFileDependencies
+> Task :app:compileDebugKotlin
+> Task :app:mergeExtDexDebug
+> Task :app:compileDebugJavaWithJavac NO-SOURCE
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:processDebugJavaRes
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:generateDebugAndroidTestLintModel
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes
+
+> Task :app:testDebugUnitTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+> Task :app:generateDebugLintReportModel
+> Task :app:generateDebugUnitTestLintModel
+> Task :app:lintAnalyzeDebugUnitTest
+> Task :app:mergeDebugJavaResource FAILED
+> Task :app:lintAnalyzeDebugAndroidTest
+> Task :app:lintAnalyzeDebug
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:mergeDebugJavaResource'.
+> A failure occurred while executing com.android.build.gradle.internal.tasks.MergeJavaResWorkAction
+   > 2 files found with path 'META-INF/native-image/native-image.properties' from inputs:
+      - org.mongodb:mongodb-driver-core:5.6.5/mongodb-driver-core-5.6.5.jar
+      - org.mongodb:bson:5.6.5/bson-5.6.5.jar
+     Adding a packaging block may help, please refer to
+     https://developer.android.com/reference/tools/gradle-api/com/android/build/api/dsl/Packaging
+     for more information
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 26s
+48 actionable tasks: 44 executed, 4 up-to-date

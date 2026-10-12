@@ -1,7 +1,7 @@
-# V0.4.0 已知问题与未验证项
+# V0.5.0 已知问题与未验证项
 
-1. **覆盖仍在扩展：** 当前七种连接类型有实现，除 SQL Server 外均只读；Oracle、Db2、MongoDB、ClickHouse、Elasticsearch/OpenSearch 等范围见 DATABASE_SCOPE，尚不可连接。目录不是兼容承诺。
-2. **Release 阻塞：** R8 仍缺少 Android JDBC/JNDI/XA/management 及可选云认证等 API；本轮报告 143 项缺失类（包含日志首条带 ERROR 前缀的记录；清单与 V0.3.0 相同）。没有 Release APK，未添加批量 dontwarn。Debug 实连不能替代正式发行门禁。
+1. **覆盖仍在扩展：** 当前八种连接类型有实现，除 SQL Server 外均只读；Oracle、Db2、ClickHouse、Elasticsearch/OpenSearch 等范围见 DATABASE_SCOPE，尚不可连接。目录不是兼容承诺。
+2. **Release 阻塞：** R8 仍缺少 Android JDBC/JNDI/XA/management 及可选云认证等 API；本轮报告 193 项缺失类，比 V0.4.0 增加 50 项 MongoDB 可选运行时依赖（Netty、Unix socket、加密等）。没有 Release APK，未添加批量 dontwarn。Debug 实连不能替代正式发行门禁。
 3. **系统范围：** 只对测试报告列出的服务器版本与 API26/API30 x86_64 模拟器作声明；未验证真机、arm64、云厂商认证、多版本服务器或大库性能。
 4. **写入：** 仅 SQL Server 测试会话开放已验证的安全类型单行编辑；视图、无主键、启用触发器、复杂类型组合只读。新增引擎没有写 SQL/DDL/图形编辑。SQL Server 短事务使用表锁，可能阻塞其他写入。
 5. **只读边界：** PostgreSQL/MySQL/MariaDB 每操作重设服务端只读事务；仍须最小权限账号。函数、扩展、临时表和外部系统副作用不能仅由 SQL 语法或事务只读保证；不应使用管理员账号浏览不可信 SQL。
@@ -14,4 +14,6 @@
 11. **Redis / Valkey：** 仅单节点 RESP2/TLS 与 ACL 用户，支持六类键只读预览；无集群/Sentinel、模块、写入及任意命令。SCAN 是游标而非快照，COUNT 非严格页长。响应超限会关闭连接。JVM 系统 DNS 解析可能不立即响应取消，但已作废回调不能复活会话。
 12. **CSV 与收藏：** 收藏只保存显式 SELECT 草稿；用户应自行确认无业务密钥。CSV 最多当前页，NULL、反斜杠和公式前缀采用 WORKSPACE 约定；第三方表格软件可能自行改写类型。系统文件选择器会触发断开，写文件失败可能留下部分文件。第三方文件提供者/真机尚未验收。
 
-下一项最小闭环：MongoDB 文档工作台，随后 Elasticsearch/OpenSearch 与 ClickHouse；同步继续解决驱动 R8 与真机门禁。主流引擎逐项接入，不能将当前版本称为“全数据库兼容”。
+下一项最小闭环：Elasticsearch/OpenSearch 搜索工作台，随后 ClickHouse；同步继续解决驱动 R8 与真机门禁。主流引擎逐项接入，不能将当前版本称为“全数据库兼容”。
+
+MongoDB 当前限定单个地址直连、SCRAM-SHA-256、库内集合只读。尚无 SRV/副本集发现/分片路由、云认证、DocumentDB 兼容声明、写入、聚合或文档导出。服务器游标不是快照，闲置或网络中断后需重新查询；超大文档仅显示未展开。官方 Java 驱动不等于官方 Android 支持，当前属于独立实验性适配。

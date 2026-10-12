@@ -5,6 +5,7 @@ dependencies {
     implementation(project(path = ":sqlserver-android", configuration = "profile"))
     implementation(libs.mariadb)
     implementation(libs.postgresql)
+    implementation(libs.mongodb) { exclude(group = "org.mongodb", module = "bson-record-codec") }
     testImplementation(libs.junit)
 }
 tasks.test { useJUnit(); testLogging { events("passed", "skipped", "failed") } }
@@ -19,7 +20,7 @@ tasks.register<Test>("integrationTest") {
     testClassesDirs = integrationTest.output.classesDirs
     classpath = integrationTest.runtimeClasspath
     useJUnit()
-    exclude("**/UntrustedCertificateTest*", "**/JdbcWorkspaceIntegrationTest*", "**/KeyValueIntegrationTest*")
+    exclude("**/UntrustedCertificateTest*", "**/JdbcWorkspaceIntegrationTest*", "**/KeyValueIntegrationTest*", "**/MongoIntegrationTest*")
     val fixture = providers.environmentVariable("DATASAIL_TEST_CONFIG")
     val trust = providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE")
     doFirst {
@@ -101,6 +102,19 @@ tasks.register<Test>("jdbcWorkspaceTest") {
     classpath = integrationTest.runtimeClasspath
     useJUnit()
     include("**/KeyValueIntegrationTest*")
+    doFirst {
+        systemProperty("datasail.test.config", providers.environmentVariable("DATASAIL_TEST_CONFIG").get())
+        systemProperty("datasail.test.trust", providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE").get())
+    }
+    testLogging { events("passed", "skipped", "failed") }
+    outputs.upToDateWhen { false }
+}
+
+ tasks.register<Test>("mongoTest") {
+    testClassesDirs = integrationTest.output.classesDirs
+    classpath = integrationTest.runtimeClasspath
+    useJUnit()
+    include("**/MongoIntegrationTest*")
     doFirst {
         systemProperty("datasail.test.config", providers.environmentVariable("DATASAIL_TEST_CONFIG").get())
         systemProperty("datasail.test.trust", providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE").get())

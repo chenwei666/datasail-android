@@ -21,6 +21,10 @@ object Failures {
                 it.contains("SSL hostname verification failed :") || it.contains("Trying to connect with ssl, but ssl not enabled in the server")
             } == true -> ErrorKind.TLS
             chain.any { it is UnknownHostException } -> ErrorKind.DNS
+            chain.any { it is com.mongodb.MongoSecurityException } -> ErrorKind.AUTHENTICATION
+            chain.any { it is com.mongodb.MongoCommandException && it.errorCode == 13 } -> ErrorKind.PERMISSION
+            chain.any { it is com.mongodb.MongoTimeoutException || it is com.mongodb.MongoExecutionTimeoutException || it is com.mongodb.MongoOperationTimeoutException } -> ErrorKind.TIMEOUT
+            chain.any { it is com.mongodb.MongoSocketException } -> ErrorKind.NETWORK
             chain.any { it is SQLTimeoutException || it is SocketTimeoutException } -> ErrorKind.TIMEOUT
             sql?.sqlState == "08001" && sql.message == "Connection attempt timed out." -> ErrorKind.TIMEOUT
             state == "HYT00" || state == "HYT01" -> ErrorKind.TIMEOUT
@@ -30,7 +34,7 @@ object Failures {
             state == "0A000" -> ErrorKind.UNSUPPORTED
             chain.any { it is SQLFeatureNotSupportedException || it is LinkageError } -> ErrorKind.UNSUPPORTED
             chain.any { it is ConnectException } || state?.startsWith("08") == true -> ErrorKind.NETWORK
-            sql != null -> ErrorKind.SQL
+            sql != null || chain.any { it is com.mongodb.MongoException } -> ErrorKind.SQL
             else -> ErrorKind.INTERNAL
         }
         return SafeFailure(kind, state, sql?.errorCode)

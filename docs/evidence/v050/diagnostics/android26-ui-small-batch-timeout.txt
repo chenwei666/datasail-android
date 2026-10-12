@@ -1,0 +1,34 @@
+Synthetic MongoDB fixture ready: 8.0.32
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+
+com.example.datasail.MongoUiTest:
+Error in connectionCollectionPagingAndTypedFilter(com.example.datasail.MongoUiTest):
+java.lang.AssertionError: Document result UI: connected=false, busy=false, page=null, count=null, message=操作超时，服务端执行结果需要核对
+	at com.example.datasail.MongoUiTest.connectionCollectionPagingAndTypedFilter$page(MongoUiTest.kt:48)
+	at com.example.datasail.MongoUiTest.connectionCollectionPagingAndTypedFilter(MongoUiTest.kt:51)
+	... 66 trimmed
+Caused by: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 20000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.MongoUiTest.connectionCollectionPagingAndTypedFilter$page(MongoUiTest.kt:45)
+	... 68 more
+
+
+Time: 60.263
+There was 1 failure:
+1) connectionCollectionPagingAndTypedFilter(com.example.datasail.MongoUiTest)
+java.lang.AssertionError: Document result UI: connected=false, busy=false, page=null, count=null, message=操作超时，服务端执行结果需要核对
+	at com.example.datasail.MongoUiTest.connectionCollectionPagingAndTypedFilter$page(MongoUiTest.kt:48)
+	at com.example.datasail.MongoUiTest.connectionCollectionPagingAndTypedFilter(MongoUiTest.kt:51)
+	... 66 trimmed
+Caused by: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 20000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.MongoUiTest.connectionCollectionPagingAndTypedFilter$page(MongoUiTest.kt:45)
+	... 68 more
+
+FAILURES!!!
+Tests run: 1,  Failures: 1

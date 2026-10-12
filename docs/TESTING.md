@@ -36,11 +36,11 @@ Android 数据库测试显式启用；不由默认 UI 测试顺带连接。脚�
 bash scripts/test-android-upgrade.sh --reset-synthetic-emulator
 ```
 
-先卸载合成 app 数据，安装不可变 V0.2.1 APK，写入非秘密 app-private 标记及 schema=1 的合成连接配置，再用 `adb install -r` 覆盖到 V0.2.2，核对 versionCode 和标记保留，并运行三个 UI/配置 smoke 测试和一个升级配置测试，检查名称/主机/端口/库/账号/生产只读标记。当前 schema 未变化，不能据此宣称复杂格式迁移已验证。签名必须与本地 V0.2.1 相同，不支持随意更换密钥。脚本不证明可降级。
+先安装不可变 V0.4.0/code6 APK，写入 schema 2 合成连接、schema 1 收藏和私有文件标记，再 `adb install -r` 覆盖 V0.5.0/code7。测试核对旧连接、生产策略、收藏保留，旧连接默认 authDatabase=admin，并再次保存/读回 schema 3 的自定义认证数据库。保持 applicationId 和签名；不代表可降级。
 
 ## Release 与未验证项
 
-`./gradlew :app:assembleRelease` 仍是失败的 R8 门禁。不得批量忽略缺失类。修复后需运行真正的混淆 Release 设备测试；当前没有 Release APK或正式签名。Android 真机/arm64、MySQL Android TLS、前后台/弱网/进程重建/TalkBack/性能等仍需独立验收。
+`./gradlew :app:assembleRelease` 仍是失败的 R8 门禁。不得批量忽略缺失类。修复后需运行真正的混淆 Release 设备测试；当前没有 Release APK或正式签名。Android 真机/arm64、前后台/弱网/进程重建/TalkBack/性能等仍需独立验收。
 
 API26 使用同样步骤，将系统镜像改为 `system-images;android-26;default;x86_64`，AVD 名称设为 datasail-api26。多台模拟器时设置 ANDROID_SERIAL，数据库仪器测试和安装/升级过程必须串行。
 
@@ -77,6 +77,22 @@ DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5554 bash scripts/test-key-valu
 
 默认设备测试新增 ConnectionUiTest、QueryStoreTest、MobileWorkflowTest：引擎筛选与表单、搜索与删除确认、收藏持久化和拒绝覆盖、跨实例并发保存/.bak 恢复、真实 SQLite 连接后自动导航、执行/收藏/载入/导出确认。CSV 字节级编码、公式防护、未加载字段拒绝由 PageCsvTest 单元测试覆盖；系统文件选择器和第三方文件提供者仍需真机验收。
 
-覆盖升级脚本基线是 V0.3.0/code5，先安装旧 APK 写入 schema 2 合成连接，再 `adb install -r` 新版本；仍保持相同包名和签名。显式测试 SQLite、UI、收藏流程应在升级后分别运行。旧 schema 1 的兼容读取保留。
+历史 V0.4.0 验收使用 V0.3.0/code5 基线；当前基线见上方“覆盖升级”；仍保持相同包名和签名。显式测试 SQLite、UI、收藏流程应在升级后分别运行。旧 schema 1 的兼容读取保留。
 
 版本归档要求 `docs/evidence/vNNN/summary.json` 中的 version/versionCode/finalApkSha256 与实际 APK 一致；devices.json 中记录各设备已安装 base.apk 的 SHA-256。归档脚本检查这些绑定再生成交付，禁止把旧构建的设备证据附到新 APK。总数按独立套件/引擎去重汇总，诊断失败另存，不加入通过计数。
+
+## V0.5.0 MongoDB
+
+```bash
+bash scripts/test-mongo-local.sh
+DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5556 bash scripts/test-mongo-local.sh
+DATASAIL_SKIP_JVM=1 DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5554 bash scripts/test-mongo-local.sh
+```
+
+脚本启动固定 digest 的 MongoDB 8.0.32，仅 loopback 动态端口，requireTLS、临时 SAN=localhost CA、SCRAM-SHA-256。reader 在 synthetic 库只有 read；controller/root 与 enableTestCommands 仅用于隔离夹具的 failCommand 注入。无连接真实服务或固定密码。退出 `docker rm -fv` 清理本夹具数据卷、app-private 凭据、端口映射与临时文件。
+
+MongoContract 三项分别覆盖 205 文档的 100/100/5 游标分页（第一页后停留 11 秒）、EJSON 类型与过滤、超大文档提示，错误 SAN/CA/密码/authSource 和服务端拒绝写入，以及真实 find 阻塞下客户端截止与已借出 socket 取消。测试控制连接的 30 秒预算仅用于等待服务器释放 20 秒故障点；读取仍为 10 秒驱动/12 秒每页总截止，登录单独为 30 秒预算。MongoUiTest 通过真实连接测试首页认证数据库、集合选择、下一页、修改筛选禁用续页和精确查询。不要在定时 ART 测试同时跑重编译。
+
+构建时排除 MongoDB 两份重复 GraalVM 元数据，正式 R8 单独失败记录，不等同 Android Debug 已通过即可发行。CI 添加此 JVM 夹具，本轮本地执行不代表 GitHub Actions 已运行。
+
+MongoDB 脚本在安装前比较本机构建与设备 APK 的 SHA-256，相同则复用已验证安装；不同才覆盖安装。`DATASAIL_MONGO_UI_ONLY=1` 仅供定位界面问题，完整验收必须去掉此标志并得到 4 项通过。相关诊断失败保存在 evidence 的 diagnostics 下，不计入通过总数。

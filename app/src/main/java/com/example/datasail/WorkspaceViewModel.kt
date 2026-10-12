@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 data class WorkspaceUiState(val busy: Boolean = false, val connected: Boolean = false,
     val target: String = "未连接", val catalog: String = "—", val schema: String = "—", val writable: Boolean = false,
     val kind: DatabaseKind = DatabaseKind.SQL_SERVER, val production: Boolean = false, val catalogs: List<String> = emptyList(), val schemas: List<String> = emptyList(),
+    val collections: List<String> = emptyList(), val documents: DocumentPage? = null,
     val keys: KeyScan? = null, val keyContent: KeyContent? = null,
     val tables: List<TableRef> = emptyList(), val result: ResultPage? = null, val preview: MutationPreview? = null,
     val message: String = "请选择已授权的数据库连接；默认只读。")
@@ -40,6 +41,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     private var exporting = false
     private val runner = WorkspaceRunner(localFactory = { profile -> SqliteBrowseSession(store.sqliteFile(profile.database), profile) })
     private val keyValueRunner = KeyValueRunner()
+    private val documentRunner = DocumentRunner()
     private val mutable = MutableStateFlow(WorkspaceUiState())
     val state = mutable.asStateFlow()
     private val connections = MutableStateFlow<List<SavedConnection>>(emptyList())
@@ -59,7 +61,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         queryText.value = query.sql; message("已载入草稿，请检查当前目标后手动执行"); return true
     }
     fun saveQuery(name: String) {
-        if (!mutable.value.connected || mutable.value.kind.isKeyValue) return
+        if (!mutable.value.connected || !mutable.value.kind.isSql) return
         val query = SavedQuery(name = name.trim(), kind = mutable.value.kind, sql = queryText.value)
         try { require(query.name.isNotBlank() && query.name.length <= 80); ReadQueryPolicy.validate(query.sql, query.kind) }
         catch (_: Exception) { message("请填写名称，且仅收藏本工作台支持的单条 SELECT"); return }
@@ -119,7 +121,18 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             kind = profile.kind, production = connection.production, message = if (profile.kind == DatabaseKind.SQLITE) "正在打开只读副本…" else "正在校验 TLS 并登录…")
         queryText.value = "SELECT 1 AS 示例"
         val ticket = ++epoch
-        runner.disconnect(); keyValueRunner.disconnect()
+        runner.disconnect(); keyValueRunner.disconnect(); documentRunner.disconnect()
+        if (profile.kind.isDocument) {
+            val accepted = documentRunner.connect(profile, credentials) { result -> viewModelScope.launch {
+                if (ticket != epoch) return@launch
+                result.fold(onSuccess = {
+                    mutable.value = mutable.value.copy(busy = false, connected = true, message = "已连接，只读文档工作台")
+                    collections()
+                }, onFailure = ::failure)
+            } }
+            if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后手动重试") }
+            return
+        }
         if (profile.kind.isKeyValue) {
             val accepted = keyValueRunner.connect(profile, credentials) { result -> viewModelScope.launch {
                 if (ticket != epoch) return@launch
@@ -143,7 +156,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     fun disconnect() {
         if (!mutable.value.connected && !mutable.value.busy) return
         epoch++
-        runner.disconnect(); keyValueRunner.disconnect()
+        runner.disconnect(); keyValueRunner.disconnect(); documentRunner.disconnect()
         mutable.value = WorkspaceUiState(message = "已请求取消并断开；未完成操作的执行结果未知，需核对。不会自动重试。")
     }
     fun switchCatalog(name: String) = execute({ s -> s.switchCatalog(name); s.schemas() }) {
@@ -183,12 +196,26 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         } }, operation)
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后重试") }
     }
+    fun collections() = executeDocument({ it.collections() }) { copy(collections = it, documents = null) }
+    fun findDocuments(collection: String, filter: String) = executeDocument({ it.find(collection, filter) }) { copy(documents = it) }
+    fun nextDocuments() = executeDocument({ it.next() }) { copy(documents = it) }
+    private fun <T> executeDocument(operation: (DocumentSession) -> T, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
+        if (mutable.value.busy || !mutable.value.connected || !mutable.value.kind.isDocument) return
+        mutable.value = mutable.value.copy(busy = true)
+        val ticket = epoch
+        val accepted = documentRunner.execute({ result, connected -> viewModelScope.launch {
+            if (ticket != epoch) return@launch
+            mutable.value = mutable.value.copy(busy = false, connected = connected)
+            result.fold(onSuccess = { mutable.value = mutable.value.update(it).copy(message = "只读文档操作完成") }, onFailure = ::failure)
+        } }, operation)
+        if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后重试") }
+    }
     private fun failure(error: Throwable) {
         val safe = Failures.classify(error)
         val lost = safe.kind in setOf(ErrorKind.TIMEOUT, ErrorKind.NETWORK, ErrorKind.CANCELLED, ErrorKind.UNSUPPORTED)
-        mutable.value = mutable.value.copy(busy = false, preview = null, result = null, keys = null, keyContent = null,
+        mutable.value = mutable.value.copy(busy = false, preview = null, result = null, documents = null, keys = null, keyContent = null,
             connected = mutable.value.connected && !lost, writable = mutable.value.writable && !lost,
             message = if (error is WorkspaceRejected) error.explanation else safe.description)
     }
-    override fun onCleared() { runner.close(); keyValueRunner.close(); super.onCleared() }
+    override fun onCleared() { runner.close(); keyValueRunner.close(); documentRunner.close(); super.onCleared() }
 }

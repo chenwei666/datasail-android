@@ -1,0 +1,52 @@
+{
+  "version": "0.5.0",
+  "versionCode": 7,
+  "jvm": {
+    "coreUnit": 40,
+    "appUnit": 4,
+    "driverUnit": 11,
+    "mysqlProbes": 7,
+    "sqlServer": 15,
+    "MYSQL": 5,
+    "MARIADB": 5,
+    "POSTGRESQL": 5,
+    "REDIS": 3,
+    "VALKEY": 3,
+    "MONGODB": 3
+  },
+  "jvmTotal": 101,
+  "unchangedDriverUnitTaskMayReuseGradleCache": true,
+  "android": {
+    "emulator-5556": {
+      "MONGODB": 4,
+      "upgradeAndSmoke": 4,
+      "mobileSqliteAndPersistence": 8
+    },
+    "emulator-5554": {
+      "MONGODB": 4,
+      "upgradeAndSmoke": 4,
+      "mobileSqliteAndPersistence": 8,
+      "REDIS": 3,
+      "VALKEY": 3,
+      "sqlServer": 2
+    }
+  },
+  "androidTotal": 40,
+  "debug": "passed",
+  "lintDebug": "passed",
+  "release": {
+    "status": "failed",
+    "missingClasses": 193,
+    "addedSinceV040": 50,
+    "blanketSuppressionsAdded": false
+  },
+  "finalApkSha256": "44e83ff562458b147be9c1655e7d923de0189875af401827a62e43416b393314",
+  "limitations": [
+    "Physical and arm64 devices untested",
+    "V050 MySQL/MariaDB/PostgreSQL Android network tests not repeated; prior V030 evidence is separate",
+    "V050 Redis/Valkey API26 tests not repeated; prior V040 evidence is separate",
+    "MongoDB single-address TLS/SCRAM-SHA-256 read-only; no SRV/topology discovery/cloud authentication or compatible-brand claim",
+    "System document-provider file-writing flow not automated",
+    "Other catalog entries remain planned; no production release or remote CI claimed"
+  ]
+}

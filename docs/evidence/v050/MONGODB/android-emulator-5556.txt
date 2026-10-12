@@ -1,0 +1,7 @@
+
+com.example.datasail.MongoDeviceTest:...
+com.example.datasail.MongoUiTest:.
+
+Time: 171.431
+
+OK (4 tests)

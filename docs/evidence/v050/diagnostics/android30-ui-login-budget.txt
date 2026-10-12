@@ -1,0 +1,26 @@
+Synthetic MongoDB fixture ready: 8.0.32
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+32840
+
+com.example.datasail.MongoDeviceTest:...
+com.example.datasail.MongoUiTest:
+Error in connectionCollectionPagingAndTypedFilter(com.example.datasail.MongoUiTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 20000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.MongoUiTest.connectionCollectionPagingAndTypedFilter(MongoUiTest.kt:37)
+
+
+Time: 255.757
+There was 1 failure:
+1) connectionCollectionPagingAndTypedFilter(com.example.datasail.MongoUiTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 20000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.MongoUiTest.connectionCollectionPagingAndTypedFilter(MongoUiTest.kt:37)
+
+FAILURES!!!
+Tests run: 4,  Failures: 1

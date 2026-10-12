@@ -1,0 +1,14 @@
+{
+  "source": "Maven Central HTTPS org.mongodb 5.6.5; official .sha1 compared independently; SHA-256 pinned in Gradle verification metadata",
+  "sha256": {
+    "bson-5.6.5-sources.jar": "bfb3e7c7e99237b51d7a587a3a28b1fb8b5bef9d9c9537680d96a94223890b10",
+    "bson-5.6.5.jar": "3608e3573b4d6bb2ab5af65e1494f98600b117c93e2e17d2466aa513d4cb7743",
+    "bson-5.6.5.pom": "6375d0991fc42b3af074b8d3c0614e5cec30a13d594b3119503f4f1a773380c4",
+    "mongodb-driver-core-5.6.5-sources.jar": "d38c9728891f85ceb6faf02dbcf48488cccfc6c5cd0a77b93bd511466132316e",
+    "mongodb-driver-core-5.6.5.jar": "125489cc9cef8b510c3ebd46f1c5bfc75d864630eff9ffb40a239ed7732633fc",
+    "mongodb-driver-core-5.6.5.pom": "9030eb9e93834d94363b334408c6bc7f26f51534628652b06fb64d4bad580ae8",
+    "mongodb-driver-sync-5.6.5-sources.jar": "358da9ede6b3551473a67c5d25c39bb6c252a95440f81ab53c916d7aa1c2f3cb",
+    "mongodb-driver-sync-5.6.5.jar": "0081f88d2d1b293719e1fa65608e69e117380e17b346b304f835509f8a20c12e",
+    "mongodb-driver-sync-5.6.5.pom": "b9cb8ad7c81171ddf39ef634ffd0a042567e8c016195f6ff09fb356b56913254"
+  }
+}
