@@ -20,5 +20,3 @@ androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied 
 
 FAILURES!!!
 Tests run: 6,  Failures: 1
-
-

@@ -16,5 +16,3 @@ com.example.datasail.UpgradeTest:.
 Time: 34.519
 
 OK (4 tests)
-
-

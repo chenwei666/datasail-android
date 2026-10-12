@@ -7,5 +7,3 @@ com.example.datasail.MobileWorkflowTest:.
 Time: 84.74
 
 OK (8 tests)
-
-

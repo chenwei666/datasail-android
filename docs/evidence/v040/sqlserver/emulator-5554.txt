@@ -162,5 +162,3 @@ com.example.datasail.SqlServerDeviceTest:..
 Time: 74.219
 
 OK (2 tests)
-
-
