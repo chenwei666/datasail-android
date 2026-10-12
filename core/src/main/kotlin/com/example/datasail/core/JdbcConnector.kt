@@ -18,6 +18,7 @@ class JdbcConnector : SqlConnector {
             DatabaseKind.SQL_SERVER -> com.microsoft.sqlserver.jdbc.SQLServerDriver()
             DatabaseKind.MYSQL, DatabaseKind.MARIADB -> org.mariadb.jdbc.Driver()
             DatabaseKind.POSTGRESQL -> org.postgresql.Driver()
+            DatabaseKind.REDIS, DatabaseKind.VALKEY -> throw WorkspaceRejected("键值引擎使用独立工作台")
             DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 使用 Android 本地文件连接")
         }
         val properties = safeProperties(profile)
@@ -33,6 +34,7 @@ class JdbcConnector : SqlConnector {
             DatabaseKind.SQL_SERVER -> "jdbc:sqlserver://${profile.host}:${profile.port}"
             DatabaseKind.MYSQL, DatabaseKind.MARIADB -> "jdbc:mariadb://${profile.host}:${profile.port}/${profile.database}"
             DatabaseKind.POSTGRESQL -> "jdbc:postgresql://${profile.host}:${profile.port}/${profile.database}"
+            DatabaseKind.REDIS, DatabaseKind.VALKEY -> throw WorkspaceRejected("键值引擎使用独立工作台")
             DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 不使用 JDBC")
         }
         internal fun safeProperties(profile: ConnectionProfile) = Properties().apply {
@@ -44,7 +46,8 @@ class JdbcConnector : SqlConnector {
                 setProperty("trustStorePassword", "changeit")
             }
             when (profile.kind) {
-                DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 不使用 JDBC")
+                DatabaseKind.REDIS, DatabaseKind.VALKEY -> throw WorkspaceRejected("键值引擎使用独立工作台")
+            DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 不使用 JDBC")
                 DatabaseKind.POSTGRESQL -> {
                     setProperty("sslmode", "verify-full")
                     setProperty("sslfactory", PostgreSqlTlsFactory::class.java.name)

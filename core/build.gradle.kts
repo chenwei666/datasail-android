@@ -10,6 +10,7 @@ dependencies {
 tasks.test { useJUnit(); testLogging { events("passed", "skipped", "failed") } }
 
 val integrationTest by sourceSets.creating
+kotlin.sourceSets.getByName("integrationTest").kotlin.srcDir("src/fixture/kotlin")
 configurations[integrationTest.implementationConfigurationName].extendsFrom(configurations.testImplementation.get())
 configurations[integrationTest.runtimeOnlyConfigurationName].extendsFrom(configurations.testRuntimeOnly.get())
 dependencies { add(integrationTest.implementationConfigurationName, sourceSets.main.get().output) }
@@ -18,7 +19,7 @@ tasks.register<Test>("integrationTest") {
     testClassesDirs = integrationTest.output.classesDirs
     classpath = integrationTest.runtimeClasspath
     useJUnit()
-    exclude("**/UntrustedCertificateTest*", "**/JdbcWorkspaceIntegrationTest*")
+    exclude("**/UntrustedCertificateTest*", "**/JdbcWorkspaceIntegrationTest*", "**/KeyValueIntegrationTest*")
     val fixture = providers.environmentVariable("DATASAIL_TEST_CONFIG")
     val trust = providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE")
     doFirst {
@@ -87,6 +88,19 @@ tasks.register<Test>("jdbcWorkspaceTest") {
     classpath = integrationTest.runtimeClasspath
     useJUnit()
     include("**/JdbcWorkspaceIntegrationTest*")
+    doFirst {
+        systemProperty("datasail.test.config", providers.environmentVariable("DATASAIL_TEST_CONFIG").get())
+        systemProperty("datasail.test.trust", providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE").get())
+    }
+    testLogging { events("passed", "skipped", "failed") }
+    outputs.upToDateWhen { false }
+}
+
+ tasks.register<Test>("keyValueTest") {
+    testClassesDirs = integrationTest.output.classesDirs
+    classpath = integrationTest.runtimeClasspath
+    useJUnit()
+    include("**/KeyValueIntegrationTest*")
     doFirst {
         systemProperty("datasail.test.config", providers.environmentVariable("DATASAIL_TEST_CONFIG").get())
         systemProperty("datasail.test.trust", providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE").get())

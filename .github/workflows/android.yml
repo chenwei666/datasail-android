@@ -28,11 +28,17 @@ jobs:
           for engine in MYSQL MARIADB POSTGRESQL; do
             bash scripts/test-jdbc-workspace-local.sh "$engine"
           done
+      - name: Independent Redis and Valkey TLS workspaces (JVM)
+        shell: bash
+        run: |
+          for engine in REDIS VALKEY; do
+            bash scripts/test-key-value-local.sh "$engine"
+          done
       - name: Preserve real artifacts and reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: DataSail-V0.3.0-build-${{ github.run_number }}
+          name: DataSail-V0.4.0-build-${{ github.run_number }}
           if-no-files-found: error
           path: |
             app/build/outputs/apk/
@@ -40,7 +46,7 @@ jobs:
             app/build/test-results/
             core/build/reports/tests/
             core/build/test-results/
-            docs/evidence/v030/*/TEST-*.xml
+            docs/evidence/v040/*/TEST-*.xml
             sqlserver-android/build/test-results/
   release-r8-gate:
     # Deliberately opt-in and failing until driver Android API gaps are resolved.

@@ -21,7 +21,8 @@ class SmokeTest {
         compose.onNodeWithText("AI 助手").assertIsNotEnabled()
         compose.onNodeWithText("工作台").performClick()
         compose.onNodeWithText("请在连接页选择数据库并连接，然后浏览表或执行查询。").assertIsDisplayed()
-        compose.onNodeWithText("收藏").assertIsNotEnabled()
+        compose.onNodeWithText("收藏").performClick()
+        compose.onNodeWithText("常用查询").assertIsDisplayed()
         compose.onNodeWithText("设置").performClick()
         compose.onNodeWithText("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。").assertIsDisplayed()
     }

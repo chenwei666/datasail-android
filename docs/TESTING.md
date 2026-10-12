@@ -63,3 +63,20 @@ adb -s emulator-5554 shell am instrument -w -e class com.example.datasail.Sqlite
 每个网络引擎分别创建 TLS 临时容器，测试五项 JVM 工作台用例；开启 Android 模式时再跑两项设备测试。保留每种服务器独立 XML，避免后一个引擎覆盖前一个的证据。MySQL 原探针测试、SQL Server 工作台、升级与 SQLite 测试也要保留。设备 shell instrumentation 命令需检查 `OK (N tests)`，ADB 的退出码本身不代表测试通过。SQLite 两项测试已纳入默认 connected suite；三个网络 fixture 测试类和 UpgradeTest 需显式调用。
 
 PostgreSQL Android 元数据使用参数化 information_schema/pg_catalog 查询，避开 pgjdbc 元数据内的 Android 缺失 closeOnCompletion 方法；普通 PreparedStatement/ResultSet 仍由 use 显式关闭。新增工作台分别断言错误 CA、错误 SAN、类型/分页、只读保护、超时与取消。驱动加载测试不能替代这些实连测试。
+
+## V0.4.0 Redis / Valkey 与移动流程
+
+```bash
+bash scripts/test-key-value-local.sh REDIS
+bash scripts/test-key-value-local.sh VALKEY
+DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5556 bash scripts/test-key-value-local.sh REDIS
+DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5554 bash scripts/test-key-value-local.sh VALKEY
+```
+
+两个参数分别启动固定摘要的实际 Redis 8.2.3 / Valkey 8.1.5，TLS-only 端口仅绑定 loopback；合成 CA、哈希 ACL 和随机密码在退出时清理。预置 212 个键、600 字段哈希、二进制键及超限字段；脚本先证明 reader 的 SET/DEL 被 ACL 拒绝。共享 KeyValueContract 在 JVM 与 ART 运行：读取/游标/保真/限额，证书主机名与未知 CA / 错误密码，实际服务器 CLIENT PAUSE 注入的超时及取消。pauser 账号仅有测试用 CLIENT PAUSE 权限，不进入应用连接配置。不要与繁重编译同时执行 TCG 模拟器的定时测试。
+
+默认设备测试新增 ConnectionUiTest、QueryStoreTest、MobileWorkflowTest：引擎筛选与表单、搜索与删除确认、收藏持久化和拒绝覆盖、跨实例并发保存/.bak 恢复、真实 SQLite 连接后自动导航、执行/收藏/载入/导出确认。CSV 字节级编码、公式防护、未加载字段拒绝由 PageCsvTest 单元测试覆盖；系统文件选择器和第三方文件提供者仍需真机验收。
+
+覆盖升级脚本基线是 V0.3.0/code5，先安装旧 APK 写入 schema 2 合成连接，再 `adb install -r` 新版本；仍保持相同包名和签名。显式测试 SQLite、UI、收藏流程应在升级后分别运行。旧 schema 1 的兼容读取保留。
+
+版本归档要求 `docs/evidence/vNNN/summary.json` 中的 version/versionCode/finalApkSha256 与实际 APK 一致；devices.json 中记录各设备已安装 base.apk 的 SHA-256。归档脚本检查这些绑定再生成交付，禁止把旧构建的设备证据附到新 APK。总数按独立套件/引擎去重汇总，诊断失败另存，不加入通过计数。

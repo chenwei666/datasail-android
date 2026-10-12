@@ -44,3 +44,7 @@ V0.2.2 SQL Server 派生版本 `13.6.0.jre8-datasail.1` 的源码来源、精确
 V0.3.0 新增 pgjdbc 42.7.14，上游二进制 SHA-256 `73914527305a40cce504b0d3d90b23caf565136912d607ae8ae7c5895512332c`，POM SHA-256 `b7e66ccf3088cba04d68ec374da4e981686fafe426e4ca69d6d276427175dc63`，从 Maven Central 官方 HTTPS 独立下载复核，与 Gradle 校验一致。上游 LICENSE 保存在 `docs/licenses/pgjdbc-42.7.14-LICENSE`。驱动使用固定 `PostgreSqlTlsFactory`，用户不能指定 JDBC 参数/自定义 factory。已审阅 sources JAR 中 `NonValidatingFactory.NonValidatingTM` 和 `SingleCertValidatingFactory.SingleCertTrustManager`：这些不是本应用选择的证书路径。lint 的 TrustAllX509TrustManager 例外只匹配此版本 JAR；应用自有 TrustManager 继续受检查，必须通过错误 CA/主机名实连反例。没有添加驱动 R8 dontwarn。
 
 V0.3.0 Android 首次 MySQL 证书错误反例暴露上游 HostnameVerifier 的 JNDI CN 回退。本项目插件改为共用已验证的 SAN 匹配逻辑，保留平台链校验，拒绝 CN-only，不再调用上游依赖 LdapName 的方法；并非降低身份校验。新的 JDBC 器件连接阶段最多十五秒（包含 TLS/认证），PostgreSQL 整体登录最多三十秒，以涵盖首次 ART 类加载及软件模拟器握手；SQL Server 现有参数不变。
+
+## V0.4.0 键值协议
+
+Redis / Valkey 使用自有 Apache-2.0 的 RESP2/TLS 实现，不打包服务器代码或第三方 Redis 驱动。协议参考：https://redis.io/docs/latest/develop/reference/protocol-spec/ 与 https://valkey.io/topics/protocol/ 。测试服务器分别使用 Redis 8.2.3 Alpine 和 Valkey 8.1.5 Alpine 的固定镜像摘要，许可证遵循各服务器上游；服务器仅是隔离测试工具，不在 APK 内分发。所有现有运行时依赖版本保持不变。

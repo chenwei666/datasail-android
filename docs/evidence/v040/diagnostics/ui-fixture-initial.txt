@@ -1,0 +1,138 @@
+
+com.example.datasail.SqliteDeviceTest:..
+com.example.datasail.ConnectionUiTest:
+Error in searchAndDeleteRequireConfirmation(com.example.datasail.ConnectionUiTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '删除' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.ConnectionUiTest.searchAndDeleteRequireConfirmation(ConnectionUiTest.kt:37)
+
+Error in engineSearchAdaptsFormAndPreventsInvalidConnection(com.example.datasail.ConnectionUiTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but found '2' nodes that satisfy: (Text + InputText + EditableText contains 'Valkey' (ignoreCase: false))
+Nodes found:
+1) Node #275 at (l=42.0, t=686.0, r=1038.0, b=854.0)px
+ContentDataType = 'AndroidContentDataType(androidAutofillType=1)'
+EditableText = 'Valkey'
+Focused = 'true'
+ImeAction = 'Default'
+InputText = 'Valkey'
+IsEditable = 'true'
+Text = '[搜索可连接的数据库]'
+TextSelectionRange = 'TextRange(6, 6)'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, InsertTextAtCursor, OnAutofillText, OnClick, OnLongClick, PasteText, PerformImeAction, RequestFocus, SetSelection, SetText, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 3 siblings
+2) Node #285 at (l=42.0, t=880.0, r=1038.0, b=1069.0)px
+Focused = 'false'
+Text = '[Valkey, 实验性：只读键扫描、类型、TTL、内容预览]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 3 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.ConnectionUiTest.engineSearchAdaptsFormAndPreventsInvalidConnection(ConnectionUiTest.kt:16)
+
+com.example.datasail.QueryStoreTest:.
+com.example.datasail.MobileWorkflowTest:
+Error in savedConnectionOpensWorkbenchAndFavoriteLoadsWithoutExecuting(com.example.datasail.MobileWorkflowTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but found '2' nodes that satisfy: (ToggleableState is defined)
+Nodes found:
+1) Node #556 at (l=74.0, t=1756.0, r=137.0, b=1819.0)px
+Focused = 'false'
+Role = 'Checkbox'
+ToggleableState = 'On'
+Actions = [OnClick, RequestFocus]
+MergeDescendants = 'true'
+Has 16 siblings
+2) Node #563 at (l=74.0, t=2128.0, r=137.0, b=2191.0)px
+Focused = 'false'
+Role = 'Checkbox'
+ToggleableState = 'Off'
+Actions = [OnClick, RequestFocus]
+MergeDescendants = 'true'
+Has 16 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.MobileWorkflowTest.savedConnectionOpensWorkbenchAndFavoriteLoadsWithoutExecuting(MobileWorkflowTest.kt:32)
+
+
+Time: 50.236
+There were 3 failures:
+1) searchAndDeleteRequireConfirmation(com.example.datasail.ConnectionUiTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '删除' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.ConnectionUiTest.searchAndDeleteRequireConfirmation(ConnectionUiTest.kt:37)
+2) engineSearchAdaptsFormAndPreventsInvalidConnection(com.example.datasail.ConnectionUiTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but found '2' nodes that satisfy: (Text + InputText + EditableText contains 'Valkey' (ignoreCase: false))
+Nodes found:
+1) Node #275 at (l=42.0, t=686.0, r=1038.0, b=854.0)px
+ContentDataType = 'AndroidContentDataType(androidAutofillType=1)'
+EditableText = 'Valkey'
+Focused = 'true'
+ImeAction = 'Default'
+InputText = 'Valkey'
+IsEditable = 'true'
+Text = '[搜索可连接的数据库]'
+TextSelectionRange = 'TextRange(6, 6)'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, InsertTextAtCursor, OnAutofillText, OnClick, OnLongClick, PasteText, PerformImeAction, RequestFocus, SetSelection, SetText, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 3 siblings
+2) Node #285 at (l=42.0, t=880.0, r=1038.0, b=1069.0)px
+Focused = 'false'
+Text = '[Valkey, 实验性：只读键扫描、类型、TTL、内容预览]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 3 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.ConnectionUiTest.engineSearchAdaptsFormAndPreventsInvalidConnection(ConnectionUiTest.kt:16)
+3) savedConnectionOpensWorkbenchAndFavoriteLoadsWithoutExecuting(com.example.datasail.MobileWorkflowTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but found '2' nodes that satisfy: (ToggleableState is defined)
+Nodes found:
+1) Node #556 at (l=74.0, t=1756.0, r=137.0, b=1819.0)px
+Focused = 'false'
+Role = 'Checkbox'
+ToggleableState = 'On'
+Actions = [OnClick, RequestFocus]
+MergeDescendants = 'true'
+Has 16 siblings
+2) Node #563 at (l=74.0, t=2128.0, r=137.0, b=2191.0)px
+Focused = 'false'
+Role = 'Checkbox'
+ToggleableState = 'Off'
+Actions = [OnClick, RequestFocus]
+MergeDescendants = 'true'
+Has 16 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.MobileWorkflowTest.savedConnectionOpensWorkbenchAndFavoriteLoadsWithoutExecuting(MobileWorkflowTest.kt:32)
+
+FAILURES!!!
+Tests run: 6,  Failures: 3
+
+

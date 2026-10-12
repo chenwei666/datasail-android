@@ -26,16 +26,23 @@ import java.util.UUID
 internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
     val state by model.state.collectAsStateWithLifecycle()
     var page by remember { mutableStateOf("连接") }
+    LaunchedEffect(state.connected) { if (state.connected) page = "工作台" }
+    var exportPreview by remember { mutableStateOf<Pair<String, ResultPage>?>(null) }
+    var exportSnapshot by remember { mutableStateOf<ResultPage?>(null) }
+    val exporter = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        val snapshot = exportSnapshot; exportSnapshot = null
+        if (uri != null && snapshot != null) model.exportPage(uri, snapshot)
+    }
     Scaffold(bottomBar = { NavigationBar {
         listOf("连接", "工作台", "AI 助手", "收藏", "设置").forEach { title ->
-            val available = title !in setOf("AI 助手", "收藏")
+            val available = title != "AI 助手"
             NavigationBarItem(selected = page == title, onClick = { page = title }, enabled = available,
                 icon = { Text(if (available) "●" else "—") }, label = { Text(title) })
         }
     } }) { padding -> Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("数舟", style = MaterialTheme.typography.headlineMedium)
-            Text("DataSail · V0.3.0 · 多数据库实验性工作台")
+            Text("DataSail · V0.4.0 · 多数据库实验性工作台")
             Text("${state.target} / ${state.catalog} / ${state.schema}\n${if (state.production) "生产" else "测试"} · ${if (state.writable) "可写" else "只读"} · ${if (state.connected) "已连接" else "未连接"}", style = MaterialTheme.typography.labelMedium)
             Text(state.message, style = MaterialTheme.typography.bodySmall)
             if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -45,12 +52,13 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             when (page) {
                 "连接" -> Connections(model, state)
-                "工作台" -> Workbench(model, state)
+                "工作台" -> Workbench(model, state) { exportPreview = state.target + " / " + state.catalog to it }
+                "收藏" -> QueryLibrary(model, state) { page = "工作台" }
                 else -> {
                     Text("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。")
                     Text("Android 8.0 为最低构建目标；各系统实测范围见交付测试报告。密码不持久化，进入后台会断开连接，不自动重试。")
                     Text("SQL Server：mssql-jdbc 13.6.0.jre8（MIT）\nMySQL / MariaDB：MariaDB Connector/J 3.5.10（LGPL-2.1-or-later）\nPostgreSQL：pgjdbc 42.7.14（BSD-2-Clause）")
-                    Text("AI、收藏尚未实现；新增数据库当前只读。SQL 过滤不是授权边界，生产连接请使用数据库只读账号。")
+                    Text("AI 尚未实现；新增数据库当前只读。SQL 过滤不是授权边界，生产连接请使用数据库只读账号。")
                     DatabaseSupport()
                     val probeState by probe.state.collectAsStateWithLifecycle()
                     ProbeForm(probe, probeState)
@@ -58,6 +66,10 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
             }
         }
     } }
+    exportPreview?.let { (target, result) -> AlertDialog(onDismissRequest = { exportPreview = null },
+        title = { Text("导出当前结果页？") }, text = { Text("$target\n仅导出当前已加载的 ${result.rows.size} 行。UTF-8 CSV，不是整表备份。NULL 写作 \\N，文字中的反斜杠前缀转义；可能被电子表格当成公式的文字前加单引号。选择保存位置时连接会断开。") },
+        confirmButton = { TextButton(onClick = { exportSnapshot = result; exportPreview = null; exporter.launch("DataSail-page.csv") }) { Text("选择保存位置") } },
+        dismissButton = { TextButton(onClick = { exportPreview = null }) { Text("取消") } }) }
     state.preview?.let { preview -> AlertDialog(onDismissRequest = { if (!state.busy) model.discardPreview() },
         title = { Text("确认${preview.kind.label} 1 行") },
         text = { Column(Modifier.heightIn(max = 450.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -70,59 +82,13 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
 }
 
 @Composable
-private fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
-    val saved by model.saved.collectAsStateWithLifecycle()
-    var draft by remember { mutableStateOf(SavedConnection()) }
-    var password by remember { mutableStateOf("") }
-    var authorized by remember { mutableStateOf(false) }
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) password = "" }
-        lifecycle.addObserver(observer); onDispose { lifecycle.removeObserver(observer) }
-    }
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> uri?.let { model.importCa(it) { hash -> draft = draft.copy(ca = hash); authorized = false } } }
-    val sqlitePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> uri?.let { model.importSqlite(it) { id -> draft = draft.copy(database = id); authorized = false } } }
-    Text("已保存连接（仅元数据）", style = MaterialTheme.typography.titleMedium)
-    saved.forEach { connection -> Row {
-        TextButton(onClick = { draft = connection; password = ""; authorized = false }) { Text("${connection.name} · ${connection.kind.label}") }
-        TextButton(onClick = { draft = connection.copy(id = UUID.randomUUID().toString(), name = connection.name + " 副本"); password = ""; authorized = false }) { Text("复制") }
-        TextButton(onClick = { model.delete(connection.id); if (draft.id == connection.id) draft = SavedConnection() }) { Text("删除") }
-    } }
-    TextButton(onClick = { draft = SavedConnection(); password = ""; authorized = false }) { Text("新建连接") }
-    fun change(value: SavedConnection) { draft = value; authorized = false }
-    Choice("数据库类型", DatabaseKind.entries.map { it.label }, draft.kind.label, !state.busy) { label ->
-        val kind = DatabaseKind.entries.first { it.label == label }
-        change(draft.copy(kind = kind, port = kind.defaultPort.toString(), database = if ((kind == DatabaseKind.SQLITE) != (draft.kind == DatabaseKind.SQLITE)) "" else draft.database)); password = ""
-    }
-    OutlinedTextField(draft.name, { change(draft.copy(name = it)) }, label = { Text("连接名称") }, singleLine = true)
-    if (draft.kind == DatabaseKind.SQLITE) {
-        Text("选择已导出的完整 SQLite 文件（≤64 MiB，非 WAL 模式）。应用保存只读副本。")
-        TextButton(onClick = { sqlitePicker.launch("*/*") }) { Text("选择 SQLite 文件") }
-        Text(if (draft.database.matches(Regex("[a-f0-9]{64}"))) "已选择副本" else "尚未选择文件")
-    } else {
-    OutlinedTextField(draft.host, { change(draft.copy(host = it)) }, label = { Text("服务器 DNS / IPv4") }, singleLine = true)
-    OutlinedTextField(draft.port, { change(draft.copy(port = it)) }, label = { Text("端口") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-    OutlinedTextField(draft.database, { change(draft.copy(database = it)) }, label = { Text("数据库") }, singleLine = true)
-    OutlinedTextField(draft.username, { change(draft.copy(username = it)) }, label = { Text("用户名") }, singleLine = true)
-    OutlinedTextField(password, { password = it }, label = { Text("密码（不保存）") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
-    Row { Checkbox(draft.production, { change(draft.copy(production = it)) }); Text("生产环境（本版只读）") }
-    Text("TLS：强制加密并验证证书和主机名。${if (draft.ca == null) "使用系统 CA。" else "自选 CA SHA-256：\n${draft.ca}"}")
-    Text("仅导入你已核对来源和指纹的 CA；它可为此连接签发受信任证书。")
-    Row { TextButton(onClick = { picker.launch("*/*") }) { Text("选择 CA 证书") }
-        TextButton(onClick = { change(draft.copy(ca = null)) }) { Text("恢复系统 CA") } }
-    }
-    Row { Checkbox(authorized, { authorized = it }); Text("我已获准访问上述目标；权限由数据库账号控制。") }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = { model.save(draft) }) { Text("保存配置") }
-        Button(enabled = authorized && (draft.kind == DatabaseKind.SQLITE || password.isNotEmpty()) && !state.busy, onClick = { val secret = password.toCharArray(); password = ""; model.connect(draft, secret) }) { Text("连接") }
-    }
-}
-
-@Composable
-private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState) {
+private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export: (ResultPage) -> Unit) {
     if (!state.connected) { Text("请在连接页选择数据库并连接，然后浏览表或执行查询。"); return }
+    if (state.kind.isKeyValue) { KeyValueWorkbench(model, state); return }
     var search by remember { mutableStateOf("") }
-    var sql by remember { mutableStateOf("SELECT 1 AS 示例") }
+    val sql by model.draftSql.collectAsStateWithLifecycle()
+    var savingQuery by remember { mutableStateOf(false) }
+    var queryName by remember { mutableStateOf("") }
     var selected by remember(state.result) { mutableStateOf<Int?>(null) }
     var editing by remember(state.result) { mutableStateOf<MutationKind?>(null) }
     Choice("数据库", state.catalogs, state.catalog, !state.busy, model::switchCatalog)
@@ -132,10 +98,16 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState) {
     // Object chooser remains bounded; data rows are limited by the core to 100.
     val matching = state.tables.filter { it.name.contains(search, ignoreCase = true) }
     Choice("表 / 视图（${matching.size}）", matching.map { it.name }, state.result?.tableSchema?.table?.name ?: "选择对象", !state.busy) { name -> model.page(matching.first { it.name == name }) }
-    OutlinedTextField(sql, { sql = it }, label = { Text("单条 SELECT 查询") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
+    OutlinedTextField(sql, model::editSql, label = { Text("单条 SELECT 查询") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
     Text("查询结果只读，最多显示 100 行 / 64 列；不支持 CTE、变量、多语句和写 SQL。请使用最小权限账号。")
     Button(enabled = !state.busy, onClick = { model.query(sql) }) { Text("执行查询") }
+    TextButton(enabled = !state.busy, onClick = { savingQuery = true; queryName = "" }) { Text("收藏查询") }
+    if (savingQuery) AlertDialog(onDismissRequest = { savingQuery = false }, title = { Text("收藏 SELECT 草稿") }, text = {
+        Column { Text("仅保存在本机。SQL 可能含业务内容，请确认没有密码或密钥。载入后需要手动执行。"); OutlinedTextField(queryName, { queryName = it }, label = { Text("查询名称") }, singleLine = true) }
+    }, confirmButton = { TextButton(enabled = queryName.isNotBlank() && queryName.length <= 80, onClick = { model.saveQuery(queryName); savingQuery = false }) { Text("保存收藏") } }, dismissButton = { TextButton(onClick = { savingQuery = false }) { Text("取消") } })
     state.result?.let { result ->
+        OutlinedButton(enabled = !state.busy && PageCsv.canExport(result), onClick = { export(result) }) { Text("导出当前页 CSV") }
+        if (!PageCsv.canExport(result)) Text("本页含未完整加载字段，暂不能导出。")
         Text("${result.tableSchema?.table?.label ?: "查询结果（只读）"} · 第 ${result.offset + 1} 行起 · ${result.rows.size} 行${if (result.hasMore) " · 还有结果" else ""}")
         Text("单字段最多 2048 字符 / 二进制 256 字节；超限值标记未加载。")
         if (result.rows.isEmpty()) Text("执行成功，没有记录。")

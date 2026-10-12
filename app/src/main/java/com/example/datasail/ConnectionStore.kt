@@ -22,12 +22,14 @@ data class SavedConnection(val id: String = UUID.randomUUID().toString(), val na
         trustStore = ca?.let { require(it.matches(Regex("[a-f0-9]{64}"))); TrustStoreSpec(File(context.filesDir, "ca/$it.p12").path) })
 }
 class ConnectionStore(private val context: Context) {
+    companion object { private val metadataLock = Any() }
     private val file = AtomicFile(File(context.filesDir, "connections-v1.json"))
-    fun load(): List<SavedConnection> {
-        if (!file.baseFile.exists()) return emptyList()
-        val root = JSONObject(file.openRead().bufferedReader().use { it.readText() })
+    fun load(): List<SavedConnection> = synchronized(metadataLock) { loadLocked() }
+    private fun loadLocked(): List<SavedConnection> {
+        if (!file.baseFile.exists() && !File(file.baseFile.path + ".bak").exists()) return emptyList()
+        val root = file.openRead().use { input -> require(input.channel.size() <= 4000000); JSONObject(input.bufferedReader().readText()) }
         require(root.getInt("schema") in 1..2)
-        val rows = root.getJSONArray("connections")
+        val rows = root.getJSONArray("connections"); require(rows.length() <= 100)
         return (0 until rows.length()).map { index -> rows.getJSONObject(index).let { row ->
             SavedConnection(row.getString("id"), row.getString("name"), row.getString("host"), row.getString("port"),
                 row.getString("database"), row.getString("username"), row.getBoolean("production"),
@@ -35,15 +37,18 @@ class ConnectionStore(private val context: Context) {
                 if (root.getInt("schema") == 1) DatabaseKind.SQL_SERVER else DatabaseKind.valueOf(row.getString("kind")))
         } }
     }
-    fun save(connections: List<SavedConnection>) {
+    fun save(connections: List<SavedConnection>) = synchronized(metadataLock) { saveLocked(connections) }
+    private fun saveLocked(connections: List<SavedConnection>) {
         require(connections.size <= 100)
         val rows = JSONArray()
         connections.forEach { c -> rows.put(JSONObject().apply {
             put("kind", c.kind.name); put("id", c.id); put("name", c.name); put("host", c.host); put("port", c.port)
             put("database", c.database); put("username", c.username); put("production", c.production); put("ca", c.ca ?: "")
         }) }
+        val encoded = JSONObject().put("schema", 2).put("connections", rows).toString().toByteArray()
+        require(encoded.size <= 4000000)
         val out = file.startWrite()
-        try { out.write(JSONObject().put("schema", 2).put("connections", rows).toString().toByteArray()); file.finishWrite(out) }
+        try { out.write(encoded); file.finishWrite(out) }
         catch (error: Exception) { file.failWrite(out); throw error }
     }
     fun sqliteFile(id: String): File {

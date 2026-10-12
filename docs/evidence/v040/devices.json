@@ -1,0 +1,16 @@
+{
+  "emulator-5556": {
+    "api": "26",
+    "fingerprint": "Android/sdk_phone_x86_64/generic_x86_64:8.0.0/OSR1.180418.004/4931640:userdebug/test-keys",
+    "abi": "x86_64",
+    "emulator": "1",
+    "installedApkSha256": "9a5d61d8172c7d89ec318592d5075c394bcd18eb528b41a7834a134a7f87949b"
+  },
+  "emulator-5554": {
+    "api": "30",
+    "fingerprint": "Android/sdk_phone_x86_64/generic_x86_64:11/RSR1.210722.013.A2/10067904:userdebug/test-keys",
+    "abi": "x86_64",
+    "emulator": "1",
+    "installedApkSha256": "9a5d61d8172c7d89ec318592d5075c394bcd18eb528b41a7834a134a7f87949b"
+  }
+}

@@ -1,0 +1,24 @@
+
+com.example.datasail.SqliteDeviceTest:..
+com.example.datasail.ConnectionUiTest:
+Error in searchAndDeleteRequireConfirmation(com.example.datasail.ConnectionUiTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 5000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.ConnectionUiTest.searchAndDeleteRequireConfirmation(ConnectionUiTest.kt:51)
+.
+com.example.datasail.QueryStoreTest:.
+com.example.datasail.MobileWorkflowTest:.
+
+Time: 85.149
+There was 1 failure:
+1) searchAndDeleteRequireConfirmation(com.example.datasail.ConnectionUiTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 5000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.ConnectionUiTest.searchAndDeleteRequireConfirmation(ConnectionUiTest.kt:51)
+
+FAILURES!!!
+Tests run: 6,  Failures: 1
+
+

@@ -44,6 +44,16 @@ cert = command(str(sdk / "build-tools/36.0.0/apksigner"), "verify", "--print-cer
 fingerprint = re.search(r"certificate SHA-256 digest: ([0-9a-f]+)", cert)
 if not fingerprint:
     raise SystemExit("No verified signing fingerprint.")
+# Bind the delivery to the APK that actually completed device verification.
+evidence = ROOT / "docs/evidence" / ("v" + VERSION[1:].replace(".", ""))
+verification = json.loads((evidence / "summary.json").read_text())
+devices = json.loads((evidence / "devices.json").read_text())
+if verification.get("version") != VERSION[1:] or verification.get("versionCode") != VERSION_CODE:
+    raise SystemExit("Evidence version differs from the APK/source.")
+if verification.get("finalApkSha256") != sha(apk) or not devices:
+    raise SystemExit("Final APK does not match completed verification evidence.")
+if any(device.get("installedApkSha256") != sha(apk) for device in devices.values()):
+    raise SystemExit("Device installation evidence does not match the final APK.")
 base.mkdir(exist_ok=True)
 staging = base / (VERSION + ".partial")
 if staging.exists():
@@ -70,7 +80,7 @@ for src, dst in [("CHANGELOG.md", "更新说明.md"), ("docs/TEST_REPORT.md", "�
     shutil.copy2(source / src, staging / dst)
 reports = staging / "docs/verification"
 reports.mkdir()
-suites = [(name, ROOT / "core/build/test-results" / name) for name in ["test", "integrationTest", "untrustedTlsTest", "sqlServerTest", "jdbcWorkspaceTest"]]
+suites = [(name, ROOT / "core/build/test-results" / name) for name in ["test", "integrationTest", "untrustedTlsTest", "sqlServerTest", "jdbcWorkspaceTest", "keyValueTest"]]
 suites.append(("app-unit", ROOT / "app/build/test-results/testDebugUnitTest"))
 suites.append(("driver-profile", ROOT / "sqlserver-android/build/test-results/test"))
 for name, folder in suites:
@@ -94,8 +104,9 @@ manifest = {
     "signing": {"type": "local debug only", "certificateSha256": fingerprint.group(1)},
     "toolchain": {"jdk": "Temurin 21.0.8+9", "agp": "8.13.0", "gradle": "8.13", "kotlin": "2.2.10", "composeBom": "2025.08.01", "compileSdk": 36, "minSdk": 26, "buildTools": "36.0.0"},
     "androidTlsProvider": "Conscrypt 2.7.0, engine sockets, platform trust manager",
-    "drivers": {"mssql-jdbc": "13.6.0.jre8", "mariadb-java-client": "3.5.10", "postgresql": "42.7.14", "sqlite": "Android platform"},
+    "drivers": {"mssql-jdbc": "13.6.0.jre8", "mariadb-java-client": "3.5.10", "postgresql": "42.7.14", "sqlite": "Android platform", "redis-valkey": "DataSail bounded RESP2/TLS implementation"},
     "sqlServerAndroidProfile": {"version": profile_lock["profile"], "jarSha256": sha(profile_jar), "upstreamSourceSha256": profile_lock["sourceSha256"], "patchSha256": sha(ROOT / "sqlserver-android/patches/android-platform.patch")},
+    "verification": verification, "devices": devices,
     "limitations": ["Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence", "New engines are read-only; other catalog entries are planned and cannot connect", "Release/R8 fails on missing APIs; no release APK"],
     "artifacts": {p.name: {"bytes": p.stat().st_size, "sha256": sha(p)} for p in sorted((staging / "apk").glob("*.apk"))},
 }

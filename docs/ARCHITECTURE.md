@@ -1,4 +1,4 @@
-# V0.3.0 架构与边界
+# V0.4.0 架构与边界
 
 `app` 是 Compose / ViewModel / StateFlow 界面；`core` 是独立 JVM 模块，包含类型、错误、安全策略、固定 SQL 探针及多引擎 SQL 工作台会话。只有驱动适配器依赖具体 JDBC 库。Activity 不连接数据库。
 
@@ -38,3 +38,9 @@ V0.3.0 由 `SqlWorkspaceSession` 隔离 SQL 工作台操作：原 `SqlServerSess
 schema=2 元数据追加 kind，schema=1 读入时默认为 SQL_SERVER；文件名保持不变以保留升级路径，下一次保存以 AtomicFile 写 schema=2。SQLite ID 是应用私有副本 SHA-256，仅经 SAF 授权读取、校验并复制；不保存任意外部文件路径或密码。不存在持久写队列。
 
 `PostgreSqlTlsFactory` 使用 pgjdbc Properties 构造扩展，复用严格平台证书链及 SAN TrustManager；固定 verify-full，无信任全部选项。PostgreSQL 也设置 8 MB 驱动结果缓冲预算，仍不等于整个应用堆内存上限。JVM 和 Android 的实际结果见 DRIVER_MATRIX。
+
+## V0.4.0 能力扩展
+
+`KeyValueSession` 与 `KeyValueRunner` 独立于 SQL 会话。固定 RESP2 命令在单个有界工作线程执行，操作截止时间关闭原始/TLS socket；取消增加代次，旧成功回调不能复活连接。解析前检查长度、节点、深度和整体预算。连接使用相同严格链/SAN 信任管理器，不加入新运行时驱动依赖。
+
+`ConnectionsScreen` 管理卡片/选型/表单，`KeyValueScreen` 提供专用浏览。`QueryStore` 为 AtomicFile schema 1、显式 SELECT 收藏，读取失败时禁止覆盖。连接与收藏各自使用进程内共享锁串行化跨实例读写；只有 .bak 时仍调用 AtomicFile 恢复，连接配置/收藏文件分别限制 4/8 MB。`PageCsv` 只序列化经确认的有界页面；系统文件选择器回调在顶层持有导出快照，生命周期断开不会丢失已确认的导出内容。保存草稿不会执行任何 SQL。

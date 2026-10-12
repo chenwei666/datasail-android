@@ -4,7 +4,9 @@ import java.math.BigDecimal
 
 enum class DatabaseKind(val label: String, val defaultPort: Int) {
     SQL_SERVER("SQL Server", 1433), MYSQL("MySQL", 3306), MARIADB("MariaDB", 3306),
-    POSTGRESQL("PostgreSQL", 5432), SQLITE("SQLite", 0)
+    POSTGRESQL("PostgreSQL", 5432), SQLITE("SQLite", 0),
+    REDIS("Redis", 6379), VALKEY("Valkey", 6379);
+    val isKeyValue: Boolean get() = this == REDIS || this == VALKEY
 }
 enum class TlsPolicy { VERIFY_IDENTITY }
 enum class ConnectionEnvironment(val label: String) { TEST("测试"), PRODUCTION("生产（本版只读）") }
@@ -35,6 +37,7 @@ class ConnectionProfile(
             require(port in 1..65535) { "端口范围为 1–65535" }
             require(username.isNotBlank() && username.length <= 128) { "请填写有效用户名" }
         }
+        if (kind.isKeyValue) require(database.matches(Regex("0|[1-9][0-9]{0,4}")) && database.toInt() <= 65535) { "数据库编号范围为 0–65535；实际范围由服务器配置决定" }
         if (kind == DatabaseKind.SQLITE) require(database.matches(Regex("[a-f0-9]{64}"))) { "请先导入 SQLite 文件" }
         require(database.length in 1..128 && database.all { it.isLetterOrDigit() || it == '_' || it == '-' }) { "技术验证版库名仅支持字母、数字、下划线和连字符" }
     }
@@ -92,5 +95,4 @@ interface AiDraftProvider { suspend fun draft(request: ApprovedAiContext): SqlDr
 data class ApprovedAiContext(val dialect: DatabaseKind, val userApprovedText: String)
 data class SqlDraft(val sql: String, val explanation: String)
 interface DocumentConnector
-interface KeyValueConnector
 interface SearchConnector
