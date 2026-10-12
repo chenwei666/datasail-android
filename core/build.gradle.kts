@@ -2,7 +2,7 @@ plugins { alias(libs.plugins.kotlin.jvm) }
 kotlin { jvmToolchain(21); compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8) } }
 java { sourceCompatibility = JavaVersion.VERSION_1_8; targetCompatibility = JavaVersion.VERSION_1_8 }
 dependencies {
-    implementation(libs.mssql)
+    implementation(project(path = ":sqlserver-android", configuration = "profile"))
     implementation(libs.mariadb)
     testImplementation(libs.junit)
 }
@@ -61,19 +61,22 @@ tasks.register<Test>("sqlServerTest") {
 
 // Build-time inspection only; ASM is never a dependency of the APK.
 val driverAudit by sourceSets.creating
+val auditOriginal by configurations.creating { isTransitive = false }
 dependencies {
+    auditOriginal(libs.mssql)
     add(driverAudit.implementationConfigurationName, libs.asm)
     add(driverAudit.implementationConfigurationName, libs.asm.tree)
 }
 tasks.register<JavaExec>("driverCompatibilityReport") {
+    dependsOn(configurations.runtimeClasspath)
     group = "verification"
     description = "Map R8 missing types to driver methods without modifying or suppressing them."
     classpath = driverAudit.runtimeClasspath
     mainClass.set("com.example.datasail.audit.DriverAudit")
     doFirst {
-        val fresh = rootProject.file("app/build/outputs/mapping/release/missing_rules.txt")
-        val evidence = if (fresh.isFile) fresh else rootProject.file("docs/evidence/v020/release-missing-rules.txt")
+        // Use a stable baseline to compare the same missing types before and after adaptation.
+        val evidence = rootProject.file("docs/evidence/v021/release-missing-rules.txt")
         args = listOf(evidence.absolutePath, layout.buildDirectory.file("reports/driver-audit.txt").get().asFile.absolutePath) +
-            configurations.runtimeClasspath.get().files.filter { it.name.startsWith("mssql-jdbc-") || it.name.startsWith("mariadb-java-client-") }.map { it.absolutePath }
+            (configurations.runtimeClasspath.get().files.filter { it.name.startsWith("mssql-jdbc-") || it.name.startsWith("mariadb-java-client-") } + auditOriginal.files).map { it.absolutePath }
     }
 }

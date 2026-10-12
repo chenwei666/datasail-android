@@ -12,6 +12,8 @@ import java.util.Properties
 /** Explicit opt-in fixture, not executed by the normal UI smoke task. No credentials in arguments or APK. */
 class SqlServerDeviceTest {
     @Test fun strictTlsBrowseEditAndConflictOnArt() {
+        assertEquals((0.9 * Runtime.getRuntime().maxMemory()).toLong(),
+            com.microsoft.sqlserver.jdbc.MaxResultBufferParser.validateMaxResultBuffer("9223372036854775807T"))
         assertEquals("DataSailTLS", javax.net.ssl.SSLContext.getInstance("TLS").provider.name)
         assertNotEquals("DataSailTLS", javax.net.ssl.TrustManagerFactory.getInstance(javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm()).provider.name)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -28,7 +30,20 @@ class SqlServerDeviceTest {
             assertEquals(diagnostic(untrusted, config.getProperty("password")), ErrorKind.TLS, Failures.classify(untrusted).kind)
             val mismatch = assertThrows(Exception::class.java) { connection(profile(host = "127.0.0.1")).close() }
             assertEquals(ErrorKind.TLS, Failures.classify(mismatch).kind)
-            connection().use { raw -> SqlServerSession(raw, profile()).use { session ->
+            connection().use { raw ->
+                val xml = raw.createSQLXML()
+                try {
+                    xml.setString("<r>数舟 &amp; 00123</r>")
+                    raw.prepareStatement("SELECT CAST(? AS xml)").use { statement ->
+                        statement.setSQLXML(1, xml)
+                        statement.executeQuery().use { rows ->
+                            assertTrue(rows.next())
+                            val value = rows.getSQLXML(1)
+                            try { assertEquals("<r>数舟 &amp; 00123</r>", value.string) } finally { value.free() }
+                        }
+                    }
+                } finally { xml.free() }
+                SqlServerSession(raw, profile()).use { session ->
                 val table = session.tables("dbo").single { it.name == "records" }
                 val page = session.page(table)
                 assertTrue(page.rows.isNotEmpty())

@@ -72,6 +72,7 @@ reports = staging / "docs/verification"
 reports.mkdir()
 suites = [(name, ROOT / "core/build/test-results" / name) for name in ["test", "integrationTest", "untrustedTlsTest", "sqlServerTest"]]
 suites.append(("app-unit", ROOT / "app/build/test-results/testDebugUnitTest"))
+suites.append(("driver-profile", ROOT / "sqlserver-android/build/test-results/test"))
 for name, folder in suites:
     if not list(folder.glob("TEST-*.xml")):
         raise SystemExit("Missing actual test results: " + name)
@@ -83,6 +84,10 @@ for name, folder in suites:
             raise SystemExit("Refusing failed/skipped test report: " + str(report))
         shutil.copy2(report, destination / report.name)
 shutil.copy2(ROOT / "app/build/reports/lint-results-debug.xml", reports / "lint-results-debug.xml")
+profile_lock = json.loads((ROOT / "sqlserver-android/upstream.lock.json").read_text())
+profile_jar = ROOT / f"sqlserver-android/build/libs/mssql-jdbc-android-{profile_lock['profile']}.jar"
+(staging / "drivers").mkdir()
+shutil.copy2(profile_jar, staging / "drivers" / profile_jar.name)
 manifest = {
     "version": VERSION, "versionCode": VERSION_CODE, "applicationId": "com.example.datasail",
     "gitSha": commit, "sourceStatus": "clean committed snapshot", "published": False,
@@ -90,6 +95,7 @@ manifest = {
     "toolchain": {"jdk": "Temurin 21.0.8+9", "agp": "8.13.0", "gradle": "8.13", "kotlin": "2.2.10", "composeBom": "2025.08.01", "compileSdk": 36, "minSdk": 26, "buildTools": "36.0.0"},
     "androidTlsProvider": "Conscrypt 2.7.0, engine sockets, platform trust manager",
     "drivers": {"mssql-jdbc": "13.6.0.jre8", "mariadb-java-client": "3.5.10"},
+    "sqlServerAndroidProfile": {"version": profile_lock["profile"], "jarSha256": sha(profile_jar), "upstreamSourceSha256": profile_lock["sourceSha256"], "patchSha256": sha(ROOT / "sqlserver-android/patches/android-platform.patch")},
     "limitations": ["Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence", "MySQL Android database runtime remains unverified", "Release/R8 fails on missing APIs; no release APK"],
     "artifacts": {p.name: {"bytes": p.stat().st_size, "sha256": sha(p)} for p in sorted((staging / "apk").glob("*.apk"))},
 }

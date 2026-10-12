@@ -21,6 +21,7 @@ class SafetyTest {
     }
     @Test fun `both drivers require verified TLS and disallow risky options`() {
         val ms = JdbcConnector.safeProperties(profile())
+        assertEquals("8M", ms.getProperty("maxResultBuffer"))
         assertEquals("true", ms.getProperty("encrypt"))
         assertEquals("false", ms.getProperty("trustServerCertificate"))
         assertEquals("0", ms.getProperty("connectRetryCount"))

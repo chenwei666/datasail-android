@@ -5,7 +5,7 @@
 | 阶段 | 范围与门槛 |
 |---|---|
 | V0.1.0 已归档 | 工程、中文驱动探针、类型/TLS/取消基础、Debug/R8 构建和真实证据 |
-| 下一项最小任务 | 按 DRIVER_RELEASE_PLAN.md 分离 SQL Server Android 源码 profile，完成 R8 后在真机验收；继续补生命周期与硬断网 |
+| 下一项最小任务 | 在已建立的 SQL Server 源码 profile 中处理 GSS/集成认证和关闭路径，继续 R8 门禁；继续补生命周期与硬断网 |
 | V0.2.x 当前 | SQL Server 对象浏览、查询、安全单行编辑 |
 | V0.3.0 | MySQL/MariaDB 独立验收 |
 | V0.4.0 | PostgreSQL/SQLite |

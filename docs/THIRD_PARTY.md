@@ -1,6 +1,6 @@
 # 依赖、来源与再构建
 
-本项目自己的代码采用根目录 Apache-2.0 许可。未修改第三方驱动字节码，不动态下载 JAR/dex。版本固定在 `gradle/libs.versions.toml`，下载内容 SHA-256 固定在 `gradle/verification-metadata.xml`；该文件是通过官方 HTTPS 仓库取得的校验基线，不是第三方安全审计结论。
+本项目自己的代码采用根目录 Apache-2.0 许可。SQL Server 从 V0.2.2 起使用可审计源码派生构建；MariaDB 保持上游二进制，不动态下载 JAR/dex。版本固定在 `gradle/libs.versions.toml`，下载内容 SHA-256 固定在 `gradle/verification-metadata.xml`；该文件是通过官方 HTTPS 仓库取得的校验基线，不是第三方安全审计结论。
 
 | 组件 | 版本 | 许可 | 官方来源 |
 |---|---|---|---|
@@ -25,7 +25,7 @@ LGPL 组件未修改，不能将其改称 Apache-2.0。允许为调试 LGPL 修�
 
 默认 TLS 插件源码审查：3.5.10 的 `DefaultTlsSocketPlugin` 既提供 TRUST 模式，也可能用 `MariaDbX509DeferredIdentityTrustManager` 将验证延后至认证阶段。本项目固定使用自己的 `StrictTlsPlugin`，系统 TrustManagerFactory 验证证书链，驱动 HostnameVerifier 验证主机名；不选择上述路径。`lint.xml` 仅针对该确切 JAR 内未使用的 Trust-All 实现作有依据的例外，应用代码仍受该检查。错误主机名与不受信 CA 的实连回归均必须通过。
 
-Release/R8 未加入生成的批量 `-dontwarn`。缺失 Android API 和可选认证依赖列表见 `docs/evidence/release-missing-rules.txt`，这个文件只作为失败证据，不参与构建。
+Release/R8 未加入生成的批量 `-dontwarn`。缺失 Android API 和可选认证依赖列表见 `docs/evidence/v022/release-missing-rules.txt`，这个文件只作为失败证据，不参与构建。
 
 V0.2.0 保持以上依赖版本与校验元数据不变。新增自有 `SqlServerTrustManager` 使用微软 JDBC 文档化的 `trustManagerClass` / `trustManagerConstructorArg` 扩展，实现平台链验证及 SAN 身份验证，避免 CN 解析依赖 Android 不具备的 JNDI。没有替换 JDBC 驱动、嵌入未经校验的二进制或压制 R8 缺失类。参考：https://learn.microsoft.com/en-us/sql/connect/jdbc/connecting-with-ssl-encryption?view=sql-server-ver17 。
 
@@ -36,3 +36,5 @@ V0.2.1 固定引入 `org.conscrypt:conscrypt-android:2.7.0`，AAR SHA-256 `86072
 Conscrypt 源码/许可证来自固定标签 2.7.0。AAR 内 `conscrypt.properties` 标明 BoringSSL 提交 `7c1efd8d6ffb36a57feba44e8c73cf674801f3cb`；对应 BoringSSL LICENSE、Conscrypt LICENSE/NOTICE、Harmony/Netty 许可均保存在 `docs/licenses/Conscrypt-2.7.0-*`。原生 arm64 ELF LOAD 段 0x4000 对齐，仅静态检查，不代表已通过 arm64/16 KiB 设备验收。
 
 上游 AAR 自带 JNI keep 与 Android 隐藏/旧版 API 的定向 dontwarn；没有添加驱动缺失类的忽略规则。Release 仍按实际失败记录；上游规则本身也不是运行兼容证明。
+
+V0.2.2 SQL Server 派生版本 `13.6.0.jre8-datasail.1` 的源码来源、精确 patch、校验、签名移除原因、MIT 许可与未适配范围见 `sqlserver-android/README.md`。上表及原驱动 SHA-256 表示上游输入，不代表最终 APK 内未修改的 SQL Server 二进制；交付 manifest 另记录派生 JAR、源码和补丁校验值。

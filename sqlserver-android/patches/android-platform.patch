@@ -1,0 +1,258 @@
+--- a/com/microsoft/sqlserver/jdbc/SQLServerCertificateUtils.java
++++ b/com/microsoft/sqlserver/jdbc/SQLServerCertificateUtils.java
+@@ -3,6 +3,7 @@
+  * available under the terms of the MIT License. See the LICENSE file in the project root for more information.
+  */
+ 
++// Modified by DataSail, 2026-10-12; see patches/android-platform.patch.
+ package com.microsoft.sqlserver.jdbc;
+ 
+ import java.io.ByteArrayInputStream;
+@@ -12,7 +13,6 @@
+ import java.io.FileNotFoundException;
+ import java.io.IOException;
+ import java.io.InputStream;
+-import java.io.StringReader;
+ import java.math.BigInteger;
+ import java.nio.Buffer;
+ import java.nio.ByteBuffer;
+@@ -22,7 +22,6 @@
+ import java.nio.file.Paths;
+ import java.security.GeneralSecurityException;
+ import java.security.KeyFactory;
+-import java.security.KeyPair;
+ import java.security.KeyStore;
+ import java.security.KeyStoreException;
+ import java.security.MessageDigest;
+@@ -50,16 +49,8 @@
+ import javax.crypto.spec.SecretKeySpec;
+ import javax.net.ssl.KeyManager;
+ import javax.net.ssl.KeyManagerFactory;
+-import javax.naming.ldap.LdapName;
+-import javax.naming.ldap.Rdn;
+ import javax.security.auth.x500.X500Principal;
+ 
+-import org.bouncycastle.openssl.PEMDecryptorProvider;
+-import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+-import org.bouncycastle.openssl.PEMKeyPair;
+-import org.bouncycastle.openssl.PEMParser;
+-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+-import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
+ 
+ 
+ final class SQLServerCertificateUtils {
+@@ -147,9 +138,7 @@
+      * @throws CertificateException
+      */
+     static void validateServerNameInCertificate(X509Certificate cert, String hostName) throws CertificateException {
+-        // Use RFC2253 format and secure CN parsing to avoid ambiguities introduced by
+-        // the "canonical" format (which lowercases and reverses RDN order). We rely
+-        // on LdapName/Rdn to securely parse the DN and extract the CN attribute only.
++        // Keep the subject for diagnostics; identity validation below requires SAN.
+         X500Principal subjectPrincipal = cert.getSubjectX500Principal();
+         String nameInCertDN = subjectPrincipal.getName(X500Principal.RFC2253);
+ 
+@@ -383,19 +372,7 @@
+     }
+ 
+     private static PrivateKey loadPrivateKeyFromPKCS1(String key, String keyPass) throws IOException {
+-        SQLServerBouncyCastleLoader.loadBouncyCastle();
+-        try (PEMParser pemParser = new PEMParser(new StringReader(key))) {
+-            Object object = pemParser.readObject();
+-            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+-            KeyPair kp;
+-            if (object instanceof PEMEncryptedKeyPair && keyPass != null) {
+-                PEMDecryptorProvider decProv = new JcePEMDecryptorProviderBuilder().build(keyPass.toCharArray());
+-                kp = converter.getKeyPair(((PEMEncryptedKeyPair) object).decryptKeyPair(decProv));
+-            } else {
+-                kp = converter.getKeyPair((PEMKeyPair) object);
+-            }
+-            return kp.getPrivate();
+-        }
++        throw new IOException("PKCS#1 client keys are not supported by the DataSail Android profile");
+     }
+ 
+     private static PrivateKey loadPrivateKeyFromPVK(String keyPath,
+@@ -535,34 +512,8 @@
+         return new String(Files.readAllBytes(Paths.get(filePath)));
+     }
+ 
+-    /**
+-     * Securely parse the Common Name (CN) from the certificate subject using
+-     * LdapName/Rdn APIs and RFC2253 string representation to avoid mis-parsing
+-     * values that appear inside other attributes when canonical form is used.
+-     */
++    /** DataSail requires subjectAltName; never fall back to CN or parse a DN using JNDI. */
+     static String parseCommonNameSecure(X509Certificate cert) {
+-        try {
+-            X500Principal subjectPrincipal = cert.getSubjectX500Principal();
+-            String dn = subjectPrincipal.getName(X500Principal.RFC2253);
+-
+-            LdapName ldapDN = new LdapName(dn);
+-            for (Rdn rdn : ldapDN.getRdns()) {
+-                if ("CN".equalsIgnoreCase(rdn.getType())) {
+-                    String cnValue = rdn.getValue().toString();
+-                    return cnValue;
+-                }
+-            }
+-
+-            if (logger.isLoggable(Level.FINER)) {
+-                logger.finer(logContext + " No CN found in certificate subject");
+-            }
+-            return null;
+-
+-        } catch (Exception e) {
+-            if (logger.isLoggable(Level.WARNING)) {
+-                logger.warning(logContext + " Error parsing certificate: " + e.getMessage());
+-            }
+-            return null;
+-        }
++        return null;
+     }
+ }
+--- a/com/microsoft/sqlserver/jdbc/MaxResultBufferParser.java
++++ b/com/microsoft/sqlserver/jdbc/MaxResultBufferParser.java
+@@ -3,9 +3,9 @@
+  * available under the terms of the MIT License. See the LICENSE file in the project root for more information.
+  */
+ 
++// Modified by DataSail, 2026-10-12; see patches/android-platform.patch.
+ package com.microsoft.sqlserver.jdbc;
+ 
+-import java.lang.management.ManagementFactory;
+ import java.text.MessageFormat;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+@@ -132,14 +132,15 @@
+ 
+     private static long adjustMemory(long size, long multiplier) throws SQLServerException {
+         checkForNegativeValue(size);
+-        if (size * multiplier > 0.9 * getMaxMemory())
++        // Compare before multiplication to avoid signed long overflow.
++        if (size > (long) (0.9 * getMaxMemory()) / multiplier)
+             return (long) (0.9 * getMaxMemory());
+         else
+             return size * multiplier;
+     }
+ 
+     private static long getMaxMemory() {
+-        return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
++        return Runtime.getRuntime().maxMemory();
+     }
+ 
+     private static void throwNewInvalidMaxResultBufferParameterException(Throwable cause,
+--- a/com/microsoft/sqlserver/jdbc/SQLServerSQLXML.java
++++ b/com/microsoft/sqlserver/jdbc/SQLServerSQLXML.java
+@@ -3,6 +3,7 @@
+  * available under the terms of the MIT License. See the LICENSE file in the project root for more information.
+  */
+ 
++// Modified by DataSail, 2026-10-12; see patches/android-platform.patch.
+ package com.microsoft.sqlserver.jdbc;
+ 
+ import java.io.ByteArrayInputStream;
+@@ -22,11 +23,6 @@
+ import javax.xml.parsers.ParserConfigurationException;
+ import javax.xml.parsers.SAXParser;
+ import javax.xml.parsers.SAXParserFactory;
+-import javax.xml.stream.XMLInputFactory;
+-import javax.xml.stream.XMLOutputFactory;
+-import javax.xml.stream.XMLStreamException;
+-import javax.xml.stream.XMLStreamReader;
+-import javax.xml.stream.XMLStreamWriter;
+ import javax.xml.transform.Result;
+ import javax.xml.transform.Source;
+ import javax.xml.transform.TransformerConfigurationException;
+@@ -37,8 +33,6 @@
+ import javax.xml.transform.sax.SAXSource;
+ import javax.xml.transform.sax.SAXTransformerFactory;
+ import javax.xml.transform.sax.TransformerHandler;
+-import javax.xml.transform.stax.StAXResult;
+-import javax.xml.transform.stax.StAXSource;
+ import javax.xml.transform.stream.StreamResult;
+ import javax.xml.transform.stream.StreamSource;
+ 
+@@ -296,7 +290,7 @@
+                     true);
+         strValue = value;
+     }
+-    // Support the following DOMSource, SAXSource, StAX and Stream. Also, null means default which is stream source
++    // DataSail supports DOMSource, SAXSource and Stream; StAX follows the unsupported-type error path. Also, null means default which is stream source
+ 
+     @Override
+     public <T extends Source> T getSource(Class<T> iface) throws SQLException {
+@@ -319,8 +313,7 @@
+             src = iface.cast(getDOMSource());
+         } else if (SAXSource.class == iface) {
+             src = iface.cast(getSAXSource());
+-        } else if (StAXSource.class == iface) {
+-            src = iface.cast(getStAXSource());
++
+         } else if (StreamSource.class == iface) {
+             src = iface.cast(new StreamSource(contents));
+         } else
+@@ -352,8 +345,7 @@
+             result = resultClass.cast(getDOMResult());
+         } else if (SAXResult.class == resultClass) {
+             result = resultClass.cast(getSAXResult());
+-        } else if (StAXResult.class == resultClass) {
+-            result = resultClass.cast(getStAXResult());
++
+         } else if (StreamResult.class == resultClass) {
+             outputStreamValue = new ByteArrayOutputStreamToInputStream();
+             result = resultClass.cast(new StreamResult(outputStreamValue));
+@@ -427,54 +419,6 @@
+         return null;
+     }
+ 
+-    private StAXSource getStAXSource() throws SQLException {
+-        try {
+-            XMLInputFactory factory = XMLInputFactory.newInstance();
+-
+-            // Defense-in-depth: disable DTD and external entity support to prevent XXE attacks.
+-            // Although SQL Server's xml data type rejects DTDs at the storage layer, these safeguards
+-            // protect against tampered TDS streams or non-xml-typed sources, consistent with getDOMSource().
+-            // If a StAX implementation does not recognize these properties, we fail closed rather than
+-            // continuing without the intended protections.
+-            try {
+-                factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+-            } catch (IllegalArgumentException e) {
+-                MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_noParserSupport"));
+-                Object[] msgArgs = {e.toString()};
+-                SQLServerException.makeFromDriverError(con, null, form.format(msgArgs), null, true);
+-            }
+-            try {
+-                factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+-            } catch (IllegalArgumentException e) {
+-                MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_noParserSupport"));
+-                Object[] msgArgs = {e.toString()};
+-                SQLServerException.makeFromDriverError(con, null, form.format(msgArgs), null, true);
+-            }
+-
+-            XMLStreamReader r = factory.createXMLStreamReader(contents);
+-            return new StAXSource(r);
+-        } catch (XMLStreamException e) {
+-            MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_noParserSupport"));
+-            Object[] msgArgs = {e.toString()};
+-            SQLServerException.makeFromDriverError(con, null, form.format(msgArgs), null, true);
+-        }
+-        return null;
+-    }
+-
+-    private StAXResult getStAXResult() throws SQLException {
+-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
+-        outputStreamValue = new ByteArrayOutputStreamToInputStream();
+-        try {
+-            XMLStreamWriter r = factory.createXMLStreamWriter(outputStreamValue);
+-            return new StAXResult(r);
+-        } catch (XMLStreamException e) {
+-            MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_noParserSupport"));
+-            Object[] msgArgs = {e.toString()};
+-            SQLServerException.makeFromDriverError(con, null, form.format(msgArgs), null, true);
+-        }
+-        return null;
+-    }
+-
+     private SAXResult getSAXResult() throws SQLException {
+         TransformerHandler handler = null;
+         try {

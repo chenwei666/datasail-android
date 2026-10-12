@@ -1,4 +1,4 @@
-# V0.2.1 架构与边界
+# V0.2.2 架构与边界
 
 `app` 是 Compose / ViewModel / StateFlow 界面；`core` 是独立 JVM 模块，包含类型、错误、安全策略、固定 SQL 探针及 SQL Server 工作台会话。只有驱动适配器依赖具体 JDBC 库。Activity 不连接数据库。
 
@@ -27,3 +27,5 @@ V0.1.0 没有持久配置。V0.2.0 新增 schema=1 的非秘密连接元数据�
 V0.2.1 中 WorkspaceRunner 返回 SessionReply（操作结果 + 实际 SessionSnapshot），即使组合操作部分失败，也会同步实际库和可写状态。驱动切库未确认时关闭会话；UI 切换目标或失联时清空旧 Schema/对象/结果/批准。只读 driverAudit source set 独立于 APK，用于方法级引用诊断。
 
 Android 进程启动时注册 Conscrypt 2.7.0 并强制 engine socket，避免旧版平台将 JDBC 包装流当作原生 socket fd。`provideTrustManager(false)` 保留系统 TrustManagerFactory；导入 CA 仍仅作用于对应连接，错误链/SAN 不降级。JVM core 未引入此 Android AAR。
+
+V0.2.2 的 sqlserver-android 模块将固定源码补丁编译并与其余上游字节组成派生 JAR；core 和 Android 使用同一派生产物，避免 JVM 测试落在未修改驱动上。模块运行时不依赖原始 JAR，也不把 ASM/Python 打进 APK。maxResultBuffer=8M 仅为驱动保留缓冲预算，不能替代应用结果读取限制。详细来源和拒绝能力见 sqlserver-android/README.md。

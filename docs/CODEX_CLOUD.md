@@ -7,7 +7,7 @@ cd /workspace/datasail-android
 export DATASAIL_TOOLS_DIR=/workspace/toolchains
 bash scripts/setup-cloud.sh
 source scripts/env.sh
-./gradlew :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+./gradlew :sqlserver-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
 ```
 
 安装器提供 Temurin JDK、Android command-line tools/SDK 与 ADB；Gradle 由仓库 Wrapper 提供。工具与缓存位于仓库之外，脚本不会写入源码或锁文件。开发任务主动更新依赖时须审查版本目录与 verification-metadata；正常构建不加 `--write-verification-metadata`。

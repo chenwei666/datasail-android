@@ -17,7 +17,7 @@ jobs:
         shell: bash
         run: |
           source scripts/env.sh
-          ./gradlew :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
+          ./gradlew :sqlserver-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
       - name: MySQL TLS and synthetic probes (JVM, not Android)
         run: bash scripts/test-mysql-local.sh
       - name: SQL Server TLS, browse and transaction tests (JVM)
@@ -26,7 +26,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: DataSail-V0.2.1-build-${{ github.run_number }}
+          name: DataSail-V0.2.2-build-${{ github.run_number }}
           if-no-files-found: error
           path: |
             app/build/outputs/apk/
@@ -34,6 +34,7 @@ jobs:
             app/build/test-results/
             core/build/reports/tests/
             core/build/test-results/
+            sqlserver-android/build/test-results/
   release-r8-gate:
     # Deliberately opt-in and failing until driver Android API gaps are resolved.
     # No continue-on-error, no -dontwarn blanket. This is a release blocker.

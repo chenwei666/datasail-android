@@ -11,6 +11,19 @@ class SqlServerIntegrationTest {
     private fun profile(host: String = "localhost", trusted: Boolean = true) = ConnectionProfile(DatabaseKind.SQL_SERVER,
         host, config.getProperty("port").toInt(), "master", "sa", trustStore = if (trusted) TrustStoreSpec(System.getProperty("datasail.sqlserver.trust")) else null)
     private fun connect(p: ConnectionProfile = profile()) = Credentials(config.getProperty("password").toCharArray()).use { JdbcConnector().connect(p, it) }
+    @Test fun bufferedResponseIsRejectedByDriverBudget() {
+        connect().use { c -> c.createStatement().use { statement ->
+            statement.queryTimeout = 10
+            // maxResultBuffer bounds retained driver buffers, not bytes consumed by an adaptive stream.
+            statement.unwrap(com.microsoft.sqlserver.jdbc.SQLServerStatement::class.java).setResponseBuffering("full")
+            val failure = assertThrows(java.sql.SQLException::class.java) {
+                statement.executeQuery("SELECT REPLICATE(CAST(N'x' AS nvarchar(max)), 5000000)").use { rows ->
+                    assertTrue(rows.next()); rows.getString(1)
+                }
+            }
+            assertTrue("driver budget must cause rejection", failure.message.orEmpty().contains("maxResultBuffer", ignoreCase = true))
+        } }
+    }
     private fun fixture(wrap: (java.sql.Connection) -> java.sql.Connection = { it }, block: (SqlServerSession, TableRef) -> Unit) {
         connect().use { connection ->
             connection.createStatement().use { s ->

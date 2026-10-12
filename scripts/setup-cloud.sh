@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
+for utility in python3 patch curl unzip tar sha256sum; do
+    command -v "$utility" >/dev/null || { echo "Required build utility missing: $utility" >&2; exit 1; }
+done
 [[ "$(uname -s)-$(uname -m)" == Linux-x86_64 ]] || { echo 'This installer supports Linux x86_64 only.' >&2; exit 1; }
 mkdir -p "$DATASAIL_TOOLS_DIR/downloads" "$GRADLE_USER_HOME" "$ANDROID_USER_HOME"
 # adb still requires this directory even with ANDROID_USER_HOME configured.

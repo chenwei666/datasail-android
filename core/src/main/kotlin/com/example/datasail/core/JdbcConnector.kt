@@ -53,6 +53,7 @@ class JdbcConnector : SqlConnector {
                     setProperty("socketTimeout", "15000")
                     setProperty("connectRetryCount", "0")
                     setProperty("responseBuffering", "adaptive")
+                    setProperty("maxResultBuffer", "8M")
                     setProperty("applicationName", "DataSail")
                 }
                 DatabaseKind.MYSQL -> {

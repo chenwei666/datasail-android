@@ -1,0 +1,5 @@
+Profile: 13.6.0.jre8-datasail.1
+JAR SHA-256: e659cab033b57ba0d5e85e6479100789b866f7b061658f7f1b6b2b6639e4f463
+verifyProfile: PASS; 5 source-compiled classes; all other upstream entries unchanged.
+Manual negative checks in a temporary directory: corrupt upstream binary rejected; changed SQLServerDriver.class rejected.
+R8 missing types: 147 -> 132; removed 15, added 0. Release still fails.

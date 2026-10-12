@@ -11,8 +11,8 @@ android {
         applicationId = "com.example.datasail"
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.2.1"
+        versionCode = 4
+        versionName = "0.2.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments["notClass"] = "com.example.datasail.SqlServerDeviceTest,com.example.datasail.UpgradeTest"
     }
@@ -44,4 +44,5 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test)
     androidTestImplementation(libs.android.test.junit)
     androidTestImplementation(libs.android.test.runner)
+    androidTestImplementation(project(path = ":sqlserver-android", configuration = "profile"))
 }
