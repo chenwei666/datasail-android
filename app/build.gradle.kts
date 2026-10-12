@@ -11,10 +11,10 @@ android {
         applicationId = "com.example.datasail"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.2.0"
+        versionCode = 3
+        versionName = "0.2.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArguments["notClass"] = "com.example.datasail.SqlServerDeviceTest"
+        testInstrumentationRunnerArguments["notClass"] = "com.example.datasail.SqlServerDeviceTest,com.example.datasail.UpgradeTest"
     }
     buildTypes {
         release {
@@ -30,6 +30,7 @@ android {
 }
 kotlin { jvmToolchain(21); compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8) } }
 dependencies {
+    implementation(libs.conscrypt)
     implementation(project(":core"))
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

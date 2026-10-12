@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import tarfile
 import zipfile
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 build_config = (ROOT / "app/build.gradle.kts").read_text()
@@ -69,13 +70,17 @@ for src, dst in [("CHANGELOG.md", "更新说明.md"), ("docs/TEST_REPORT.md", "�
     shutil.copy2(source / src, staging / dst)
 reports = staging / "docs/verification"
 reports.mkdir()
-for name in ["test", "integrationTest", "untrustedTlsTest", "sqlServerTest"]:
-    folder = ROOT / "core/build/test-results" / name
+suites = [(name, ROOT / "core/build/test-results" / name) for name in ["test", "integrationTest", "untrustedTlsTest", "sqlServerTest"]]
+suites.append(("app-unit", ROOT / "app/build/test-results/testDebugUnitTest"))
+for name, folder in suites:
     if not list(folder.glob("TEST-*.xml")):
         raise SystemExit("Missing actual test results: " + name)
     destination = reports / name
     destination.mkdir()
     for report in folder.glob("TEST-*.xml"):
+        result = ET.parse(report).getroot()
+        if any(int(result.get(key, "0")) for key in ("failures", "errors", "skipped")):
+            raise SystemExit("Refusing failed/skipped test report: " + str(report))
         shutil.copy2(report, destination / report.name)
 shutil.copy2(ROOT / "app/build/reports/lint-results-debug.xml", reports / "lint-results-debug.xml")
 manifest = {
@@ -83,8 +88,9 @@ manifest = {
     "gitSha": commit, "sourceStatus": "clean committed snapshot", "published": False,
     "signing": {"type": "local debug only", "certificateSha256": fingerprint.group(1)},
     "toolchain": {"jdk": "Temurin 21.0.8+9", "agp": "8.13.0", "gradle": "8.13", "kotlin": "2.2.10", "composeBom": "2025.08.01", "compileSdk": 36, "minSdk": 26, "buildTools": "36.0.0"},
+    "androidTlsProvider": "Conscrypt 2.7.0, engine sockets, platform trust manager",
     "drivers": {"mssql-jdbc": "13.6.0.jre8", "mariadb-java-client": "3.5.10"},
-    "limitations": ["Physical devices and API26 not tested; consult TEST_REPORT for exact API30 evidence", "MySQL Android database runtime remains unverified", "Release/R8 fails on missing APIs; no release APK"],
+    "limitations": ["Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence", "MySQL Android database runtime remains unverified", "Release/R8 fails on missing APIs; no release APK"],
     "artifacts": {p.name: {"bytes": p.stat().st_size, "sha256": sha(p)} for p in sorted((staging / "apk").glob("*.apk"))},
 }
 (staging / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")

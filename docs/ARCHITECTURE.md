@@ -1,4 +1,4 @@
-# V0.2.0 架构与边界
+# V0.2.1 架构与边界
 
 `app` 是 Compose / ViewModel / StateFlow 界面；`core` 是独立 JVM 模块，包含类型、错误、安全策略、固定 SQL 探针及 SQL Server 工作台会话。只有驱动适配器依赖具体 JDBC 库。Activity 不连接数据库。
 
@@ -23,3 +23,7 @@ V0.1.0 没有持久配置。V0.2.0 新增 schema=1 的非秘密连接元数据�
 `WorkspaceViewModel` 通过 Flow 暴露不可变界面快照，额外用代次防止主线程排队回调在断开后恢复旧连接状态。`ConnectionStore` 只保存有版本的非秘密连接元数据与用户导入的公共 CA，AtomicFile 防止半写；密码不进入存储或 saved state。`WorkspaceScreen` 提供原生对象选择、懒加载可视网格、记录详情、编辑和变更确认。
 
 `SqlServerTrustManager` 使用微软驱动公开扩展，先由平台 X509TrustManager 验证链，再匹配 SAN 的 DNS/IPv4（DNS 支持完整左标签通配符）。不会因 Android 缺少 JNDI 而跳过身份验证；无匹配 SAN 直接拒绝。MySQL 保留独立严格 TLS 插件，未据此推断 Android MySQL 已兼容。
+
+V0.2.1 中 WorkspaceRunner 返回 SessionReply（操作结果 + 实际 SessionSnapshot），即使组合操作部分失败，也会同步实际库和可写状态。驱动切库未确认时关闭会话；UI 切换目标或失联时清空旧 Schema/对象/结果/批准。只读 driverAudit source set 独立于 APK，用于方法级引用诊断。
+
+Android 进程启动时注册 Conscrypt 2.7.0 并强制 engine socket，避免旧版平台将 JDBC 包装流当作原生 socket fd。`provideTrustManager(false)` 保留系统 TrustManagerFactory；导入 CA 仍仅作用于对应连接，错误链/SAN 不降级。JVM core 未引入此 Android AAR。

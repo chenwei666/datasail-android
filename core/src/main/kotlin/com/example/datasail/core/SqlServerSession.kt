@@ -32,8 +32,15 @@ class SqlServerSession(private val connection: Connection, val profile: Connecti
     fun switchCatalog(name: String) {
         if (name !in catalogs()) throw WorkspaceRejected("数据库不在当前账号可访问列表中")
         invalidate(); writable = false
-        connection.catalog = name
-        catalog = name
+        try {
+            connection.catalog = name
+            val actual = connection.catalog
+            if (actual != name) throw WorkspaceRejected("驱动未确认目标数据库，连接已失效")
+            catalog = actual
+        } catch (error: Exception) {
+            close() // A failed USE may already have changed server state; never retain an ambiguous target.
+            throw error
+        }
     }
     fun setWritable(enabled: Boolean) {
         if (enabled && profile.environment != ConnectionEnvironment.TEST) throw WorkspaceRejected("生产连接在 V0.2.0 中保持只读")

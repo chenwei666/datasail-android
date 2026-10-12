@@ -1,40 +1,38 @@
-# V0.2.0 实际测试报告
+# V0.2.1 实际测试报告
 
-日期：2026-10-12；versionName 0.2.0 / versionCode 2；包名 com.example.datasail。代码提交 SHA、APK SHA-256 和签名指纹由版本 manifest 记录。产物是本地 Debug，不是正式 Release。
+2026-10-12；versionName 0.2.1 / versionCode 3；包名 com.example.datasail，minSdk26。Debug 开发交付，未公开发布；源码提交、APK 校验和与签名由版本 manifest 记录。
 
-## 实际命令与结果
+## 命令与结果
 
-| 命令 | 结果与范围 |
+| 命令 | 实际结果 |
 |---|---|
-| `./gradlew :core:test :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | 退出 0；25 个 JVM 单元测试通过，lint 无错误，真实 Debug / instrumentation APK 已生成 |
-| `bash scripts/test-sqlserver-local.sh` | 退出 0；12 个 SQL Server JVM 集成测试通过，无跳过 |
-| `DATASAIL_ANDROID_TESTS=1 bash scripts/test-sqlserver-local.sh` | 退出 0；重跑 12 个 JVM 测试，再在 Android 11 执行 1 个实连仪器测试，通过 |
-| `bash scripts/test-mysql-local.sh` | 退出 0；6 个真实 MySQL JVM 测试及独立 JVM 的 1 个不受信 CA 反例通过 |
-| `bash scripts/test-android-upgrade.sh --reset-synthetic-emulator` | 从 V0.1.0（code 1）用 `adb install -r` 覆盖到 V0.2.0（code 2），私有文件标记保留；3 个 UI/类加载/配置测试通过 |
-| `./gradlew :app:assembleRelease --console=plain` | 退出 1；R8 缺失平台与可选 API，保留完整日志及建议规则清单；没有采用批量忽略，没有 Release APK |
-| `git diff --check`、脚本 bash/Python 语法检查 | 通过 |
+| `./gradlew :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest -Pkotlin.compiler.execution.strategy=in-process -Pkotlin.incremental=false --console=plain` | 退出 0；26 个 core 单元测试、3 个 app 状态测试通过，lint 与 Debug / instrumentation APK 构建通过 |
+| `DATASAIL_ANDROID_TESTS=1 bash scripts/test-sqlserver-local.sh`（分别指定 API26/API30） | 每次退出 0；14 个 SQL Server JVM 集成测试通过，每台设备各 2 个 Android 实连测试通过 |
+| `bash scripts/test-mysql-local.sh` | 退出 0；6 个 MySQL JVM 测试和独立 JVM 的 1 个错误 CA 反例通过 |
+| `bash scripts/test-android-upgrade.sh --reset-synthetic-emulator`（分别指定 API26/API30） | 每次退出 0；V0.2.0 code2 覆盖安装 V0.2.1 code3，3 个 smoke 测试 + 1 个旧配置保留测试通过 |
+| `./gradlew :app:assembleRelease --console=plain` | 退出 1，R8 缺失平台/可选 API；没有 Release APK |
+| `./gradlew :core:driverCompatibilityReport --console=plain` | 退出 0；215 个相关方法（SQL Server 143，MariaDB 72），仅诊断，不修改驱动或生成忽略规则 |
+| `git diff --check`、bash/Python 脚本语法检查 | 通过 |
 
-证据在 `docs/evidence/v020/`；归档另外复制 core 的真实 JUnit XML 和 lint XML。早期设备测试因两个安装/测试流程重叠而中断，已改为串行并重新验证；未将中断结果当作通过。默认 `connectedDebugAndroidTest` 不连接数据库，显式设备 fixture 需单独运行。
+合计 50 个 JVM 测试通过（26 + 3 + 14 + 6 + 1），API26 和 API30 上各 6 个仪器测试通过（合计 12 次）。报告按平台分别计数，不用 JVM 成功代替 Android 成功。证据在 `docs/evidence/v021/`；归档另外包含真实 core / app JUnit XML 及 lint XML。
 
-## 环境
+## 本轮新增回归
 
-- JVM：Linux x86_64 / Temurin 21.0.8+9。Gradle 8.13、AGP 8.13.0、Kotlin 2.2.10、Compose BOM 2025.08.01；compile/target SDK36、minSdk26、build-tools36.0.0。
-- Android：API30 / x86_64 / `Android/sdk_phone_x86_64/generic_x86_64:11/RSR1.210722.013.A2/10067904:userdebug/test-keys`。软件 TCG，无 KVM，不是物理设备。
-- SQL Server 2022 CU16 Developer 与 MySQL 8.4.6 官方镜像固定 digest，详见 DRIVER_MATRIX。只运行本机 loopback 容器及合成账号，临时 CA/密码/容器结束后清理。
-- Debug 证书 SHA-256：`1c0f10a1cc14cc44b1eefc18a78de23b34ce30761b70dae039bea7f302cc78db`，与 V0.1.0 相同。
+- API26 修复前两项数据库仪器测试失败，严格 TLS 报 Socket closed；改用 adb reverse 仍失败。应用内注册固定 Conscrypt 2.7.0 engine socket 后，两项通过；Android 11 同样回归。可信连接、错 CA/主机名拒绝、真实读写冲突和超时/取消同时验证；断言 TLS provider 与系统 TrustManagerFactory 分工，没有信任全部证书。修复前证据保存在 api26-before-tls-fix.log。
+- 真实 JDBC 包装注入“服务器切库完成、客户端收到异常”，会话立即关闭且不能继续查询。
+- 组合操作切库成功后刷新 Schema 失败，SessionReply 仍报告实际新库和只读状态；界面清除旧 Schema、表、结果与预览。
+- 成功结果伴随连接关闭时，界面不会保留可写会话。
+- Android 上固定 WAITFOR 超时探针按预期结束；取消结果仍为 UNKNOWN；断开检查通过，每次只连接一次，不自动重连。没有据此声称服务端请求已消失。
+- 先在已安装 V0.2.0 的 app-private 目录写入其 schema=1 的合成连接配置，再用 `adb install -r` 覆盖；检查名称、主机、端口、库名、账号及生产只读标记保留。配置为测试脚本注入，不宣称是通过旧 UI 录入或复杂迁移；不包含密码或实际业务数据。
 
-## 覆盖与边界
+原有严格 TLS、错证书/主机名、类型保真、分页、参数化增改删、冲突/回滚/未知提交等继续回归。初期同目录并行构建导致一次中间类/APK读取失败，最终构建和设备验证已串行重跑；后续 Kotlin daemon 增量缓存也曾报错并回退，最终检查显式使用进程内编译并关闭增量缓存，通过后按默认脚本验证。上表只列最终有效结果。
 
-单元测试覆盖语法门禁、参数/标识符处理、精确类型/范围/NULL、SAN 匹配、错误脱敏、凭据清理、有界执行、取消、迟到回调和不可编辑对象策略。
+## 环境与限制
 
-SQL Server JVM 覆盖元数据/分页/文本预算不跳行、Unicode/前导零/小数/时间类型、增改删、参数化、旧确认失效、并发冲突、大小写/尾空格精确比较、触发器变更拒绝、异常匹配数回滚、未知提交结果不重试、错误证书/账号、超时/取消。异常计数和丢失提交确认通过真实 JDBC 包装故障注入，不能当作实际网络断开的证据。
+JVM Linux x86_64 / Temurin21.0.8+9；Gradle8.13、AGP8.13.0、Kotlin2.2.10、SDK36。Android8 API26 与 Android11 API30 x86_64 软件模拟器，无 KVM；build 指纹在 device-api26.txt / device-api30.txt。SQL Server 2022 CU16 Developer / MySQL8.4.6 固定 digest、loopback 临时容器、合成凭据与临时 CA，退出清理。
 
-Android 实连覆盖链验证、错误 CA、错误主机名、表读取、单行增改删、并发冲突和重复确认拒绝。最初由于微软证书 CN 解析依赖 `javax.naming.ldap.LdapName` 而失败；通过严格 TrustManager 扩展修复，仍验证链与 SAN，没有 trust-all。另修正 SQL Server 登录错误码分类及 datetimeoffset 读取。保留失败原因以供后续 Release 适配。
+签名沿用本地 Debug 证书 `1c0f10a1cc14cc44b1eefc18a78de23b34ce30761b70dae039bea7f302cc78db`。V0.1.0 与 V0.2.0 不可变归档校验保持不变。
 
-升级验证来自先安装旧 APK 再覆盖安装，保留 app-private 合成标记；不是卸载重装冒充升级。V0.1.0 没有持久连接配置，不声称验证了复杂迁移或降级。V0.1.0 ZIP SHA-256 仍为 `37f3b665a7774c18bb5f46919421652a813a66e3b766f0e7f32c1a7e818966e7`。
+APK 签名验证与 zipalign 16 KiB 对齐检查通过；Conscrypt arm64 ELF LOAD 段为 0x4000 对齐。它们是静态检查，不等同 16 KiB/arm64 设备实测。APK 中包含 Conscrypt，不含 ASM driverAudit 类。
 
-## 未通过 / 未执行
-
-Release/R8 未通过。API26、Android 11 真机/arm64、MySQL Android 实连、MariaDB 服务器、硬断网、服务端取消后最终状态、完整生命周期/键盘/TalkBack/性能测试均未执行。SQL Server Android 超时/取消探针尚未单独验收，不能沿用 JVM 结论。
-
-GitHub Actions 未触发，未推送或公开发布。云环境启动说明已保存草稿，未发布环境，也未验证全新云任务恢复本地提交。下一步应解决 Release 驱动适配门禁并在真机验证同一套安全读写流程。
+Release/R8 未通过；真机/arm64、MySQL Android、硬断网与服务端取消后最终状态、完整生命周期、无障碍和性能未验证。GitHub Actions 未触发，未推送/发布。下一步按 DRIVER_RELEASE_PLAN.md 实施可审计的 Android 驱动源码适配并验证混淆 APK。

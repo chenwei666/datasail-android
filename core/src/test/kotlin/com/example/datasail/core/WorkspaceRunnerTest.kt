@@ -42,6 +42,19 @@ class WorkspaceRunnerTest {
         assertThrows(IllegalStateException::class.java) { credentials.usePassword { it } }
         assertEquals(0, connector.connects.get())
     }
+    @Test fun `successful operation that closes connection cannot report a live session`() {
+        WorkspaceRunner(FakeConnector()).use { runner ->
+            val ready = CountDownLatch(1)
+            runner.connect(profile, secret()) { ready.countDown() }
+            assertTrue(ready.await(3, TimeUnit.SECONDS))
+            val done = CountDownLatch(1)
+            val reply = java.util.concurrent.atomic.AtomicReference<SessionReply<Unit>>()
+            assertTrue(runner.execute({ reply.set(it); done.countDown() }) { it.close() })
+            assertTrue(done.await(3, TimeUnit.SECONDS))
+            assertTrue(reply.get().result.isSuccess)
+            assertEquals(SessionSnapshot(null, false, false), reply.get().session)
+        }
+    }
     private class FakeConnector(val blockLogin: Boolean = false) : SqlConnector {
         override val capabilities = SqlCapabilities()
         val entered = CountDownLatch(1); val release = CountDownLatch(1); val closed = CountDownLatch(1); val connects = AtomicInteger()

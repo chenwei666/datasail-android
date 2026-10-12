@@ -58,3 +58,22 @@ tasks.register<Test>("sqlServerTest") {
     testLogging { events("passed", "skipped", "failed") }
     outputs.upToDateWhen { false }
 }
+
+// Build-time inspection only; ASM is never a dependency of the APK.
+val driverAudit by sourceSets.creating
+dependencies {
+    add(driverAudit.implementationConfigurationName, libs.asm)
+    add(driverAudit.implementationConfigurationName, libs.asm.tree)
+}
+tasks.register<JavaExec>("driverCompatibilityReport") {
+    group = "verification"
+    description = "Map R8 missing types to driver methods without modifying or suppressing them."
+    classpath = driverAudit.runtimeClasspath
+    mainClass.set("com.example.datasail.audit.DriverAudit")
+    doFirst {
+        val fresh = rootProject.file("app/build/outputs/mapping/release/missing_rules.txt")
+        val evidence = if (fresh.isFile) fresh else rootProject.file("docs/evidence/v020/release-missing-rules.txt")
+        args = listOf(evidence.absolutePath, layout.buildDirectory.file("reports/driver-audit.txt").get().asFile.absolutePath) +
+            configurations.runtimeClasspath.get().files.filter { it.name.startsWith("mssql-jdbc-") || it.name.startsWith("mariadb-java-client-") }.map { it.absolutePath }
+    }
+}

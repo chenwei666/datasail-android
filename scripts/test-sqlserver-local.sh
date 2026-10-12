@@ -63,5 +63,5 @@ if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb reverse "tcp:$port" "tcp:$port"
  adb shell am instrument -w -e class com.example.datasail.SqlServerDeviceTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  adb shell run-as com.example.datasail rm -f files/fixture.properties files/fixture-ca.pem
- rg -q 'OK \(1 test\)' "$fixture/android-result.txt"
+ rg -q 'OK \(2 tests\)' "$fixture/android-result.txt"
 fi

@@ -17,6 +17,16 @@ data class WorkspaceUiState(val busy: Boolean = false, val connected: Boolean = 
     val production: Boolean = false, val catalogs: List<String> = emptyList(), val schemas: List<String> = emptyList(),
     val tables: List<TableRef> = emptyList(), val result: ResultPage? = null, val preview: MutationPreview? = null,
     val message: String = "请选择已授权的 SQL Server 连接；默认只读。")
+// Operation completion is authoritative even when a later step in that operation failed.
+internal fun WorkspaceUiState.withSession(actual: SessionSnapshot): WorkspaceUiState {
+    val targetChanged = catalog != actual.catalog || !actual.connected
+    return copy(connected = actual.connected, catalog = actual.catalog ?: "—", writable = actual.writable,
+        schema = if (targetChanged) "—" else schema,
+        schemas = if (targetChanged) emptyList() else schemas,
+        tables = if (targetChanged) emptyList() else tables,
+        result = if (targetChanged) null else result,
+        preview = null)
+}
 class WorkspaceViewModel(application: Application) : AndroidViewModel(application) {
     private val runner = WorkspaceRunner()
     private val store = ConnectionStore(application)
@@ -89,9 +99,10 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         if (mutable.value.busy) return
         mutable.value = mutable.value.copy(busy = true, preview = null)
         val ticket = epoch
-        val accepted = runner.execute({ result -> viewModelScope.launch {
+        val accepted = runner.execute({ reply -> viewModelScope.launch {
             if (ticket != epoch) return@launch
-            result.fold(onSuccess = { mutable.value = mutable.value.copy(busy = false, message = "操作完成").update(it) }, onFailure = ::failure)
+            mutable.value = mutable.value.withSession(reply.session)
+            reply.result.fold(onSuccess = { mutable.value = mutable.value.copy(busy = false, message = "操作完成").update(it) }, onFailure = ::failure)
         } }, operation)
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后重试") }
     }

@@ -7,6 +7,9 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
+data class SessionSnapshot(val catalog: String?, val writable: Boolean, val connected: Boolean)
+data class SessionReply<T>(val result: Result<T>, val session: SessionSnapshot)
+
 /** One bounded worker owns the session. Cancellation invalidates all old callbacks and approvals. */
 class WorkspaceRunner(private val connector: SqlConnector = JdbcConnector()) : AutoCloseable {
     private val worker = ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, ArrayBlockingQueue(1))
@@ -31,7 +34,10 @@ class WorkspaceRunner(private val connector: SqlConnector = JdbcConnector()) : A
         return accepted
     }
 
-    fun <T> execute(done: (Result<T>) -> Unit, operation: (SqlServerSession) -> T): Boolean = submit(done) {
+    fun <T> execute(done: (SessionReply<T>) -> Unit, operation: (SqlServerSession) -> T): Boolean = submit({ result ->
+        val current = session?.takeUnless { it.isClosed() }
+        done(SessionReply(result, SessionSnapshot(current?.catalog, current?.writable == true, current != null)))
+    }) {
         val current = session ?: throw WorkspaceRejected("请先连接 SQL Server")
         if (current.isClosed()) throw WorkspaceRejected("连接已失效，请手动重新连接")
         operation(current)

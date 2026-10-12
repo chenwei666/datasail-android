@@ -97,6 +97,37 @@ class SqlServerIntegrationTest {
         val temporal = s.select("SELECT CAST('2026-10-12T12:00:00+07:00' AS datetimeoffset) AS moment")
         assertTrue(temporal.rows.single().single() is DbValue.Temporal)
     }
+    @Test fun failedCatalogAcknowledgementClosesAmbiguousSession() = fixture(wrap = { raw ->
+        proxy(java.sql.Connection::class.java, raw) { method, args ->
+            if (method.name == "setCatalog" && args!![0] == "master") {
+                raw.catalog = "master"
+                throw java.sql.SQLException("simulated lost USE acknowledgement", "S0001")
+            }
+            method.invoke(raw, *(args ?: emptyArray()))
+        }
+    }) { s, _ ->
+        assertThrows(java.sql.SQLException::class.java) { s.switchCatalog("master") }
+        assertTrue(s.isClosed()); assertFalse(s.writable)
+        assertThrows(IllegalStateException::class.java) { s.select("SELECT 1") }
+    }
+    @Test fun partialOperationFailureReportsActualCatalogAndReadOnlyState() = fixture { _, _ ->
+        WorkspaceRunner().use { runner ->
+            val ready = java.util.concurrent.CountDownLatch(1)
+            val connected = java.util.concurrent.atomic.AtomicReference<Result<Unit>>()
+            runner.connect(profile(), Credentials(config.getProperty("password").toCharArray())) { connected.set(it); ready.countDown() }
+            assertTrue(ready.await(15, java.util.concurrent.TimeUnit.SECONDS)); connected.get().getOrThrow()
+            val done = java.util.concurrent.CountDownLatch(1)
+            val reply = java.util.concurrent.atomic.AtomicReference<SessionReply<Unit>>()
+            assertTrue(runner.execute<Unit>({ reply.set(it); done.countDown() }) { session ->
+                session.setWritable(true)
+                session.switchCatalog("datasail_v020")
+                throw WorkspaceRejected("simulated schema refresh failure")
+            })
+            assertTrue(done.await(15, java.util.concurrent.TimeUnit.SECONDS))
+            assertTrue(reply.get().result.isFailure)
+            assertEquals(SessionSnapshot("datasail_v020", false, true), reply.get().session)
+        }
+    }
     @Test fun probeTypesTimeoutAndCancellation() {
         for (mode in ProbeMode.entries) {
             val done = java.util.concurrent.CountDownLatch(1)

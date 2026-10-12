@@ -1,0 +1,5 @@
+zipalign -c -P 16 -v 4 app-debug.apk: exit 0
+Verification successful
+APK DEX contains Conscrypt and no ASM audit classes.
+Conscrypt 2.7.0 arm64 ELF LOAD alignment: 0x4000 (static check only).
+No arm64 or 16 KiB device execution claimed.
