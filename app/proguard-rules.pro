@@ -3,3 +3,5 @@
 -keep class org.mariadb.jdbc.Driver { public *; }
 -keep class com.example.datasail.core.StrictTlsPlugin { public *; }
 -keepattributes Signature,InnerClasses,EnclosingMethod
+
+-keep class com.example.datasail.core.SqlServerTrustManager { public <init>(java.lang.String); public *; }

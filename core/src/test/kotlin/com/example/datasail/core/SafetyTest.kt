@@ -55,6 +55,7 @@ class SafetyTest {
     @Test fun `error classes remain distinct`() {
         assertEquals(ErrorKind.TIMEOUT, Failures.classify(SQLTimeoutException()).kind)
         assertEquals(ErrorKind.AUTHENTICATION, Failures.classify(SQLException("", "28000")).kind)
+        assertEquals(ErrorKind.AUTHENTICATION, Failures.classify(SQLException("redacted", "S0001", 18456)).kind)
         assertEquals(ErrorKind.PERMISSION, Failures.classify(SQLException("", "42000", 1142)).kind)
         assertEquals(ErrorKind.UNSUPPORTED, Failures.classify(NoClassDefFoundError()).kind)
         assertEquals(ErrorKind.CANCELLED, Failures.classify(SQLException("", "HY008")).kind)

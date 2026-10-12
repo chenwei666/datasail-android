@@ -44,3 +44,17 @@ tasks.register<Test>("untrustedTlsTest") {
     testLogging { events("passed", "skipped", "failed") }
     outputs.upToDateWhen { false }
 }
+
+tasks.named<Test>("integrationTest") { exclude("**/SqlServerIntegrationTest*") }
+tasks.register<Test>("sqlServerTest") {
+    testClassesDirs = integrationTest.output.classesDirs
+    classpath = integrationTest.runtimeClasspath
+    useJUnit()
+    include("**/SqlServerIntegrationTest*")
+    doFirst {
+        systemProperty("datasail.sqlserver.config", providers.environmentVariable("DATASAIL_SQLSERVER_CONFIG").get())
+        systemProperty("datasail.sqlserver.trust", providers.environmentVariable("DATASAIL_SQLSERVER_TRUSTSTORE").get())
+    }
+    testLogging { events("passed", "skipped", "failed") }
+    outputs.upToDateWhen { false }
+}

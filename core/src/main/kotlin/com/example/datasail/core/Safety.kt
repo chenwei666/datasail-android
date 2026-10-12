@@ -24,7 +24,7 @@ object Failures {
             chain.any { it is SQLTimeoutException || it is SocketTimeoutException } -> ErrorKind.TIMEOUT
             state == "HYT00" || state == "HYT01" -> ErrorKind.TIMEOUT
             state == "HY008" || state == "70100" -> ErrorKind.CANCELLED
-            state?.startsWith("28") == true -> ErrorKind.AUTHENTICATION
+            state?.startsWith("28") == true || sql?.errorCode in setOf(18452, 18456, 18487, 18488) -> ErrorKind.AUTHENTICATION
             state == "42501" || sql?.errorCode in setOf(229, 1142, 1143) -> ErrorKind.PERMISSION
             chain.any { it is SQLFeatureNotSupportedException || it is LinkageError } -> ErrorKind.UNSUPPORTED
             chain.any { it is ConnectException } || state?.startsWith("08") == true -> ErrorKind.NETWORK

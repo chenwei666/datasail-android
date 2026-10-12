@@ -12,7 +12,9 @@ import tarfile
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "V0.1.0"
+build_config = (ROOT / "app/build.gradle.kts").read_text()
+VERSION = "V" + re.search(r'versionName = "([0-9]+\.[0-9]+\.[0-9]+)"', build_config).group(1)
+VERSION_CODE = int(re.search(r'versionCode = ([0-9]+)', build_config).group(1))
 os.chdir(ROOT)
 
 def command(*args):
@@ -34,6 +36,9 @@ test_apk = ROOT / "app/build/outputs/apk/androidTest/debug/app-debug-androidTest
 if not apk.is_file():
     raise SystemExit("No real Debug APK: build before archiving.")
 sdk = Path(os.environ["ANDROID_HOME"])
+badging = command(str(sdk / "build-tools/36.0.0/aapt"), "dump", "badging", str(apk))
+if f"versionCode='{VERSION_CODE}'" not in badging or f"versionName='{VERSION[1:]}'" not in badging:
+    raise SystemExit("APK version differs from committed source.")
 cert = command(str(sdk / "build-tools/36.0.0/apksigner"), "verify", "--print-certs", str(apk))
 fingerprint = re.search(r"certificate SHA-256 digest: ([0-9a-f]+)", cert)
 if not fingerprint:
@@ -57,14 +62,14 @@ with tarfile.open(fileobj=io.BytesIO(payload)) as archive:
     archive.extractall(source, filter="data")
 shutil.copytree(source / "docs", staging / "docs")
 (staging / "apk").mkdir()
-shutil.copy2(apk, staging / "apk/DataSail-V0.1.0-debug.apk")
+shutil.copy2(apk, staging / f"apk/DataSail-{VERSION}-debug.apk")
 if test_apk.is_file():
-    shutil.copy2(test_apk, staging / "apk/DataSail-V0.1.0-androidTest.apk")
+    shutil.copy2(test_apk, staging / f"apk/DataSail-{VERSION}-androidTest.apk")
 for src, dst in [("CHANGELOG.md", "更新说明.md"), ("docs/TEST_REPORT.md", "测试报告.md"), ("docs/KNOWN_ISSUES.md", "已知问题.md")]:
     shutil.copy2(source / src, staging / dst)
 reports = staging / "docs/verification"
 reports.mkdir()
-for name in ["test", "integrationTest", "untrustedTlsTest"]:
+for name in ["test", "integrationTest", "untrustedTlsTest", "sqlServerTest"]:
     folder = ROOT / "core/build/test-results" / name
     if not list(folder.glob("TEST-*.xml")):
         raise SystemExit("Missing actual test results: " + name)
@@ -74,12 +79,12 @@ for name in ["test", "integrationTest", "untrustedTlsTest"]:
         shutil.copy2(report, destination / report.name)
 shutil.copy2(ROOT / "app/build/reports/lint-results-debug.xml", reports / "lint-results-debug.xml")
 manifest = {
-    "version": VERSION, "versionCode": 1, "applicationId": "com.example.datasail",
+    "version": VERSION, "versionCode": VERSION_CODE, "applicationId": "com.example.datasail",
     "gitSha": commit, "sourceStatus": "clean committed snapshot", "published": False,
     "signing": {"type": "local debug only", "certificateSha256": fingerprint.group(1)},
     "toolchain": {"jdk": "Temurin 21.0.8+9", "agp": "8.13.0", "gradle": "8.13", "kotlin": "2.2.10", "composeBom": "2025.08.01", "compileSdk": 36, "minSdk": 26, "buildTools": "36.0.0"},
     "drivers": {"mssql-jdbc": "13.6.0.jre8", "mariadb-java-client": "3.5.10"},
-    "limitations": ["Android runtime and physical device tests not executed", "SQL Server integration blocked by registry egress", "Release/R8 fails on missing APIs; no release APK"],
+    "limitations": ["Physical devices and API26 not tested; consult TEST_REPORT for exact API30 evidence", "MySQL Android database runtime remains unverified", "Release/R8 fails on missing APIs; no release APK"],
     "artifacts": {p.name: {"bytes": p.stat().st_size, "sha256": sha(p)} for p in sorted((staging / "apk").glob("*.apk"))},
 }
 (staging / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")

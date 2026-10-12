@@ -1,5 +1,16 @@
 # 更新说明
 
+## V0.2.0 — 2026-10-12（versionCode 2，实验性 SQL Server 工作台）
+
+- 增加连接元数据保存/复制/删除、测试/生产环境标记及连接专用 CA 导入；密码仅驻留内存。
+- 开放 SQL Server 数据库、Schema、表/视图和列结构浏览，按主键分页与受限单条 SELECT 查询。
+- 实现单行新增/修改/删除预览、单次时限确认、参数绑定、事务内结构检查、乐观并发与异常行数回滚；未知结果不重放。
+- 修复文本并发比较忽略大小写/尾空格、分页遇文本预算时跳行、Android SQL Server 证书校验依赖 JNDI 等问题，并加入回归测试。
+- SQL Server Developer 固定镜像隔离测试可运行；增加 Android 11 实连脚本和本地签名覆盖升级验证。
+- 归档脚本读取当前版本及构建号，校验 APK 一致性并拒绝覆盖旧版本；V0.1.0 交付保留。
+
+Release/R8 的其它 Android API 缺口仍是发布阻塞。真机、API26、MySQL Android 实连未验证；详见当前测试报告，不能将实验性 Debug 视为正式发布。
+
 ## V0.1.0 — 2026-10-12（versionCode 1，技术验证交付）
 
 - 从 README-only 仓库建立 Kotlin / Compose / ViewModel 原生工程，最低 API26，中文显示名称“数舟”。

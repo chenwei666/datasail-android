@@ -4,9 +4,9 @@
 
 | 阶段 | 范围与门槛 |
 |---|---|
-| V0.1.0 当前 | 工程、中文驱动探针、类型/TLS/取消基础、Debug/R8 构建和真实证据 |
-| 下一项最小任务 | Android 11 上完成 SQL Server 验证：可信/错误证书、SELECT 1、Unicode、NULL、小数、超时、取消；先记录设备/ABI/服务器版本再决定驱动修正 |
-| V0.2.0 | SQL Server 对象浏览、查询、安全单行编辑 |
+| V0.1.0 已归档 | 工程、中文驱动探针、类型/TLS/取消基础、Debug/R8 构建和真实证据 |
+| 下一项最小任务 | 解决 Release/R8 剩余 API 缺口，并补 SQL Server API26/Android 11 真机、超时/取消/生命周期验收 |
+| V0.2.0 当前 | SQL Server 对象浏览、查询、安全单行编辑 |
 | V0.3.0 | MySQL/MariaDB 独立验收 |
 | V0.4.0 | PostgreSQL/SQLite |
 | V0.5.0 | AI 草稿与上下文批准 |

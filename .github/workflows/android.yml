@@ -20,11 +20,13 @@ jobs:
           ./gradlew :core:test :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
       - name: MySQL TLS and synthetic probes (JVM, not Android)
         run: bash scripts/test-mysql-local.sh
+      - name: SQL Server TLS, browse and transaction tests (JVM)
+        run: bash scripts/test-sqlserver-local.sh
       - name: Preserve real artifacts and reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: DataSail-V0.1.0-build-${{ github.run_number }}
+          name: DataSail-V0.2.0-build-${{ github.run_number }}
           if-no-files-found: error
           path: |
             app/build/outputs/apk/

@@ -1,0 +1,59 @@
+package com.example.datasail.core
+
+import org.junit.Assert.*
+import org.junit.Test
+import java.lang.reflect.Proxy
+import java.sql.Connection
+import java.sql.Statement
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+
+class WorkspaceRunnerTest {
+    private val profile = ConnectionProfile(DatabaseKind.SQL_SERVER, "localhost", 1433, "synthetic", "test")
+    private fun secret() = Credentials("synthetic-only".toCharArray())
+    @Test fun `connect owns credentials and closes them after login`() {
+        val connector = FakeConnector(); val credentials = secret(); val done = CountDownLatch(1)
+        WorkspaceRunner(connector).use { runner ->
+            assertTrue(runner.connect(profile, credentials) { assertTrue(it.isSuccess); done.countDown() })
+            assertTrue(done.await(3, TimeUnit.SECONDS))
+            assertThrows(IllegalStateException::class.java) { credentials.usePassword { it } }
+            runner.disconnect()
+            assertTrue(connector.closed.await(3, TimeUnit.SECONDS))
+        }
+    }
+    @Test fun `disconnect during login disposes late connection and never delivers stale success`() {
+        val connector = FakeConnector(blockLogin = true); val callbacks = AtomicInteger()
+        WorkspaceRunner(connector).use { runner ->
+            assertTrue(runner.connect(profile, secret()) { callbacks.incrementAndGet() })
+            assertTrue(connector.entered.await(3, TimeUnit.SECONDS))
+            val rejected = secret()
+            assertFalse(runner.connect(profile, rejected) {})
+            assertThrows(IllegalStateException::class.java) { rejected.usePassword { it } }
+            runner.disconnect(); connector.release.countDown()
+            assertTrue(connector.closed.await(3, TimeUnit.SECONDS))
+            assertEquals(0, callbacks.get()); assertEquals(1, connector.connects.get())
+        }
+    }
+    @Test fun `closed runner cannot retain credentials or create sessions`() {
+        val connector = FakeConnector(); val runner = WorkspaceRunner(connector); runner.close()
+        val credentials = secret()
+        assertFalse(runner.connect(profile, credentials) {})
+        assertThrows(IllegalStateException::class.java) { credentials.usePassword { it } }
+        assertEquals(0, connector.connects.get())
+    }
+    private class FakeConnector(val blockLogin: Boolean = false) : SqlConnector {
+        override val capabilities = SqlCapabilities()
+        val entered = CountDownLatch(1); val release = CountDownLatch(1); val closed = CountDownLatch(1); val connects = AtomicInteger()
+        override fun connect(profile: ConnectionProfile, credentials: Credentials): Connection {
+            connects.incrementAndGet(); entered.countDown()
+            if (blockLogin) check(release.await(3, TimeUnit.SECONDS))
+            val statement = Proxy.newProxyInstance(Statement::class.java.classLoader, arrayOf(Statement::class.java)) { _, method, _ ->
+                when (method.name) { "execute" -> false; else -> null }
+            } as Statement
+            return Proxy.newProxyInstance(Connection::class.java.classLoader, arrayOf(Connection::class.java)) { _, method, _ ->
+                when (method.name) { "createStatement" -> statement; "close" -> { closed.countDown(); null }; else -> null }
+            } as Connection
+        }
+    }
+}

@@ -6,6 +6,10 @@ enum class DatabaseKind(val label: String, val defaultPort: Int) {
     SQL_SERVER("SQL Server", 1433), MYSQL("MySQL（MariaDB 驱动）", 3306)
 }
 enum class TlsPolicy { VERIFY_IDENTITY }
+enum class ConnectionEnvironment(val label: String) { TEST("测试"), PRODUCTION("生产（本版只读）") }
+class TrustStoreSpec(val path: String, val type: String = "PKCS12") {
+    override fun toString() = "TrustStoreSpec([LOCAL CA])"
+}
 enum class ProbeMode(val label: String) {
     BASIC("连接 / TLS / 类型"), TIMEOUT("查询超时（约 3 秒）"), CANCEL("取消（约 1 秒后请求）")
 }
@@ -21,6 +25,8 @@ class ConnectionProfile(
     val database: String,
     val username: String,
     val tls: TlsPolicy = TlsPolicy.VERIFY_IDENTITY,
+    val environment: ConnectionEnvironment = ConnectionEnvironment.TEST,
+    val trustStore: TrustStoreSpec? = null,
 ) {
     init {
         require(host.length in 1..253 && host.matches(Regex("[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?"))) { "主机仅支持 DNS 名称或 IPv4，不可填连接串" }
@@ -48,6 +54,10 @@ sealed interface DbValue {
     data class Text(val value: String) : DbValue
     data class Integer(val value: Long) : DbValue
     data class Decimal(val value: BigDecimal) : DbValue
+    data class Bool(val value: Boolean) : DbValue
+    data class Temporal(val value: String) : DbValue
+    data class Approximate(val value: String) : DbValue
+    data class Unavailable(val reason: String) : DbValue
     class Binary(bytes: ByteArray) : DbValue {
         private val bytes = bytes.copyOf()
         fun copyBytes() = bytes.copyOf()

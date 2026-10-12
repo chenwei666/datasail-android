@@ -6,7 +6,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,7 +19,8 @@ class SmokeTest {
     @Test fun launchShowsHonestNavigation() {
         compose.onNodeWithText("数舟").assertIsDisplayed()
         compose.onNodeWithText("AI 助手").assertIsNotEnabled()
-        compose.onNodeWithText("工作台").assertIsNotEnabled()
+        compose.onNodeWithText("工作台").performClick()
+        compose.onNodeWithText("请在连接页登录 SQL Server。MySQL 仍仅提供设置页中的固定探针。").assertIsDisplayed()
         compose.onNodeWithText("收藏").assertIsNotEnabled()
         compose.onNodeWithText("设置").performClick()
         compose.onNodeWithText("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。").assertIsDisplayed()
@@ -31,4 +32,18 @@ class SmokeTest {
         assertTrue(sqlServer.acceptsURL("jdbc:sqlserver://localhost:1433"))
         assertTrue(mysql.acceptsURL("jdbc:mariadb://localhost:3306/synthetic"))
     }
+    @Test fun metadataRoundTripPreservesConnectionPolicy() {
+        val context = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+        val store = ConnectionStore(context)
+        val original = store.load()
+        try {
+            val connection = SavedConnection(name = "合成连接", host = "localhost", database = "synthetic", username = "fixture", production = true)
+            store.save(listOf(connection))
+            assertEquals(listOf(connection), ConnectionStore(context).load())
+            val file = java.io.File(context.filesDir, "connections-v1.json").readText()
+            assertFalse(file.contains("password"))
+            assertEquals(com.example.datasail.core.ConnectionEnvironment.PRODUCTION, store.load().single().profile(context).environment)
+        } finally { store.save(original) }
+    }
+
 }

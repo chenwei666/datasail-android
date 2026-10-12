@@ -22,54 +22,27 @@ import com.example.datasail.core.*
 
 class MainActivity : ComponentActivity() {
     private val model: ProbeViewModel by viewModels()
+    private val workspace: WorkspaceViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         enableEdgeToEdge()
         setContent {
             MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
-                DataSail(model)
+                WorkspaceApp(workspace, model)
             }
         }
     }
     override fun onStop() {
         // No background session: rotation/background transitions request cancellation.
         model.cancel()
+        workspace.disconnect()
         super.onStop()
     }
 }
 
 @Composable
-private fun DataSail(model: ProbeViewModel) {
-    val state by model.state.collectAsStateWithLifecycle()
-    var page by remember { mutableStateOf("连接") }
-    Scaffold(bottomBar = {
-        NavigationBar {
-            listOf("连接", "工作台", "AI 助手", "收藏", "设置").forEach { title ->
-                val available = title == "连接" || title == "设置"
-                NavigationBarItem(selected = page == title, onClick = { page = title }, enabled = available,
-                    icon = { Text(if (available) "●" else "—") }, label = { Text(title) })
-            }
-        }
-    }) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()
-            .verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("数舟", style = MaterialTheme.typography.headlineLarge)
-            Text("DataSail · V0.1.0 技术验证", style = MaterialTheme.typography.labelLarge)
-            if (state.busy) Text("正在验证：${state.target}\n${state.execution.label()}")
-            if (page == "设置") {
-                Text("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。")
-                Text("Android 8.0 为最低构建目标，Android 11 为重点验收目标；构建成功不等于真机兼容。")
-                Text("凭据不持久化；AI 未启用。应用进入后台会请求取消连接/查询，不自动重连。")
-                Text("SQL Server：mssql-jdbc 13.6.0.jre8（MIT）\nMySQL：MariaDB Connector/J 3.5.10（LGPL-2.1-or-later）\n两者均为实验性接入，详见源码 docs/DRIVER_MATRIX.md。")
-                Text("工作台、AI 助手、收藏尚未实现，对应入口已禁用。")
-            } else ProbeForm(model, state)
-        }
-    }
-}
-
-@Composable
-private fun ProbeForm(model: ProbeViewModel, state: ProbeUiState) {
+internal fun ProbeForm(model: ProbeViewModel, state: ProbeUiState) {
     var kind by remember { mutableStateOf(DatabaseKind.SQL_SERVER) }
     var host by remember { mutableStateOf("") }
     var port by remember { mutableStateOf("1433") }

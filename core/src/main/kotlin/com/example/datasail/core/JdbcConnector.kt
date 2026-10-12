@@ -33,12 +33,22 @@ class JdbcConnector : SqlConnector {
         }
         internal fun safeProperties(profile: ConnectionProfile) = Properties().apply {
             setProperty("user", profile.username)
+            profile.trustStore?.let {
+                setProperty("trustStore", it.path)
+                setProperty("trustStoreType", it.type)
+                // This store contains only explicitly imported public CA certificates, not keys.
+                setProperty("trustStorePassword", "changeit")
+            }
             when (profile.kind) {
                 DatabaseKind.SQL_SERVER -> {
                     setProperty("databaseName", profile.database)
                     setProperty("authentication", "SqlPassword")
                     setProperty("encrypt", "true")
                     setProperty("trustServerCertificate", "false")
+                    setProperty("trustManagerClass", SqlServerTrustManager::class.java.name)
+                    val trust = profile.trustStore
+                    require(trust == null || ('\n' !in trust.path && '\n' !in trust.type))
+                    setProperty("trustManagerConstructorArg", profile.host + "\n" + (trust?.type ?: "PKCS12") + "\n" + (trust?.path ?: ""))
                     setProperty("loginTimeout", "5")
                     setProperty("socketTimeout", "15000")
                     setProperty("connectRetryCount", "0")

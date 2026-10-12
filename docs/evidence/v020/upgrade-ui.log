@@ -1,0 +1,19 @@
+Performing Streamed Install
+Success
+    versionCode=1 minSdk=26 targetSdk=36
+    versionName=0.1.0
+Performing Streamed Install
+Success
+    versionCode=2 minSdk=26 targetSdk=36
+    versionName=0.2.0
+synthetic upgrade marker
+Performing Streamed Install
+Success
+
+com.example.datasail.SmokeTest:...
+
+Time: 66.983
+
+OK (3 tests)
+
+
