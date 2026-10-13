@@ -27,12 +27,12 @@ data class IndexMapping(val index: String, val json: String)
 
 // All JDBC work is dispatched to one bounded worker; UI only holds immutable snapshots.
 data class WorkspaceUiState(val busy: Boolean = false, val connected: Boolean = false,
-    val target: String = "未连接", val catalog: String = "—", val schema: String = "—", val writable: Boolean = false,
+    val connectionKey: String = "", val connectionName: String = "", val target: String = "未连接", val catalog: String = "—", val schema: String = "—", val writable: Boolean = false,
     val kind: DatabaseKind = DatabaseKind.SQL_SERVER, val production: Boolean = false, val catalogs: List<String> = emptyList(), val schemas: List<String> = emptyList(),
     val indices: List<String> = emptyList(), val searchPage: SearchPage? = null, val mapping: IndexMapping? = null,
     val collections: List<String> = emptyList(), val documents: DocumentPage? = null,
     val keys: KeyScan? = null, val keyContent: KeyContent? = null,
-    val tables: List<TableRef> = emptyList(), val result: ResultPage? = null, val preview: MutationPreview? = null,
+    val navigationIssues: List<String> = emptyList(), val tables: List<TableRef> = emptyList(), val result: ResultPage? = null, val preview: MutationPreview? = null,
     val message: String = "请选择已授权的数据库连接；默认只读。")
 // Operation completion is authoritative even when a later step in that operation failed.
 internal fun WorkspaceUiState.withSession(actual: SessionSnapshot): WorkspaceUiState {
@@ -56,6 +56,11 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     private var settingsReady = false
     private val settingsOperations = Mutex()
     private var persistedSettings = AppSettings()
+    private val tableStore = TableFavoriteStore(application)
+    private val tableList = MutableStateFlow<List<TableFavorite>>(emptyList())
+    val favoriteTables = tableList.asStateFlow()
+    private var tableStorageValid = false
+    private var tableSaving = false
     private val queryStore = QueryStore(application)
     private val queryList = MutableStateFlow<List<SavedQuery>>(emptyList())
     val queries = queryList.asStateFlow()
@@ -93,6 +98,41 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         catch (_: Exception) { message("设置读取失败，使用本次默认值") }
         finally { persistedSettings = preferences.value; settingsReady = true }
     } }
+    init { viewModelScope.launch {
+        try { tableList.value = withContext(Dispatchers.IO) { tableStore.load() }; tableStorageValid = true }
+        catch (_: Exception) { message("表收藏读取失败，禁止覆盖原文件") }
+    } }
+    fun toggleTableFavorite(table: TableRef) {
+        val current = mutable.value
+        if (!current.connected || table.catalog != current.catalog || table != current.result?.tableSchema?.table) return
+        val old = tableList.value.find { it.matches(current.connectionKey, table) }
+        persistTables(if (old != null) tableList.value - old else tableList.value + TableFavorite(current.connectionKey,
+            current.connectionName, current.kind, table.catalog, table.schema, table.name, table.view))
+    }
+    fun removeTableFavorite(value: TableFavorite) = persistTables(tableList.value - value)
+    private fun persistTables(values: List<TableFavorite>) {
+        if (!tableStorageValid || tableSaving) { message("表收藏尚未加载或正在保存，请稍后重试"); return }
+        tableSaving = true
+        viewModelScope.launch {
+            try { withContext(Dispatchers.IO) { tableStore.save(values) }; tableList.value = values; message("表收藏已保存到本机") }
+            catch (_: Exception) { message("表收藏保存失败；最多 100 项，原文件保留") }
+            finally { tableSaving = false }
+        }
+    }
+    fun openTableFavorite(value: TableFavorite): Boolean {
+        val current = mutable.value
+        if (!current.connected || current.busy || current.connectionKey != value.connectionKey || current.kind != value.kind) {
+            message("请先连接收藏对应的原连接：${value.connectionName}"); return false
+        }
+        execute({ session ->
+            if (session.catalog != value.catalog) session.switchCatalog(value.catalog)
+            val navigation = SqlNavigator.load(session, value.schema)
+            val table = navigation.tables.singleOrNull { it.schema == value.schema && it.name == value.name && it.view == value.view }
+                ?: throw WorkspaceRejected("收藏对象不存在或不可见，请刷新并检查 Schema / 权限。未打开其它同名表。")
+            navigation to session.page(table)
+        }) { navigation(it.first).copy(result = it.second, message = "已打开收藏表") }
+        return true
+    }
     fun updateSettings(value: AppSettings) {
         if (!settingsReady) { message("设置正在加载，请稍后重试"); return }
         preferences.value = value
@@ -246,6 +286,27 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         } }
         if (!accepted) discovering.value = DiscoveryUiState(message = "上一扫描仍在清理，请稍后重试")
     }
+    fun connectSaved(connection: SavedConnection, needsPassword: () -> Unit) {
+        if (mutable.value.busy) return
+        if (connection.fieldErrors().isNotEmpty()) { needsPassword(); message("请补全连接信息后连接"); return }
+        cancelDiscovery()
+        val ticket = ++epoch
+        mutable.value = mutable.value.copy(busy = true, message = "正在读取此连接的已存凭据…")
+        viewModelScope.launch {
+            var secret: CharArray? = null
+            try {
+                secret = if (connection.kind == DatabaseKind.SQLITE) charArrayOf() else passwordOperations.withLock {
+                    withContext(Dispatchers.IO) { passwords.load(connection) }
+                }
+                if (ticket != epoch) return@launch
+                mutable.value = mutable.value.copy(busy = false)
+                if (secret == null) { needsPassword(); message("此连接尚未保存密码，请填写后连接") }
+                else connect(connection, secret)
+            } catch (_: Exception) {
+                if (ticket == epoch) { mutable.value = mutable.value.copy(busy = false); needsPassword(); message("已存密码无法读取，请重新填写") }
+            } finally { secret?.fill('\u0000') }
+        }
+    }
     fun connect(connection: SavedConnection, password: CharArray) {
         cancelDiscovery()
         if (mutable.value.busy) { password.fill('\u0000'); return }
@@ -253,7 +314,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             password.fill('\u0000'); message("连接信息无效，请检查主机、端口、库名和用户名"); return
         }
         val credentials = Credentials(password); password.fill('\u0000')
-        mutable.value = WorkspaceUiState(busy = true, target = if (profile.kind == DatabaseKind.SQLITE) "SQLite · ${connection.name}" else "${profile.kind.label} · ${profile.host}:${profile.port}", catalog = if (profile.kind == DatabaseKind.SQLITE) "main" else profile.database,
+        mutable.value = WorkspaceUiState(busy = true, connectionKey = tableConnectionKey(connection), connectionName = connection.name, target = if (profile.kind == DatabaseKind.SQLITE) "SQLite · ${connection.name}" else "${profile.kind.label} · ${profile.host}:${profile.port}", catalog = if (profile.kind == DatabaseKind.SQLITE) "main" else profile.database,
             kind = profile.kind, production = connection.production, message = if (profile.kind == DatabaseKind.SQLITE) "正在打开只读副本…" else "正在校验 TLS 并登录…")
         queryText.value = "SELECT 1 AS 示例"
         val ticket = ++epoch
@@ -295,7 +356,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             if (ticket != epoch) return@launch
             result.fold(onSuccess = {
                 mutable.value = mutable.value.copy(busy = false, connected = true, message = "已连接，只读模式")
-                execute({ s -> s.catalogs() to s.schemas() }) { value -> copy(catalogs = value.first, schemas = value.second) }
+                refreshNavigation()
             }, onFailure = { failure(it) })
         } }
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后手动重试") }
@@ -307,10 +368,24 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         runner.disconnect(); keyValueRunner.disconnect(); documentRunner.disconnect(); searchRunner.disconnect()
         mutable.value = WorkspaceUiState(message = "已请求取消并断开；未完成操作的执行结果未知，需核对。不会自动重试。")
     }
-    fun switchCatalog(name: String) = execute({ s -> s.switchCatalog(name); s.schemas() }) {
-        copy(catalog = name, schema = "—", schemas = it, tables = emptyList(), result = null, writable = false)
+    private fun WorkspaceUiState.navigation(value: SqlNavigation) = copy(
+        catalogs = value.catalogs, schemas = value.schemas, schema = value.schema ?: "—",
+        tables = value.tables, result = null, navigationIssues = value.issues,
+        message = if (value.issues.isEmpty()) "已加载数据库对象，请点击表或视图查看数据" else "已连接，但部分对象列表未能加载，请查看数据库导航提示")
+    fun refreshNavigation() {
+        val preferred = mutable.value.schema.takeUnless { it == "—" }
+        execute({ SqlNavigator.load(it, preferred) }) { navigation(it) }
     }
-    fun tables(schema: String) = execute({ it.tables(schema) }) { copy(schema = schema, tables = it, result = null) }
+    fun switchCatalog(name: String) {
+        if (mutable.value.busy) return
+        mutable.value = mutable.value.copy(tables = emptyList(), schemas = emptyList(), schema = "—", result = null, navigationIssues = emptyList())
+        execute({ s -> s.switchCatalog(name); SqlNavigator.load(s) }) { navigation(it) }
+    }
+    fun tables(schema: String) {
+        if (mutable.value.busy) return
+        mutable.value = mutable.value.copy(schema = schema, tables = emptyList(), result = null, navigationIssues = emptyList())
+        execute({ SqlNavigator.load(it, schema) }) { navigation(it) }
+    }
     fun page(table: TableRef, offset: Int = 0) = execute({ it.page(table, offset) }) { copy(result = it) }
     fun query(sql: String) = execute({ it.select(sql) }) { copy(result = it) }
     fun writable(enabled: Boolean) = execute({ it.setWritable(enabled) }) { copy(writable = enabled) }

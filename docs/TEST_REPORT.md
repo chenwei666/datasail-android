@@ -1,40 +1,36 @@
-# V0.8.0 实际测试报告
+# V0.8.1 实际测试报告
 
-版本 0.8.0 / versionCode 12，2026-10-13（Asia/Bangkok）。保持 com.example.datasail 与原 Debug 签名；仅交付实验性 Debug 包。
+版本 0.8.1 / versionCode 13，2026-10-13 UTC。保持 com.example.datasail 和原 Debug 签名。本次仍为实验性 Debug 预发布，不能承诺零缺陷或生产正式就绪。
 
-## 改动
+## 改动及问题原因
 
-- PasswordVault、WorkspaceViewModel、ConnectionsScreen：可选 Keystore AES-GCM 密码，独立 noBackup 存储、端点/账号/连接绑定、异步自动填入、忘记/清除。
-- AppSettings、SettingsScreen、MainActivity：持久化主题、网格密度/字号/类型、编辑器字号/补全、生产默认值及设置恢复。
-- ResultGrid、SqlEditor、WorkspaceScreen：表格单元格查看/复制/原位编辑、NULL、预览/确认、已知结果只读刷新；本地关键字及已加载元数据 Tab 补全。SQL Server 测试会话之外的既有只读边界保持。
-- WorkspaceRunner：重复断开清理合并，手动重连排在旧会话关闭后，保留有界串行操作与取消代次校验。
-- 密钥/密码不进入连接 JSON、备份、日志或源码；复制和端点/账号变化不可复用。见 PASSWORD_STORAGE 与 WORKSPACE。
+- 原工作台连接成功只请求 catalog/schema，没有选中 Schema 或加载表，且入口是默认空白下拉框。原 SQL 界面测试直接调用 ViewModel 加载表，绕过了真实导航入口，因此漏掉此交互问题。本次 SqlNavigation、WorkspaceViewModel、WorkspaceScreen 自动加载默认 Schema 和对象列表，切库/Schema 后同步刷新；列表可直接点击、筛选，空列表、部分失败和刷新入口均可见。
+- 原 `catalogs() to schemas()` 的后一步失败会丢弃整个结果。现在分别处理非致命元数据失败，保留成功部分及已认证当前库；网络、超时、失联仍传播到会话失效处理，不冒称空列表成功。
+- TableFavoriteStore、QueryLibrary 增加最多100项本机表收藏，绑定连接ID/端点/账号及库/Schema/名称/表或视图类型；不保存数据行、密码或旧object_id。打开时重新查询元数据，匹配目标后读取；可切回原库，不自动开启写入。修改服务器、账号或复制连接后不能用原收藏打开新目标。
+- ConnectionsScreen、WorkspaceViewModel 的历史连接可一键使用已存加密密码登录并进入工作台；缺少密码或解密失败进入配置。延迟读取回调受连接代次约束，取消不会复活旧连接。严格TLS、显式证书指纹信任和生产只读保持。
+- 真实SQL Server回归另发现ProbeRunner取消线程与finally清理线程可能并发close。现在一次连接只执行一次close，两条路径共享真实关闭结果，关闭失败仍为UNKNOWN，不重放查询。新增阻塞关闭回归在原实现上失败，在修复后通过，见diagnostics。
 
-## 实际命令与结果
+## 实际验证
 
-`./gradlew :core:test :sqlserver-android:test :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --rerun-tasks --console=plain` 通过，最终构建日志存于 evidence/v080。核心 55、应用 13、驱动 profile 11 个单测实际执行，无跳过；覆盖补全中间 token、引用转义、字符串/注释/美元引号排除及网格值保真。
+`./gradlew :sqlserver-android:check :sasl-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` 通过。修复close后再次执行core/app单测、lint及两个Debug APK构建；最终日志build-final.log。核心62、应用13、驱动profile11个JVM单测通过，lint 0问题。驱动未变更，另以 `:sqlserver-android:test --rerun` 明确重跑11项，避免把缓存报告当作本轮执行。
 
-`ANDROID_SERIAL=… bash scripts/test-android-upgrade.sh --reset-synthetic-emulator`：API26/API30 各 4 个通过，从不可变 V0.7.2/code11 覆盖至 code12，保留合成连接、生产只读、Mongo authSource、搜索范围、收藏与证书指纹。密码与设置是本轮新加，不把旧版不存在的功能算作升级迁移验证。
+`DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5556 bash scripts/test-sqlserver-local.sh`：SQL Server 2022 CU16真实TLS服务，JVM15项和Android3项通过。UI实际点击历史连接重登、库选择、Schema选择、表筛选/打开及跨库表收藏；没有使用model.tables()/model.page()绕过首个对象入口。回归Tab、预览前未写入、文本/NULL提交、已知结果刷新及任意SELECT只读。设备测试包含超时、取消、只连接一次、确实完成关闭；失败断言未放宽。
 
-Android 通用 7 个测试类（ConnectionUiTest、MobileWorkflowTest、QueryStoreTest、SqliteDeviceTest、PasswordVaultTest、PasswordWorkflowTest、SettingsUiTest），两台设备各 13 个通过。覆盖引擎筛选、SQLite/收藏、加密往返与端点/账号/副本隔离、密文损坏拒绝、设置重读、密码保存/掩码自动填入/忘记、主题及补全开关/恢复确认。截图仅为合成夹具，测试内临时解除 FLAG_SECURE，生产仍禁止截屏。
+`DATASAIL_SQLSERVER_AUTOCERT=1 DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5556 bash scripts/test-sqlserver-local.sh`：未配置证书的SQL Server，JVM1项、Android2项通过，包含IP、自签名证书预览确认与扫描连接。
 
-`DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5556 bash scripts/test-sqlserver-local.sh`：真实 SQL Server 2022 CU16 TLS 服务，JVM 15 个 + Android 3 个通过。包括原单行编辑/冲突/未知结果安全合约，以及界面保存密码后重新登录、真实硬件键 Tab 事件、单元格预览前未写入、提交文本保留前导零、NULL 写入、提交后刷新和任意 SELECT 结果不可编辑。
+Android8/API26与Android11/API30 x86_64软件模拟器：`bash scripts/test-android-upgrade.sh --reset-synthetic-emulator` 各5项通过，从不可变V0.8.0/code12覆盖到code13，保留连接/生产只读、查询收藏、证书信任、加密密码与设置。旧包安装后各运行1项合成状态准备检查，不计入新包通过数；未清除真实用户数据。TableFavoriteStore是新增文件，旧版本没有表收藏，不将其算作旧版迁移。
 
-`DATASAIL_SQLSERVER_AUTOCERT=1 DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5556 bash scripts/test-sqlserver-local.sh`：JVM 1 个 + Android 2 个通过，回归自签名/IP/证书处理/扫描连接。
+同两台设备使用明确class参数运行ConnectionUiTest、MobileWorkflowTest、QueryStoreTest、SqliteDeviceTest、PasswordVaultTest、PasswordWorkflowTest、SettingsUiTest、TableFavoriteStoreTest，各14项通过。包含SQLite一键连接后自动出现表、实际点击读取、收藏/打开、持久化及同名异库/Schema/端点隔离；以及密码、原查询收藏和设置回归。
 
-本轮合计 95 项 JVM、39 项 Android 检查通过。精确计数与安装哈希见 `docs/evidence/v080/summary.json`、`devices.json`。
+新包合计102项JVM、43项Android检查通过。精确计数、日志与安装包哈希见 `evidence/v081/summary.json`、`devices.json`。先前中间包及原close实现的失败保存在diagnostics，不计入最终包通过数。原实现阻塞关闭测试退出1，修复后全套core测试退出0。
 
-`./gradlew :app:assembleRelease --console=plain` 退出 1：仍有 193 个 R8 缺失类，与 V0.7.2 新增 0、移除 0。未添加批量忽略，未交付 Release APK。
+`./gradlew :app:assembleRelease --console=plain` 退出1，仍有193个R8缺失类；未添加批量dontwarn，没有生成或交付Release APK。Debug成功不是Release通过。
 
-## 发现与修正
+## 边界与交付
 
-初次密码自动填入 UI 测试错误地期待语义树暴露明文，因实际返回掩码超时。改为验证掩码、已保存状态及独立解密结果，再以真实 SQL Server 的重连认证证明密码可用。真实重连测试随后复现重复 disconnect 清理占满队列。WorkspaceRunner 合并清理、为一个清理和一个已受理操作保留有界空间，并增加阻塞旧连接关闭的确定性回归；仍串行关闭旧会话后才登录，不重试写入。网格仪器测试还修正了嵌套滚动定位，先滚动外层表格并断言单元格可见，再进行真实点击，并推进测试时钟等待双击识别窗口结束。全量重建还改变了 classes6.dex 和 APK 哈希，随后对最终包重新跑设备和实连矩阵。中间失败及中间包日志留在 diagnostics，不计入最终包通过数。KTX 风格检查建议的 SharedPreferences.edit 扩展会丢弃 commit 成功值，存储函数仅对该风格提示作精确注解，保留落盘失败处理。编译期实验 API 与跨模块 smart cast 问题已修正。
-
-## 限制与交付
-
-- 未测试物理设备、arm64、所有厂商 Keystore、实际用户服务器、强弱网络全矩阵或新云任务恢复；不宣称密钥一定硬件背书。没有生物认证/应用锁、密码导出或设备迁移恢复。
-- 图形写入仅 SQL Server 测试会话中的可安全定位表；无批量粘贴、公式、任意 SQL 写入或多格事务。其它引擎网格当前只读。补全不是完整语言服务器，不解析全部别名/上下文，仍需核对手写 SQL 的对象归属。
-- 完整九网络引擎矩阵来自 V0.7.1 历史证据，未计入本轮。密码/设置/新 SQL 网格是本轮新实现；不因界面共用就宣称其它数据库实连全部通过。
-- 最终 APK SHA-256：`b90e3dba9afdfc882abe6542ec711f585baaa4a2d447953720f19e10802267ec`。测试 APK：`abc700c3c3eed0f8bddca1da40c33760e65ebe7608c21209b852197e149d51c8`。
-- 交付 `versions/V0.8.0/` 与 `versions/V0.8.0.zip`，完整源码/安装包/文档/manifest/SHA256SUMS；干净本地提交，未推送或公开发布。独立源码归档重建未执行。
-- 云环境 start_skill 更新为本轮入口并保存草稿，未发布。下一项最小任务为数据库对象树与对象搜索，再补多查询标签和各引擎写能力。
+- 最终APK SHA-256：`41b2060a94f861d095cc2f6b7bdb8ce66c356a49f51a81269cd524160f01b471`；测试APK：`6b9c30b26953ecacad9194789f8932c26be91332bc781b9b7d3b6ab12a602e95`。devices.json记录从两台设备实际已安装base.apk读取并核对的哈希。
+- 版本归档：`versions/V0.8.1/` 与 `versions/V0.8.1.zip`，来自干净提交。保留12个旧版ZIP/归档，包名及签名不变。独立归档源码重建未执行。归档manifest中的published=false代表打包时状态，后续GitHub发布另有回执。
+- 没有访问用户业务数据库；真实服务为本机隔离合成夹具。用户服务器、物理设备、arm64、大库/弱网全矩阵和其他网络引擎的新界面实连未验证。历史十引擎证据不算本轮测试。
+- PostgreSQL每连接一库；默认Schema空时需手动选择其它Schema。表收藏仅SQL表/视图，不含文档集合、键或搜索索引；打开前需连接原连接。生产保持只读，其他引擎写入、完整DBeaver功能仍未完成。
+- 已按cloud-environment-onboarding:setup保存更新后的start_skill草稿（docs/CLOUD_START.md），未发布/激活新环境快照。修正emulator路径及恢复后残留锁的处理，进程需重新启动；未声称V0.8.1新云任务恢复验证通过。
+- 下一项最小任务：解决Release驱动适配并补真机/arm64验证，再讨论正式生产发行。

@@ -93,7 +93,7 @@ class SqlServerDeviceTest {
                     assertTrue("bounded probe completion", done.await(40, java.util.concurrent.TimeUnit.SECONDS))
                     assertEquals(report.get().failure?.toString(), if (mode == ProbeMode.TIMEOUT) ExecutionState.SUCCEEDED else ExecutionState.UNKNOWN, report.get().state)
                     assertEquals(1, connects.get())
-                    assertTrue(report.get().checks.any { it.name == "断开" && it.status == CheckStatus.PASSED })
+                    assertTrue("mode=$mode report=${report.get()}", report.get().checks.any { it.name == "断开" && it.status == CheckStatus.PASSED })
                 }
             }
         } finally { trust.delete() }

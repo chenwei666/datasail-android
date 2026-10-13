@@ -23,6 +23,9 @@ class ProbeRunner(private val connector: SqlConnector = JdbcConnector()) : AutoC
         val cancelled = AtomicBoolean(false)
         val statement = AtomicReference<Statement?>(null)
         val connection = AtomicReference<Connection?>(null)
+        val closeLock = Any()
+        var closeAttempted = false // guarded by closeLock; one connection per Run
+        var closeError: Exception? = null
     }
 
     @Synchronized fun start(profile: ConnectionProfile, credentials: Credentials, mode: ProbeMode,
@@ -94,7 +97,7 @@ class ProbeRunner(private val connector: SqlConnector = JdbcConnector()) : AutoC
                 run.statement.set(null)
                 val connection = run.connection.getAndSet(null)
                 if (connection != null) {
-                    try { connection.close(); checks += ProbeCheck("断开", CheckStatus.PASSED, "客户端连接已关闭") }
+                    try { closeConnection(run, connection); checks += ProbeCheck("断开", CheckStatus.PASSED, "客户端连接已关闭") }
                     catch (_: Exception) {
                         checks += ProbeCheck("断开", CheckStatus.UNKNOWN, "连接关闭异常，服务端状态未知")
                         state = ExecutionState.UNKNOWN
@@ -125,7 +128,16 @@ class ProbeRunner(private val connector: SqlConnector = JdbcConnector()) : AutoC
         val statement = run.statement.get()
         val connection = run.connection.get()
         submitControl { try { statement?.cancel() } catch (_: Exception) { /* report remains UNKNOWN */ } }
-        submitControl { try { connection?.close() } catch (_: Exception) { /* report remains UNKNOWN */ } }
+        submitControl { try { if (connection != null) closeConnection(run, connection) } catch (_: Exception) { /* report remains UNKNOWN */ } }
+    }
+    // Cancellation and worker cleanup can race; never close a JDBC connection concurrently.
+    // Both paths observe the same outcome, including a failed close (never report false success).
+    private fun closeConnection(run: Run, connection: Connection) = synchronized(run.closeLock) {
+        if (!run.closeAttempted) {
+            run.closeAttempted = true
+            try { connection.close() } catch (error: Exception) { run.closeError = error }
+        }
+        run.closeError?.let { throw it }
     }
     private fun submitControl(action: () -> Unit) {
         try { control.execute(action) } catch (_: java.util.concurrent.RejectedExecutionException) { /* bounded; socket timeout remains */ }

@@ -1,0 +1,44 @@
+{
+  "version": "0.8.1",
+  "versionCode": 13,
+  "finalApkSha256": "41b2060a94f861d095cc2f6b7bdb8ce66c356a49f51a81269cd524160f01b471",
+  "androidTestApkSha256": "6b9c30b26953ecacad9194789f8932c26be91332bc781b9b7d3b6ab12a602e95",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest",
+    "sqlServerAutoCertificateTest"
+  ],
+  "jvmTests": {
+    "core-unit": 62,
+    "app-unit": 13,
+    "driver-profile": 11,
+    "sqlserver": 15,
+    "sqlserver-autocert": 1
+  },
+  "androidTests": {
+    "upgrade-api26.txt": 5,
+    "mobile-api26.txt": 14,
+    "upgrade-api30.txt": 5,
+    "mobile-api30.txt": 14,
+    "SQL_SERVER/android-emulator-5556.txt": 3,
+    "SQL_SERVER_AUTOCERT/android-emulator-5556.txt": 2
+  },
+  "previousVersionUpgradeSeedTests": {
+    "api26": 1,
+    "api30": 1
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "SQL metadata navigation, exact table favorites, saved-connection quick login; SQL Server real UI catalog/schema/object/commit, close-race regression, SQLite UI, API26/API30 upgrade. Original ProbeRunner fails new deterministic close test; fix and real ART cancellation pass.",
+  "unverified": [
+    "physical/arm64",
+    "user database server",
+    "other network engine current-version matrix",
+    "complete DBeaver functionality",
+    "production write editing",
+    "fresh cloud restore of V0.8.1"
+  ]
+}

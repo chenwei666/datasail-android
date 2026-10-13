@@ -1,4 +1,4 @@
-# V0.8.0 驱动与能力矩阵
+# V0.8.1 驱动与能力矩阵
 
 当前实际实现十种连接类型；下表区分功能实现与测试证据。完整验收命令和系统范围见 TEST_REPORT。
 
@@ -40,3 +40,5 @@ MongoDB 复用共享 TrustManager；默认启用驱动 endpoint identification�
 搜索服务测试固定 Elasticsearch 8.19.5（官方 image amd64 digest `7a159fec8fc8a7b15ae74dcc01f418b39147a93ae097236774fec0b23e40364a`）及 OpenSearch 2.19.4（官方 image amd64 digest `16effbdfb018599a0f5cf5102e15b7ecce1aacbc9959a2203ff4769ff23d375f`）。这不是最新版本声明。APK 不打包这两个服务器或桌面 Java 客户端，只使用 Android 平台 HTTPS 和有界 JSON 实现；两个服务分别验收。V0.5.0/V0.6.0 历史实连证据保留在不可变归档；本轮扫描及工作台回归的实际执行范围以 TEST_REPORT 为准。
 
 V0.7.1 增加九种网络引擎的服务器发现入口；SQLite 继续使用文件选择器。引擎扫描语义、权限与上限见 WORKSPACE。实测结果以本轮 TEST_REPORT 为准。
+
+V0.8.1 没有变更驱动或协议；SQL 元数据导航与表收藏实际测试范围见本轮 TEST_REPORT。历史跨引擎结果不计为新界面的全部实连验收。

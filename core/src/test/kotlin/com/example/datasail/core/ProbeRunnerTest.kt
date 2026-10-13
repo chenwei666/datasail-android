@@ -67,6 +67,24 @@ class ProbeRunnerTest {
             assertEquals(1, db.connects.get())
         }
     }
+    @Test fun `cancel and cleanup close once and wait for actual close completion`() {
+        val db = FakeDb(block = true, blockClose = true)
+        val done = CountDownLatch(1)
+        val result = AtomicReference<ProbeReport>()
+        ProbeRunner(db).use { runner ->
+            runner.start(profile, credentials(), ProbeMode.BASIC, {}, { result.set(it); done.countDown() })
+            assertTrue(db.executing.await(3, TimeUnit.SECONDS))
+            runner.cancel()
+            assertTrue(db.closeEntered.await(3, TimeUnit.SECONDS))
+            try { assertFalse("must not finish while close is still running", done.await(200, TimeUnit.MILLISECONDS)) }
+            finally { db.releaseClose.countDown() }
+            assertTrue(done.await(3, TimeUnit.SECONDS))
+            assertEquals(1, db.connectionClosed.get())
+            assertEquals(ExecutionState.UNKNOWN, result.get().state)
+            assertEquals(CheckStatus.PASSED, result.get().checks.single { it.name == "断开" }.status)
+            assertEquals(1, db.connects.get())
+        }
+    }
     @Test fun `close failure cannot masquerade as disconnected success`() {
         ProbeRunner(FakeDb(closeFailure = true)).use { runner ->
             val report = run(runner)
@@ -101,7 +119,7 @@ class ProbeRunnerTest {
         return result.get()
     }
     private class FakeDb(val wrongDecimal: Boolean = false, val block: Boolean = false,
-        val connectFailure: SQLException? = null, val closeFailure: Boolean = false) : SqlConnector {
+        val connectFailure: SQLException? = null, val closeFailure: Boolean = false, val blockClose: Boolean = false) : SqlConnector {
         override val capabilities = SqlCapabilities()
         val connects = AtomicInteger()
         val resultClosed = AtomicInteger()
@@ -110,12 +128,18 @@ class ProbeRunnerTest {
         val executing = CountDownLatch(1)
         val cancelled = CountDownLatch(1)
         val release = CountDownLatch(1)
+        val closeEntered = CountDownLatch(1)
+        val releaseClose = CountDownLatch(1)
         override fun connect(profile: ConnectionProfile, credentials: Credentials): Connection {
             connects.incrementAndGet()
             connectFailure?.let { throw it }
             return proxy(Connection::class.java) { method, _ -> when (method) {
                 "createStatement" -> statement()
-                "close" -> { connectionClosed.incrementAndGet(); release.countDown(); if (closeFailure) throw SQLException(); null }
+                "close" -> {
+                    val count = connectionClosed.incrementAndGet(); release.countDown(); closeEntered.countDown()
+                    if (blockClose && count == 1) check(releaseClose.await(3, TimeUnit.SECONDS))
+                    if (closeFailure) throw SQLException(); null
+                }
                 else -> null
             } }
         }

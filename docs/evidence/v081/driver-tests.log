@@ -1,0 +1,40 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+> Task :sqlserver-android:compileTestJava UP-TO-DATE
+> Task :sqlserver-android:processTestResources UP-TO-DATE
+> Task :sqlserver-android:testClasses UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :sqlserver-android:test
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+AndroidProfileTest > malformedAndNonPositiveLimitsReject PASSED
+
+AndroidProfileTest > explicitBudgetUsesDecimalBytesAndHeapCeiling PASSED
+
+AndroidProfileTest > staxRequestsFailRatherThanReturningEmptySuccess PASSED
+
+AndroidProfileTest > supportedXmlStreamStillPreservesContentAndSingleUse PASSED
+
+AndroidProfileTest > pkcs1KeysFailExplicitlyWithoutLoadingOptionalCrypto PASSED
+
+AndroidProfileTest > matchingCommonNameCannotOverrideWrongSan PASSED
+
+AndroidProfileTest > largeMultipliersCannotWrapToNegativeOrSmallLimits PASSED
+
+AndroidProfileTest > matchingSanWorksDespiteDifferentCommonName PASSED
+
+AndroidProfileTest > percentagesUseRuntimeHeapWithoutJmx PASSED
+
+AndroidProfileTest > commonNameAloneCannotAuthenticateServer PASSED
+
+AndroidProfileTest > absentLimitKeepsUpstreamSentinel PASSED
+
+BUILD SUCCESSFUL in 1s
+7 actionable tasks: 2 executed, 5 up-to-date

@@ -16,11 +16,13 @@ class MobileWorkflowTest {
     private lateinit var store: ConnectionStore
     private lateinit var queries: QueryStore
     private var original = emptyList<SavedConnection>()
+    private var originalTables = emptyList<TableFavorite>()
     private var originalQueries = emptyList<SavedQuery>()
     private lateinit var fixtureFile: File
     private var copy: File? = null
     private val fixture = object : org.junit.rules.ExternalResource() {
         override fun before() {
+            originalTables = TableFavoriteStore(context).load(); TableFavoriteStore(context).save(emptyList())
             store = ConnectionStore(context); original = store.load()
             queries = QueryStore(context); originalQueries = queries.load()
             fixtureFile = File(context.cacheDir, "mobile-workflow.db"); fixtureFile.delete()
@@ -32,15 +34,22 @@ class MobileWorkflowTest {
             store.save(listOf(SavedConnection(name = "移动工作流", kind = DatabaseKind.SQLITE, port = "0", database = id)))
             queries.save(emptyList())
         }
-        override fun after() { store.save(original); queries.save(originalQueries); fixtureFile.delete(); copy?.delete() }
+        override fun after() { TableFavoriteStore(context).save(originalTables); store.save(original); queries.save(originalQueries); fixtureFile.delete(); copy?.delete() }
     }
     private val compose = createAndroidComposeRule<MainActivity>()
     @get:Rule val rules: org.junit.rules.RuleChain = org.junit.rules.RuleChain.outerRule(fixture).around(compose)
     @Test fun savedConnectionOpensWorkbenchAndFavoriteLoadsWithoutExecuting() {
-            compose.onNodeWithText("打开连接").performScrollTo().performClick()
-            compose.onNode(isToggleable()).performScrollTo().performClick()
-            compose.onNodeWithText("连接数据库").performScrollTo().performClick()
+            compose.onNodeWithText("连接并进入工作台").performScrollTo().performClick()
             compose.waitUntil(10000) { compose.onAllNodesWithText("SQL 编辑器").fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(10000) { compose.onAllNodesWithTag("object-mobile_fixture").fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithTag("object-list").performScrollTo()
+            compose.onNodeWithTag("object-mobile_fixture").performClick()
+            compose.waitUntil(10000) { compose.onAllNodesWithText("收藏此表").fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithText("收藏此表").performScrollTo().performClick()
+            compose.waitUntil(5000) { TableFavoriteStore(context).load().size == 1 }
+            compose.onNodeWithText("收藏").performClick()
+            compose.onNodeWithText("打开收藏表").performScrollTo().performClick()
+            compose.waitUntil(10000) { compose.onAllNodesWithText("取消表收藏").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("SQL 编辑器").performScrollTo().performClick()
             compose.onNodeWithText("单条 SELECT 查询").performScrollTo().performTextReplacement("SELECT id, name FROM mobile_fixture")
             compose.onNodeWithText("执行查询").performScrollTo().performClick()

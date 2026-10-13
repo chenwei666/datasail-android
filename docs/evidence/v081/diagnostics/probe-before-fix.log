@@ -1,0 +1,54 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:processResources UP-TO-DATE
+> Task :core:processTestResources UP-TO-DATE
+> Task :core:compileKotlin
+> Task :core:compileJava NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar
+> Task :core:compileTestKotlin
+> Task :core:compileTestJava NO-SOURCE
+> Task :core:testClasses UP-TO-DATE
+
+> Task :core:test FAILED
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+ProbeRunnerTest > success checks actual returned values and closes all resources PASSED
+
+ProbeRunnerTest > close failure cannot masquerade as disconnected success PASSED
+
+ProbeRunnerTest > TLS connection failure never reports success or retries PASSED
+
+ProbeRunnerTest > cancel invokes driver cancel and close and reports unknown without retry PASSED
+
+ProbeRunnerTest > late cancellation cannot overwrite a terminal result PASSED
+
+ProbeRunnerTest > type corruption must fail instead of reporting success PASSED
+
+ProbeRunnerTest > closed runner rejects new work and destroys supplied credentials PASSED
+
+ProbeRunnerTest > cancel and cleanup close once and wait for actual close completion FAILED
+    java.lang.AssertionError at ProbeRunnerTest.kt:79
+
+8 tests completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:test'.
+> There were failing tests. See the report at: file:///workspace/datasail-android/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 3s
+10 actionable tasks: 5 executed, 5 up-to-date

@@ -96,6 +96,7 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
     if (state.kind.isKeyValue) { KeyValueWorkbench(model, state); return }
     var search by remember { mutableStateOf("") }
     var showEditor by remember { mutableStateOf(state.message.startsWith("已载入草稿")) }
+    val favorites by model.favoriteTables.collectAsStateWithLifecycle()
     val sql by model.draftSql.collectAsStateWithLifecycle()
     val settings by model.settings.collectAsStateWithLifecycle()
     var savingQuery by remember { mutableStateOf(false) }
@@ -103,13 +104,31 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
     var showStructure by remember { mutableStateOf(false) }
     var selected by remember(state.result) { mutableStateOf<Int?>(null) }
     var editing by remember(state.result) { mutableStateOf<MutationKind?>(null) }
-    Choice("数据库", state.catalogs, state.catalog, !state.busy, model::switchCatalog)
-    Choice("Schema", state.schemas, state.schema, !state.busy, model::tables)
-    Row { Switch(state.writable, { model.writable(it) }, modifier = Modifier.testTag("allow-session-write"), enabled = !state.busy && !state.production && state.kind == DatabaseKind.SQL_SERVER); Text("允许本次测试会话写入（单行确认）") }
-    OutlinedTextField(search, { search = it }, label = { Text("筛选表 / 视图") }, singleLine = true)
-    // Object chooser remains bounded; data rows are limited by the core to 100.
+    Text("数据库导航", style = MaterialTheme.typography.titleMedium)
+    Choice("数据库（${state.catalogs.size}）", state.catalogs, state.catalog, !state.busy, "catalog-picker", model::switchCatalog)
+    if (state.kind == DatabaseKind.POSTGRESQL) Text("PostgreSQL 当前连接只浏览此库；切换其它库请在连接页选择后连接。", style = MaterialTheme.typography.bodySmall)
+    Choice("Schema", state.schemas, state.schema, !state.busy, "schema-picker", model::tables)
+    TextButton(enabled = !state.busy, onClick = model::refreshNavigation) { Text("刷新数据库和对象") }
+    state.navigationIssues.forEach { Text(it, color = MaterialTheme.colorScheme.error) }
+    if (!state.busy && state.schemas.isEmpty()) Text("没有取得可见 Schema。请刷新，或检查账号的元数据权限；仍可使用 SQL 编辑器查询已知对象。")
+    OutlinedTextField(search, { search = it }, label = { Text("筛选表 / 视图") }, singleLine = true, modifier = Modifier.fillMaxWidth())
     val matching = state.tables.filter { it.name.contains(search, ignoreCase = true) }
-    Choice("表 / 视图（${matching.size}）", matching.map { it.name }, state.result?.tableSchema?.table?.name ?: "选择对象", !state.busy) { name -> model.page(matching.first { it.name == name }) }
+    Text("表 / 视图 · ${matching.size}", style = MaterialTheme.typography.titleSmall)
+    if (state.busy && state.tables.isEmpty()) Text("正在加载数据库对象…")
+    else if (matching.isEmpty()) Text(if (search.isNotBlank()) "没有匹配对象，请修改筛选条件。" else "当前 Schema 没有可见表或视图。可切换上方数据库 / Schema，或检查对象权限。")
+    else LazyColumn(Modifier.fillMaxWidth().heightIn(max = 240.dp).testTag("object-list")) {
+        itemsIndexed(matching, key = { _, table -> table.name }) { _, table ->
+            TextButton(enabled = !state.busy, onClick = { model.page(table) }, modifier = Modifier.fillMaxWidth().testTag("object-${table.name}"),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text(table.name, modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyLarge)
+                    Text("${if (table.view) "视图" else "表"} · ${table.schema}", modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodySmall)
+                }
+                Text("查看 ›")
+            }
+        }
+    }
+    Row { Switch(state.writable, { model.writable(it) }, modifier = Modifier.testTag("allow-session-write"), enabled = !state.busy && !state.production && state.kind == DatabaseKind.SQL_SERVER); Text("允许本次测试会话写入（单行确认）") }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         FilterChip(selected = !showEditor, onClick = { showEditor = false }, label = { Text("数据浏览") })
         FilterChip(selected = showEditor, onClick = { showEditor = true }, label = { Text("SQL 编辑器") })
@@ -130,6 +149,9 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
         Text("单字段最多 2048 字符 / 二进制 256 字节；超限值标记未加载。")
         if (result.rows.isEmpty()) Text("执行成功，没有记录。")
         result.tableSchema?.let { schema ->
+            TextButton(onClick = { model.toggleTableFavorite(schema.table) }, enabled = !state.busy) {
+                Text(if (favorites.any { it.matches(state.connectionKey, schema.table) }) "取消表收藏" else "收藏此表")
+            }
             Text(schema.readOnlyReason ?: "支持安全单行编辑；自增、计算列及主键修改禁用。")
             TextButton(onClick = { showStructure = !showStructure }) { Text(if (showStructure) "收起表结构" else "查看表结构") }
             if (showStructure) Text(schema.columns.joinToString("\n") { "${it.name} · ${it.typeName}(${it.size},${it.scale})${if (it.primaryKeyOrder > 0) " · PK" else ""}${if (it.nullable) " · NULL" else " · NOT NULL"}${if (it.identity) " · 自增" else ""}" })
@@ -161,9 +183,9 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
 }
 
 @Composable
-private fun Choice(label: String, values: List<String>, selected: String, enabled: Boolean, onSelect: (String) -> Unit) {
+private fun Choice(label: String, values: List<String>, selected: String, enabled: Boolean, tag: String, onSelect: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    Box { OutlinedButton(enabled = enabled && values.isNotEmpty(), onClick = { expanded = true }) { Text("$label：$selected") }
+    Box { OutlinedButton(modifier = Modifier.fillMaxWidth().testTag(tag), enabled = enabled && values.isNotEmpty(), onClick = { expanded = true }) { Text("$label：$selected") }
         DropdownMenu(expanded, { expanded = false }, modifier = Modifier.heightIn(max = 320.dp)) {
             values.forEach { value -> DropdownMenuItem(text = { Text(value) }, onClick = { expanded = false; onSelect(value) }) }
         }

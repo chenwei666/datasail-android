@@ -104,10 +104,10 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
     Spacer(Modifier.height(1.dp).bringIntoViewRequester(stageLocation))
     if (stage == "list") {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("我的连接", style = MaterialTheme.typography.titleLarge)
+            Text("历史连接", style = MaterialTheme.typography.titleLarge)
             Button(onClick = { stage = "type"; search = ""; category = "全部" }, enabled = !state.busy) { Text("新建连接") }
         }
-        Text("${DatabaseKind.entries.size} 种已接入引擎 · 本机连接管理 · 可选择加密保存密码。", style = MaterialTheme.typography.bodySmall)
+        Text("点击连接即可进入工作台；使用本机已保存的密码。仅连接你获准访问的服务器。", style = MaterialTheme.typography.bodySmall)
         if (saved.isEmpty()) {
             OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("从第一个数据库开始", style = MaterialTheme.typography.titleMedium)
@@ -128,6 +128,7 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                     }
                     Text("${connection.kind.label} · ${if (connection.production) "生产 · 只读" else "测试"}")
                     Text(if (connection.kind == DatabaseKind.SQLITE) "本机只读文件副本" else "${connection.host}:${connection.port} / ${connection.database}", style = MaterialTheme.typography.bodySmall)
+                    Button(enabled = !state.busy, onClick = { dismissInput(); model.connectSaved(connection) { edit(connection) } }, modifier = Modifier.fillMaxWidth()) { Text("连接并进入工作台") }
                     Row {
                         TextButton(enabled = !state.busy, onClick = { edit(connection) }) { Text("打开连接") }
                         TextButton(enabled = !state.busy, onClick = { edit(connection.copy(id = UUID.randomUUID().toString(), certificateTrust = null, name = (connection.name.take(77) + " 副本"))) }) { Text("复制") }

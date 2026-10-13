@@ -23,26 +23,29 @@ import java.util.Properties
 class SpreadsheetSqlServerUiTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
     private var original = emptyList<SavedConnection>()
+    private var originalFavorites = emptyList<TableFavorite>()
     private lateinit var connection: SavedConnection
     private lateinit var config: Properties
     private fun raw() = Credentials(config.getProperty("password").toCharArray()).use { JdbcConnector().connect(connection.profile(context), it) }
-    private fun value(): String? = raw().use { c -> c.createStatement().use { s -> s.executeQuery("SELECT code FROM dbo.ui_grid_v080 WHERE id=1").use { r -> assertTrue(r.next()); r.getString(1) } } }
+    private fun value(): String? = raw().use { c -> c.createStatement().use { s -> s.executeQuery("SELECT code FROM dbo.ui_grid_v081 WHERE id=1").use { r -> assertTrue(r.next()); r.getString(1) } } }
     private val fixture = object : ExternalResource() {
         override fun before() {
             val store = ConnectionStore(context); original = store.load()
+            originalFavorites = TableFavoriteStore(context).load(); TableFavoriteStore(context).save(emptyList())
             config = Properties().apply { File(context.filesDir, "fixture.properties").inputStream().use(::load) }
             val ca = store.importCa(Uri.fromFile(File(context.filesDir, "fixture-ca.pem")))
             connection = SavedConnection(name = "表格实连夹具", host = "localhost", port = config.getProperty("port"), database = "datasail_v020", username = "sa", ca = ca)
             raw().use { c -> c.createStatement().use { s ->
-                s.execute("DROP TABLE IF EXISTS dbo.ui_grid_v080")
-                s.execute("CREATE TABLE dbo.ui_grid_v080(id int PRIMARY KEY, code nvarchar(64) NULL, amount decimal(24,8) NULL, version rowversion)")
-                s.execute("INSERT dbo.ui_grid_v080(id,code,amount) VALUES(1,N'0007',1234567890123456.12345678)")
+                s.execute("DROP TABLE IF EXISTS dbo.ui_grid_v081")
+                s.execute("CREATE TABLE dbo.ui_grid_v081(id int PRIMARY KEY, code nvarchar(64) NULL, amount decimal(24,8) NULL, version rowversion)")
+                s.execute("INSERT dbo.ui_grid_v081(id,code,amount) VALUES(1,N'0007',1234567890123456.12345678)")
             } }
             store.save(listOf(connection))
         }
         override fun after() {
+            TableFavoriteStore(context).save(originalFavorites)
             ConnectionStore(context).save(original); PasswordVault(context).delete(connection.id)
-            raw().use { c -> c.createStatement().use { it.execute("DROP TABLE IF EXISTS dbo.ui_grid_v080") } }; config.clear()
+            raw().use { c -> c.createStatement().use { it.execute("DROP TABLE IF EXISTS dbo.ui_grid_v081") } }; config.clear()
         }
     }
     private val compose = createAndroidComposeRule<MainActivity>()
@@ -67,10 +70,7 @@ class SpreadsheetSqlServerUiTest {
         compose.waitUntil(10000) { PasswordVault(context).load(connection) != null }
         compose.runOnIdle { model.disconnect() }
         compose.onNodeWithText("连接", substring = false).performClick()
-        compose.onNodeWithText("打开连接").performScrollTo().performClick()
-        compose.waitUntil(10000) { compose.onNodeWithText("密码").fetchSemanticsNode().config[androidx.compose.ui.semantics.SemanticsProperties.EditableText].text.isNotEmpty() }
-        compose.onNodeWithTag("connection-authorization").performScrollTo().performClick()
-        compose.onNodeWithText("连接数据库").performScrollTo().performClick()
+        compose.onNodeWithText("连接并进入工作台").performScrollTo().performClick()
         compose.waitUntil(45000) { !model.state.value.busy }
         assertTrue(model.state.value.message, model.state.value.connected)
         compose.onNodeWithText("SQL 编辑器").performScrollTo().performClick()
@@ -78,11 +78,37 @@ class SpreadsheetSqlServerUiTest {
         compose.onNodeWithText("单条 SELECT 查询").performKeyInput { pressKey(Key.Tab) }
         compose.onNodeWithText("单条 SELECT 查询").assertTextContains("SELECT")
         compose.onNodeWithText("数据浏览").performScrollTo().performClick()
-        compose.runOnIdle { model.tables("dbo") }
-        compose.waitUntil(20000) { !model.state.value.busy && model.state.value.tables.any { it.name == "ui_grid_v080" } }
-        val table = model.state.value.tables.single { it.name == "ui_grid_v080" }
-        compose.runOnIdle { model.page(table) }
+        // Regression: no ViewModel calls to load metadata or open the first table.
+        assertEquals("dbo", model.state.value.schema)
+        compose.onNodeWithTag("catalog-picker").performScrollTo().performClick()
+        compose.onNodeWithText("master", substring = false).performClick()
+        compose.waitUntil(20000) { !model.state.value.busy && model.state.value.catalog == "master" }
+        assertNull(model.state.value.result)
+        compose.onNodeWithTag("catalog-picker").performScrollTo().performClick()
+        compose.onNodeWithText("datasail_v020", substring = false).performClick()
+        compose.waitUntil(20000) { !model.state.value.busy && model.state.value.tables.any { it.name == "ui_grid_v081" } }
+        compose.onNodeWithTag("schema-picker").performScrollTo().performClick()
+        compose.onNodeWithText("sys", substring = false).performClick()
+        compose.waitUntil(20000) { !model.state.value.busy && model.state.value.schema == "sys" }
+        assertTrue(model.state.value.tables.isEmpty())
+        compose.onNodeWithTag("schema-picker").performScrollTo().performClick()
+        compose.onNodeWithText("dbo", substring = false).performClick()
+        compose.waitUntil(20000) { !model.state.value.busy && model.state.value.tables.any { it.name == "ui_grid_v081" } }
+        val table = model.state.value.tables.single { it.name == "ui_grid_v081" }
+        compose.onNodeWithText("筛选表 / 视图").performScrollTo().performTextReplacement("ui_grid_v081")
+        compose.onNodeWithTag("object-list").performScrollTo()
+        compose.onNodeWithTag("object-ui_grid_v081").performClick()
         compose.waitUntil(20000) { !model.state.value.busy && model.state.value.result != null }
+        compose.onNodeWithText("收藏此表").performScrollTo().performClick()
+        compose.waitUntil(10000) { TableFavoriteStore(context).load().size == 1 }
+        compose.onNodeWithTag("catalog-picker").performScrollTo().performClick()
+        compose.onNodeWithText("master", substring = false).performClick()
+        compose.waitUntil(20000) { !model.state.value.busy && model.state.value.catalog == "master" }
+        compose.onNodeWithText("收藏").performClick()
+        compose.onNodeWithText("打开收藏表").performScrollTo().performClick()
+        compose.waitUntil(20000) { !model.state.value.busy && model.state.value.result?.tableSchema?.table?.name == "ui_grid_v081" }
+        assertEquals("datasail_v020", model.state.value.catalog)
+        assertFalse(model.state.value.writable)
         compose.onNodeWithTag("allow-session-write").performScrollTo().performClick()
         compose.waitUntil(10000) { model.state.value.writable && !model.state.value.busy }
         selectCell()
@@ -90,7 +116,7 @@ class SpreadsheetSqlServerUiTest {
         compose.runOnIdle { compose.activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
         compose.waitForIdle()
         compose.onRoot().captureToImage().asAndroidBitmap().let { bitmap ->
-            File(compose.activity.filesDir, "v080-grid.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            File(compose.activity.filesDir, "v081-grid.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
         compose.onNodeWithText("编辑单元格").performScrollTo().performClick()
         compose.onNodeWithTag("result-grid").performScrollTo()
@@ -113,7 +139,7 @@ class SpreadsheetSqlServerUiTest {
         compose.waitUntil(10000) { !model.state.value.busy && model.state.value.preview == null }
         assertNull(value())
         assertEquals(DbValue.Null, model.state.value.result!!.rows[0][1])
-        compose.runOnIdle { model.query("SELECT id, code FROM dbo.ui_grid_v080") }
+        compose.runOnIdle { model.query("SELECT id, code FROM dbo.ui_grid_v081") }
         compose.waitUntil(10000) { !model.state.value.busy && model.state.value.result != null }
         selectCell()
         compose.onNodeWithText("编辑单元格").performScrollTo().assertIsNotEnabled()
