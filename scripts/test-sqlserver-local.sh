@@ -51,6 +51,8 @@ keytool -importcert -noprompt -alias datasail-test-ca -file "$fixture/tls/ca.pem
 export DATASAIL_SQLSERVER_CONFIG="$fixture/database.properties"
 export DATASAIL_SQLSERVER_TRUSTSTORE="$fixture/trust.p12"
 ./gradlew :core:sqlServerTest --console=plain
+mkdir -p docs/evidence/v070/SQL_SERVER
+cp core/build/test-results/sqlServerTest/TEST-*.xml docs/evidence/v070/SQL_SERVER/
 
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
@@ -64,4 +66,5 @@ if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb shell am instrument -w -e class com.example.datasail.SqlServerDeviceTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  adb shell run-as com.example.datasail rm -f files/fixture.properties files/fixture-ca.pem
  rg -q 'OK \(2 tests\)' "$fixture/android-result.txt"
+ cp "$fixture/android-result.txt" "docs/evidence/v070/SQL_SERVER/android-${ANDROID_SERIAL}.txt"
 fi

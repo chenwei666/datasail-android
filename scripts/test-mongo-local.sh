@@ -55,7 +55,7 @@ docker exec --user 0 "$container" mongosh --quiet --host localhost --tls --tlsCA
 keytool -importcert -noprompt -alias fixture-ca -file "$fixture/server/ca.pem" -keystore "$fixture/trust.p12" -storepass changeit >/dev/null 2>&1
 export DATASAIL_TEST_CONFIG="$fixture/database.properties"
 export DATASAIL_TEST_TRUSTSTORE="$fixture/trust.p12"
-evidence="docs/evidence/v050/MONGODB"
+evidence="docs/evidence/v070/MONGODB"
 mkdir -p "$evidence"
 if [[ "${DATASAIL_SKIP_JVM:-0}" != 1 ]]; then
  ./gradlew :core:mongoTest --console=plain

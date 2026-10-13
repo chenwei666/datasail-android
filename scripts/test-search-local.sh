@@ -104,7 +104,7 @@ fault_port="$(cat "$fixture/fault-port")"
 printf 'port=%s\nfaultPort=%s\n' "$port" "$fault_port" >> "$fixture/database.properties"
 keytool -importcert -noprompt -alias fixture-ca -file "$fixture/server/ca.pem" -keystore "$fixture/trust.p12" -storepass changeit >/dev/null 2>&1
 export DATASAIL_TEST_CONFIG="$fixture/database.properties" DATASAIL_TEST_TRUSTSTORE="$fixture/trust.p12"
-evidence="docs/evidence/v060/$kind"; mkdir -p "$evidence"
+evidence="docs/evidence/v070/$kind"; mkdir -p "$evidence"
 cp "$fixture/server-version.json" "$evidence/"
 if [[ "${DATASAIL_SKIP_JVM:-0}" != 1 ]]; then
  ./gradlew :core:searchTest --console=plain

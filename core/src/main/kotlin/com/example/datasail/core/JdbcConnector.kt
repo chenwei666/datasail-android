@@ -13,7 +13,9 @@ interface SqlConnector {
 class JdbcConnector : SqlConnector {
     init { DriverLogging.disableRawMessages() }
     override val capabilities = SqlCapabilities()
-    override fun connect(profile: ConnectionProfile, credentials: Credentials): Connection {
+    override fun connect(profile: ConnectionProfile, credentials: Credentials): Connection = connect(profile, credentials, false)
+    fun connectServer(profile: ConnectionProfile, credentials: Credentials): Connection = connect(profile, credentials, true)
+    private fun connect(profile: ConnectionProfile, credentials: Credentials, discovery: Boolean): Connection {
         val driver: Driver = when (profile.kind) {
             DatabaseKind.SQL_SERVER -> com.microsoft.sqlserver.jdbc.SQLServerDriver()
             DatabaseKind.MYSQL, DatabaseKind.MARIADB -> org.mariadb.jdbc.Driver()
@@ -24,9 +26,12 @@ class JdbcConnector : SqlConnector {
             DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 使用 Android 本地文件连接")
         }
         val properties = safeProperties(profile)
+        if (discovery && profile.kind == DatabaseKind.SQL_SERVER) properties.remove("databaseName")
+        val targetUrl = if (discovery && profile.kind in setOf(DatabaseKind.MYSQL, DatabaseKind.MARIADB))
+            "jdbc:mariadb://${profile.host}:${profile.port}/" else url(profile)
         return credentials.usePassword { password ->
             properties.setProperty("password", password)
-            try { driver.connect(url(profile), properties) ?: throw SQLException("Unsupported JDBC scheme", "08001") }
+            try { driver.connect(targetUrl, properties) ?: throw SQLException("Unsupported JDBC scheme", "08001") }
             finally { properties.remove("password") }
         }
     }

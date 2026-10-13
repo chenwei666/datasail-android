@@ -58,3 +58,6 @@ find 游标使用 ITERATION 超时模式，用户阅读页面的空闲时间不�
 Android 缺少 Java SE SASL 接口；`sasl-android` 仅提供来源固定且未改动的 Apache Harmony SaslClient/SaslException 两个 API 类型，作为 app runtime 依赖。不是 SASL 算法重写，也不加载 provider；官方 MongoDB 驱动自己的 SCRAM 实现与服务端签名验证保持原样。GSSAPI/通用 Sasl 仍不支持，JVM 的通过不能代替 ART 认证验证。
 
 V0.6.0 增加 `SearchSession` / `HttpsSearchSession` / `SearchRunner` 与原生 `SearchWorkbench`，通过同一连接元数据选择能力，不使用 JDBC/SQL 或 Mongo BSON 解析搜索结果。HTTPS 固定同源路径、无重定向，Authorization 仅留当前会话；搜索操作只可选择当前元数据中的索引。`SearchJson` 是有界严格 JSON 语法树，保留数值 lexeme、拒绝重复键和非标准 JSON；`SearchPolicy` 仅允许受限 query 子句。`ClosingTlsContext` 复用严格 TrustManager 和可关闭 socket 注册表，12 秒 watchdog 使会话失效。单线程 runner 及 generation 防止取消后的旧结果恢复 UI。
+
+
+V0.7.0 的服务器发现通过独立 `DiscoveryRunner` / `ServerDatabaseDiscovery` 执行，不占用工作台会话，不给 UI 暴露驱动。扫描使用短期会话：SQL 固定目录查询、MongoDB 授权库查询、RESP INFO keyspace、HTTPS 索引列表，完成即关闭。JDBC server login 只在 SQL Server/MySQL/MariaDB 省略目标库，PostgreSQL 明确使用入口库；常规 workspace connect 行为保持。ViewModel 单独维护发现状态与世代，页面参数变化/取消/后台将旧回调作废；密码不在 StateFlow/SavedState/持久文件中，界面仅记忆当前输入。扫描失败和空列表独立显示，连接所选目标时再次认证而不保存后台凭据。

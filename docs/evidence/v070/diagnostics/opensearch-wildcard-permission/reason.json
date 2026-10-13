@@ -1,0 +1,4 @@
+{
+  "cause": "The pinned OpenSearch fixture grants reader index permissions only on synthetic. Its security plugin rejects CAT indices with explicit wildcard * (indices:monitor/settings/get), unlike the Elasticsearch fixture. The original test incorrectly assumed wildcard enumeration was always authorized.",
+  "resolution": "Add explicit permission-failure assertion for the broad scope, then require successful enumeration for the authorized scope; preserve the least-privilege role and application failure behavior. No app source or permission broadening."
+}

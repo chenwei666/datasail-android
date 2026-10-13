@@ -1,0 +1,285 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar UP-TO-DATE
+
+> Task :sasl-android:verifyUpstream
+Apache Harmony SASL API sources and notices match pinned upstream bytes.
+
+> Task :sasl-android:compileJava UP-TO-DATE
+> Task :sasl-android:processResources UP-TO-DATE
+> Task :sasl-android:classes UP-TO-DATE
+> Task :sasl-android:jar UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :app:mergeReleaseNativeLibs UP-TO-DATE
+> Task :app:stripReleaseDebugSymbols UP-TO-DATE
+> Task :app:extractReleaseNativeSymbolTables UP-TO-DATE
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:buildKotlinToolingMetadata UP-TO-DATE
+> Task :app:checkReleaseDuplicateClasses UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:checkReleaseAarMetadata UP-TO-DATE
+> Task :app:processReleaseNavigationResources UP-TO-DATE
+> Task :app:compileReleaseNavigationResources UP-TO-DATE
+> Task :app:generateReleaseResValues UP-TO-DATE
+> Task :app:mapReleaseSourceSetPaths UP-TO-DATE
+> Task :app:generateReleaseResources UP-TO-DATE
+> Task :app:mergeReleaseResources UP-TO-DATE
+> Task :app:packageReleaseResources UP-TO-DATE
+> Task :app:parseReleaseLocalResources UP-TO-DATE
+> Task :app:createReleaseCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksRelease UP-TO-DATE
+> Task :app:processReleaseMainManifest UP-TO-DATE
+> Task :app:processReleaseManifest UP-TO-DATE
+> Task :app:processReleaseManifestForPackage UP-TO-DATE
+> Task :app:processReleaseResources UP-TO-DATE
+> Task :app:javaPreCompileRelease UP-TO-DATE
+> Task :app:mergeReleaseArtProfile UP-TO-DATE
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:mergeReleaseStartupProfile UP-TO-DATE
+> Task :app:mergeReleaseShaders UP-TO-DATE
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets UP-TO-DATE
+> Task :app:compressReleaseAssets UP-TO-DATE
+> Task :app:extractReleaseVersionControlInfo UP-TO-DATE
+> Task :app:collectReleaseDependencies UP-TO-DATE
+> Task :app:sdkReleaseDependencyData UP-TO-DATE
+> Task :app:writeReleaseAppMetadata UP-TO-DATE
+> Task :app:writeReleaseSigningConfigVersions UP-TO-DATE
+> Task :app:compileReleaseKotlin
+> Task :app:compileReleaseJavaWithJavac NO-SOURCE
+> Task :app:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :app:processReleaseJavaRes UP-TO-DATE
+> Task :app:mergeReleaseJavaResource UP-TO-DATE
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:expandReleaseArtProfileWildcards
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:lintVitalReportRelease UP-TO-DATE
+> Task :app:lintVitalRelease
+
+> Task :app:minifyReleaseWithR8 FAILED
+ERROR: Missing classes detected while running R8. Please add the missing classes or apply additional keep rules that are generated in /workspace/datasail-android/app/build/outputs/mapping/release/missing_rules.txt.
+ERROR: R8: Missing class com.amazonaws.auth.AWSCredentials (referenced from: com.mongodb.AwsCredential com.mongodb.internal.authentication.AwsSdkV1CredentialSupplier.get())
+Missing class com.amazonaws.auth.AWSCredentialsProvider (referenced from: com.amazonaws.auth.AWSCredentialsProvider com.mongodb.internal.authentication.AwsSdkV1CredentialSupplier.provider and 1 other context)
+Missing class com.amazonaws.auth.AWSSessionCredentials (referenced from: com.mongodb.AwsCredential com.mongodb.internal.authentication.AwsSdkV1CredentialSupplier.get())
+Missing class com.amazonaws.auth.DefaultAWSCredentialsProviderChain (referenced from: void com.mongodb.internal.authentication.AwsSdkV1CredentialSupplier.<init>())
+Missing class com.azure.core.credential.AccessToken (referenced from: reactor.core.publisher.Mono com.microsoft.sqlserver.jdbc.KeyVaultTokenCredential.authenticateWithConfidentialClient(com.azure.core.credential.TokenRequestContext) and 7 other contexts)
+Missing class com.azure.core.credential.TokenCredential (referenced from: com.azure.core.credential.TokenCredential com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.credential and 6 other contexts)
+Missing class com.azure.core.credential.TokenRequestContext (referenced from: void com.microsoft.sqlserver.jdbc.KeyVaultCustomCredentialPolicy.<init>(com.microsoft.sqlserver.jdbc.KeyVaultTokenCredential) and 8 other contexts)
+Missing class com.azure.core.http.HttpPipeline (referenced from: com.azure.core.http.HttpPipeline com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.keyVaultPipeline and 3 other contexts)
+Missing class com.azure.core.http.HttpPipelineBuilder (referenced from: com.azure.core.http.HttpPipeline com.microsoft.sqlserver.jdbc.KeyVaultHttpPipelineBuilder.buildPipeline())
+Missing class com.azure.core.http.policy.HttpLogOptions (referenced from: com.azure.core.http.policy.HttpLogOptions com.microsoft.sqlserver.jdbc.KeyVaultHttpPipelineBuilder.httpLogOptions and 2 other contexts)
+Missing class com.azure.core.http.policy.HttpLoggingPolicy (referenced from: com.azure.core.http.HttpPipeline com.microsoft.sqlserver.jdbc.KeyVaultHttpPipelineBuilder.buildPipeline())
+Missing class com.azure.core.http.policy.HttpPipelinePolicy (referenced from: com.azure.core.http.HttpPipeline com.microsoft.sqlserver.jdbc.KeyVaultHttpPipelineBuilder.buildPipeline() and 1 other context)
+Missing class com.azure.core.http.policy.HttpPolicyProviders (referenced from: com.azure.core.http.HttpPipeline com.microsoft.sqlserver.jdbc.KeyVaultHttpPipelineBuilder.buildPipeline())
+Missing class com.azure.core.http.policy.RetryPolicy (referenced from: com.azure.core.http.policy.RetryPolicy com.microsoft.sqlserver.jdbc.KeyVaultHttpPipelineBuilder.retryPolicy and 1 other context)
+Missing class com.azure.identity.DefaultAzureCredential (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerSecurityUtility.getDefaultAzureCredAuthToken(java.lang.String, java.lang.String, int))
+Missing class com.azure.identity.DefaultAzureCredentialBuilder (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerSecurityUtility.getDefaultAzureCredAuthToken(java.lang.String, java.lang.String, int))
+Missing class com.azure.identity.ManagedIdentityCredential (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.<init>() and 2 other contexts)
+Missing class com.azure.identity.ManagedIdentityCredentialBuilder (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.<init>() and 2 other contexts)
+Missing class com.azure.security.keyvault.keys.KeyClient (referenced from: com.azure.security.keyvault.keys.KeyClient com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.getKeyClient(java.lang.String) and 1 other context)
+Missing class com.azure.security.keyvault.keys.KeyClientBuilder (referenced from: com.azure.security.keyvault.keys.KeyClient com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.getKeyClient(java.lang.String))
+Missing class com.azure.security.keyvault.keys.cryptography.CryptographyClient (referenced from: byte[] com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.azureKeyVaultSignHashedData(byte[], java.lang.String) and 3 other contexts)
+Missing class com.azure.security.keyvault.keys.cryptography.CryptographyClientBuilder (referenced from: com.azure.security.keyvault.keys.cryptography.CryptographyClient com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.getCryptographyClient(java.lang.String))
+Missing class com.azure.security.keyvault.keys.cryptography.models.KeyWrapAlgorithm (referenced from: byte[] com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.azureKeyVaultUnWrap(java.lang.String, com.azure.security.keyvault.keys.cryptography.models.KeyWrapAlgorithm, byte[]) and 2 other contexts)
+Missing class com.azure.security.keyvault.keys.cryptography.models.SignResult (referenced from: byte[] com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.azureKeyVaultSignHashedData(byte[], java.lang.String))
+Missing class com.azure.security.keyvault.keys.cryptography.models.SignatureAlgorithm (referenced from: byte[] com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.azureKeyVaultSignHashedData(byte[], java.lang.String) and 1 other context)
+Missing class com.azure.security.keyvault.keys.cryptography.models.UnwrapResult (referenced from: byte[] com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.azureKeyVaultUnWrap(java.lang.String, com.azure.security.keyvault.keys.cryptography.models.KeyWrapAlgorithm, byte[]))
+Missing class com.azure.security.keyvault.keys.cryptography.models.VerifyResult (referenced from: boolean com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.azureKeyVaultVerifySignature(byte[], byte[], java.lang.String))
+Missing class com.azure.security.keyvault.keys.models.JsonWebKey (referenced from: int com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.getAKVKeySize(java.lang.String))
+Missing class com.azure.security.keyvault.keys.models.KeyType (referenced from: com.azure.security.keyvault.keys.models.KeyVaultKey com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.getKeyVaultKey(java.lang.String))
+Missing class com.azure.security.keyvault.keys.models.KeyVaultKey (referenced from: int com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider.getAKVKeySize(java.lang.String) and 2 other contexts)
+Missing class com.github.luben.zstd.Zstd (referenced from: void com.mongodb.internal.connection.ZstdCompressor.compress(java.util.List, org.bson.io.BsonOutput))
+Missing class com.github.luben.zstd.ZstdInputStream (referenced from: java.io.InputStream com.mongodb.internal.connection.ZstdCompressor.getInputStream(java.io.InputStream))
+Missing class com.google.gson.JsonArray (referenced from: com.google.gson.JsonArray com.microsoft.sqlserver.jdbc.JWTCertificateEntry.certificates and 3 other contexts)
+Missing class com.google.gson.JsonElement (referenced from: void com.microsoft.sqlserver.jdbc.AASAttestationResponse.validateToken(java.lang.String, byte[]))
+Missing class com.google.gson.JsonObject (referenced from: void com.microsoft.sqlserver.jdbc.AASAttestationResponse.validateToken(java.lang.String, byte[]))
+Missing class com.google.gson.JsonParser (referenced from: void com.microsoft.sqlserver.jdbc.AASAttestationResponse.validateToken(java.lang.String, byte[]))
+Missing class com.microsoft.aad.msal4j.AbstractClientApplicationBase$Builder (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthToken(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, java.lang.String, int) and 4 other contexts)
+Missing class com.microsoft.aad.msal4j.ClientCredentialFactory (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthTokenPrincipal(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, java.lang.String, int) and 1 other context)
+Missing class com.microsoft.aad.msal4j.ClientCredentialParameters$ClientCredentialParametersBuilder (referenced from: java.util.concurrent.CompletableFuture com.microsoft.sqlserver.jdbc.KeyVaultTokenCredential.lambda$authenticateWithConfidentialClient$5(com.azure.core.credential.TokenRequestContext) and 2 other contexts)
+Missing class com.microsoft.aad.msal4j.ClientCredentialParameters (referenced from: java.util.concurrent.CompletableFuture com.microsoft.sqlserver.jdbc.KeyVaultTokenCredential.lambda$authenticateWithConfidentialClient$5(com.azure.core.credential.TokenRequestContext) and 2 other contexts)
+Missing class com.microsoft.aad.msal4j.ConfidentialClientApplication$Builder (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthTokenPrincipal(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, java.lang.String, int) and 1 other context)
+Missing class com.microsoft.aad.msal4j.ConfidentialClientApplication (referenced from: com.microsoft.aad.msal4j.ConfidentialClientApplication com.microsoft.sqlserver.jdbc.KeyVaultTokenCredential.confidentialClientApplication and 4 other contexts)
+Missing class com.microsoft.aad.msal4j.IAccount (referenced from: com.microsoft.aad.msal4j.IAccount com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getAccountByUsername(java.util.Set, java.lang.String) and 5 other contexts)
+Missing class com.microsoft.aad.msal4j.IAuthenticationResult (referenced from: reactor.core.publisher.Mono com.microsoft.sqlserver.jdbc.KeyVaultTokenCredential.authenticateWithConfidentialClient(com.azure.core.credential.TokenRequestContext) and 8 other contexts)
+Missing class com.microsoft.aad.msal4j.IClientCertificate (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthTokenPrincipalCertificate(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, int))
+Missing class com.microsoft.aad.msal4j.IClientCredential (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthTokenPrincipal(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, java.lang.String, int) and 1 other context)
+Missing class com.microsoft.aad.msal4j.IClientSecret (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthTokenPrincipal(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, java.lang.String, int))
+Missing class com.microsoft.aad.msal4j.ITokenCacheAccessAspect (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthToken(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, java.lang.String, int) and 5 other contexts)
+Missing class com.microsoft.aad.msal4j.IntegratedWindowsAuthenticationParameters$IntegratedWindowsAuthenticationParametersBuilder (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthTokenIntegrated(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, int))
+Missing class com.microsoft.aad.msal4j.IntegratedWindowsAuthenticationParameters (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthTokenIntegrated(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, int))
+Missing class com.microsoft.aad.msal4j.InteractionRequiredExceptionReason (referenced from: java.lang.String com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.lambda$getSqlFedAuthTokenInteractive$0(com.microsoft.aad.msal4j.MsalInteractionRequiredException))
+Missing class com.microsoft.aad.msal4j.InteractiveRequestParameters$InteractiveRequestParametersBuilder (referenced from: com.microsoft.aad.msal4j.InteractiveRequestParameters com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.buildInteractiveRequestParameters(java.net.URI, java.lang.String, java.lang.String))
+Missing class com.microsoft.aad.msal4j.InteractiveRequestParameters (referenced from: com.microsoft.aad.msal4j.InteractiveRequestParameters com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.buildInteractiveRequestParameters(java.net.URI, java.lang.String, java.lang.String) and 1 other context)
+Missing class com.microsoft.aad.msal4j.MsalInteractionRequiredException (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthTokenInteractive(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, int) and 1 other context)
+Missing class com.microsoft.aad.msal4j.PublicClientApplication$Builder (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthToken(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, java.lang.String, int) and 2 other contexts)
+Missing class com.microsoft.aad.msal4j.PublicClientApplication (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.<clinit>() and 3 other contexts)
+Missing class com.microsoft.aad.msal4j.SilentParameters$SilentParametersBuilder (referenced from: java.util.concurrent.CompletableFuture com.microsoft.sqlserver.jdbc.KeyVaultTokenCredential.lambda$authenticateWithConfidentialClientCache$2(com.azure.core.credential.TokenRequestContext) and 1 other context)
+Missing class com.microsoft.aad.msal4j.SilentParameters (referenced from: java.util.concurrent.CompletableFuture com.microsoft.sqlserver.jdbc.KeyVaultTokenCredential.lambda$authenticateWithConfidentialClientCache$2(com.azure.core.credential.TokenRequestContext) and 1 other context)
+Missing class com.microsoft.aad.msal4j.SystemBrowserOptions$SystemBrowserOptionsBuilder (referenced from: com.microsoft.aad.msal4j.InteractiveRequestParameters com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.buildInteractiveRequestParameters(java.net.URI, java.lang.String, java.lang.String))
+Missing class com.microsoft.aad.msal4j.SystemBrowserOptions (referenced from: com.microsoft.aad.msal4j.InteractiveRequestParameters com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.buildInteractiveRequestParameters(java.net.URI, java.lang.String, java.lang.String))
+Missing class com.microsoft.aad.msal4j.UserNamePasswordParameters$UserNamePasswordParametersBuilder (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthToken(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, java.lang.String, int))
+Missing class com.microsoft.aad.msal4j.UserNamePasswordParameters (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthToken(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, java.lang.String, java.lang.String, int))
+Missing class com.mongodb.crypt.capi.MongoCryptException (referenced from: org.bson.RawBsonDocument com.mongodb.client.internal.Crypt.decrypt(org.bson.RawBsonDocument, com.mongodb.internal.time.Timeout) and 1 other context)
+Missing class com.mongodb.internal.crypt.capi.MongoCrypt (referenced from: com.mongodb.internal.crypt.capi.MongoCrypt com.mongodb.client.internal.Crypt.mongoCrypt and 6 other contexts)
+Missing class com.mongodb.internal.crypt.capi.MongoCryptContext$State (referenced from: void com.mongodb.client.internal.Crypt$1.<clinit>() and 1 other context)
+Missing class com.mongodb.internal.crypt.capi.MongoCryptContext (referenced from: void com.mongodb.client.internal.Crypt.collInfo(com.mongodb.internal.crypt.capi.MongoCryptContext, java.lang.String, com.mongodb.internal.time.Timeout) and 7 other contexts)
+Missing class com.mongodb.internal.crypt.capi.MongoCryptOptions$Builder (referenced from: com.mongodb.internal.crypt.capi.MongoCryptOptions com.mongodb.internal.capi.MongoCryptHelper.createMongoCryptOptions(java.util.Map, boolean, java.util.List, java.util.Map, java.util.Map, java.util.Map, java.lang.Long))
+Missing class com.mongodb.internal.crypt.capi.MongoCryptOptions (referenced from: com.mongodb.client.internal.Crypt com.mongodb.client.internal.Crypts.createCrypt(com.mongodb.MongoClientSettings, com.mongodb.AutoEncryptionSettings) and 2 other contexts)
+Missing class com.mongodb.internal.crypt.capi.MongoCrypts (referenced from: com.mongodb.client.internal.Crypt com.mongodb.client.internal.Crypts.createCrypt(com.mongodb.MongoClientSettings, com.mongodb.AutoEncryptionSettings))
+Missing class com.mongodb.internal.crypt.capi.MongoKeyDecryptor (referenced from: void com.mongodb.client.internal.Crypt.decryptKey(com.mongodb.internal.crypt.capi.MongoKeyDecryptor, com.mongodb.internal.time.Timeout) and 1 other context)
+Missing class com.sun.jna.LastErrorException (referenced from: int org.mariadb.jdbc.client.socket.impl.UnixDomainSocket$UnixSocketInputStream.read(byte[], int, int) and 6 other contexts)
+Missing class com.sun.jna.Native (referenced from: void org.mariadb.jdbc.client.socket.impl.UnixDomainSocket.<clinit>() and 1 other context)
+Missing class com.sun.jna.Platform (referenced from: org.mariadb.jdbc.client.socket.impl.SocketHandlerFunction org.mariadb.jdbc.client.socket.impl.SocketUtility.getSocketHandler() and 3 other contexts)
+Missing class com.sun.jna.Structure (referenced from: void org.mariadb.jdbc.client.socket.impl.UnixDomainSocket$SockAddr.<init>(java.lang.String) and 1 other context)
+Missing class com.sun.jna.platform.win32.Kernel32 (referenced from: void org.mariadb.jdbc.client.socket.impl.NamedPipeSocket.connect(java.net.SocketAddress, int))
+Missing class com.sun.jna.platform.win32.Sspi$CtxtHandle (referenced from: void org.mariadb.jdbc.plugin.authentication.addon.gssapi.WindowsNativeSspiAuthentication.authenticate(org.mariadb.jdbc.client.socket.Writer, org.mariadb.jdbc.client.socket.Reader, java.lang.String, java.lang.String))
+Missing class com.sun.jna.platform.win32.Sspi$SecBufferDesc (referenced from: void org.mariadb.jdbc.plugin.authentication.addon.gssapi.WindowsNativeSspiAuthentication.authenticate(org.mariadb.jdbc.client.socket.Writer, org.mariadb.jdbc.client.socket.Reader, java.lang.String, java.lang.String))
+Missing class com.sun.jna.platform.win32.SspiUtil$ManagedSecBufferDesc (referenced from: void org.mariadb.jdbc.plugin.authentication.addon.gssapi.WindowsNativeSspiAuthentication.authenticate(org.mariadb.jdbc.client.socket.Writer, org.mariadb.jdbc.client.socket.Reader, java.lang.String, java.lang.String))
+Missing class io.netty.bootstrap.AbstractBootstrap (referenced from: void com.mongodb.internal.connection.netty.NettyStream.initializeChannel(com.mongodb.internal.connection.OperationContext, com.mongodb.connection.AsyncCompletionHandler, java.util.Queue))
+Missing class io.netty.bootstrap.Bootstrap (referenced from: void com.mongodb.internal.connection.netty.NettyStream.initializeChannel(com.mongodb.internal.connection.OperationContext, com.mongodb.connection.AsyncCompletionHandler, java.util.Queue))
+Missing class io.netty.buffer.ByteBuf (referenced from: io.netty.buffer.ByteBuf com.mongodb.internal.connection.netty.NettyByteBuf.proxied and 40 other contexts)
+Missing class io.netty.buffer.ByteBufAllocator (referenced from: io.netty.buffer.ByteBufAllocator com.mongodb.internal.connection.netty.NettyStream.allocator and 12 other contexts)
+Missing class io.netty.buffer.CompositeByteBuf (referenced from: void com.mongodb.internal.connection.netty.NettyStream.readAsync(int, com.mongodb.connection.AsyncCompletionHandler, long) and 1 other context)
+Missing class io.netty.buffer.PooledByteBufAllocator (referenced from: void com.mongodb.internal.connection.netty.NettyStream.writeAsync(java.util.List, com.mongodb.internal.connection.OperationContext, com.mongodb.connection.AsyncCompletionHandler))
+Missing class io.netty.channel.Channel (referenced from: io.netty.channel.Channel com.mongodb.internal.connection.netty.NettyStream.channel and 3 other contexts)
+Missing class io.netty.channel.ChannelFuture (referenced from: io.netty.channel.ChannelFuture com.mongodb.internal.connection.netty.NettyStream$OpenChannelFutureListener.channelFuture and 4 other contexts)
+Missing class io.netty.channel.ChannelFutureListener (referenced from: void com.mongodb.internal.connection.netty.NettyStream.writeAsync(java.util.List, com.mongodb.internal.connection.OperationContext, com.mongodb.connection.AsyncCompletionHandler) and 1 other context)
+Missing class io.netty.channel.ChannelHandler (referenced from: java.util.Optional com.mongodb.internal.connection.netty.NettyStream.addWriteTimeoutHandler(long) and 1 other context)
+Missing class io.netty.channel.ChannelHandlerContext (referenced from: io.netty.channel.ChannelHandlerContext com.mongodb.internal.connection.netty.NettyStream$ReadTimeoutTask.ctx and 1 other context)
+Missing class io.netty.channel.ChannelInitializer (referenced from: void com.mongodb.internal.connection.netty.NettyStream$1.<init>(com.mongodb.internal.connection.netty.NettyStream) and 1 other context)
+Missing class io.netty.channel.ChannelOption (referenced from: void com.mongodb.internal.connection.netty.NettyStream.initializeChannel(com.mongodb.internal.connection.OperationContext, com.mongodb.connection.AsyncCompletionHandler, java.util.Queue))
+Missing class io.netty.channel.ChannelPipeline (referenced from: java.util.Optional com.mongodb.internal.connection.netty.NettyStream.addWriteTimeoutHandler(long))
+Missing class io.netty.channel.EventLoopGroup (referenced from: io.netty.channel.EventLoopGroup com.mongodb.internal.connection.netty.NettyStream.workerGroup and 12 other contexts)
+Missing class io.netty.channel.nio.NioEventLoopGroup (referenced from: void com.mongodb.internal.connection.netty.NettyStreamFactoryFactory.<init>(com.mongodb.internal.connection.netty.NettyStreamFactoryFactory$Builder))
+Missing class io.netty.channel.socket.nio.NioSocketChannel (referenced from: void com.mongodb.internal.connection.netty.NettyStreamFactoryFactory.<init>(com.mongodb.internal.connection.netty.NettyStreamFactoryFactory$Builder))
+Missing class io.netty.handler.ssl.SslContext (referenced from: io.netty.handler.ssl.SslContext com.mongodb.internal.connection.netty.NettyStream.sslContext and 10 other contexts)
+Missing class io.netty.handler.timeout.WriteTimeoutHandler (referenced from: java.util.Optional com.mongodb.internal.connection.netty.NettyStream.addWriteTimeoutHandler(long))
+Missing class io.netty.util.concurrent.EventExecutor (referenced from: java.util.concurrent.ScheduledFuture com.mongodb.internal.connection.netty.NettyStream$ReadTimeoutTask.schedule(long))
+Missing class io.netty.util.concurrent.Future (referenced from: void com.mongodb.internal.connection.netty.NettyStreamFactoryFactory.close())
+Missing class io.netty.util.concurrent.GenericFutureListener (referenced from: void com.mongodb.internal.connection.netty.NettyStream.initializeChannel(com.mongodb.internal.connection.OperationContext, com.mongodb.connection.AsyncCompletionHandler, java.util.Queue) and 1 other context)
+Missing class io.netty.util.concurrent.ScheduledFuture (referenced from: java.util.concurrent.ScheduledFuture com.mongodb.internal.connection.netty.NettyStream$ReadTimeoutTask.schedule(long))
+Missing class java.beans.Transient (referenced from: com.microsoft.sqlserver.jdbc.SQLServerError com.microsoft.sqlserver.jdbc.SQLServerError.getSQLServerMessage())
+Missing class java.lang.management.ManagementFactory (referenced from: void org.mariadb.jdbc.pool.Pool.registerJmx() and 2 other contexts)
+Missing class java.lang.management.MemoryMXBean (referenced from: long org.postgresql.util.internal.JvmHeapAccess.maxHeapBytes())
+Missing class java.lang.management.MemoryUsage (referenced from: long org.postgresql.util.internal.JvmHeapAccess.maxHeapBytes())
+Missing class java.sql.SQLType (referenced from: void org.mariadb.jdbc.BaseCallableStatement.registerOutParameter(int, java.sql.SQLType))
+Missing class javax.annotation.Nullable (referenced from: java.lang.Object org.bson.assertions.Assertions.assertNotNull(java.lang.Object) and 1 other context)
+Missing class javax.management.MBeanServer (referenced from: void org.mariadb.jdbc.pool.Pool.registerJmx() and 1 other context)
+Missing class javax.management.ObjectInstance (referenced from: void org.mariadb.jdbc.pool.Pool.registerJmx())
+Missing class javax.management.ObjectName (referenced from: void org.mariadb.jdbc.pool.Pool.registerJmx() and 1 other context)
+Missing class javax.naming.InvalidNameException (referenced from: java.lang.String org.mariadb.jdbc.client.tls.HostnameVerifier.extractCommonName(java.lang.String) and 1 other context)
+Missing class javax.naming.NameNotFoundException (referenced from: boolean com.microsoft.sqlserver.jdbc.dns.DNSKerberosLocator.isRealmValid(java.lang.String) and 1 other context)
+Missing class javax.naming.NamingEnumeration (referenced from: java.util.Set com.microsoft.sqlserver.jdbc.dns.DNSUtilities.findSrvRecords(java.lang.String) and 1 other context)
+Missing class javax.naming.NamingException (referenced from: boolean com.microsoft.sqlserver.jdbc.SSPIAuthentication$1.isRealmValid(java.lang.String) and 2 other contexts)
+Missing class javax.naming.directory.Attribute (referenced from: java.util.Set com.microsoft.sqlserver.jdbc.dns.DNSUtilities.findSrvRecords(java.lang.String) and 1 other context)
+Missing class javax.naming.directory.Attributes (referenced from: java.util.Set com.microsoft.sqlserver.jdbc.dns.DNSUtilities.findSrvRecords(java.lang.String) and 1 other context)
+Missing class javax.naming.directory.DirContext (referenced from: java.util.Set com.microsoft.sqlserver.jdbc.dns.DNSUtilities.findSrvRecords(java.lang.String))
+Missing class javax.naming.directory.InitialDirContext (referenced from: java.util.Set com.microsoft.sqlserver.jdbc.dns.DNSUtilities.findSrvRecords(java.lang.String) and 2 other contexts)
+Missing class javax.naming.ldap.LdapName (referenced from: java.lang.String org.mariadb.jdbc.client.tls.HostnameVerifier.extractCommonName(java.lang.String) and 1 other context)
+Missing class javax.naming.ldap.Rdn (referenced from: java.lang.String org.mariadb.jdbc.client.tls.HostnameVerifier.extractCommonName(java.lang.String) and 1 other context)
+Missing class javax.security.auth.callback.NameCallback (referenced from: void com.microsoft.sqlserver.jdbc.KerbCallback.handle(javax.security.auth.callback.Callback[]) and 2 other contexts)
+Missing class javax.security.auth.callback.TextOutputCallback (referenced from: void org.postgresql.gss.GSSCallbackHandler.handle(javax.security.auth.callback.Callback[]))
+Missing class javax.security.auth.kerberos.KerberosPrincipal (referenced from: com.microsoft.sqlserver.jdbc.SqlAuthenticationToken com.microsoft.sqlserver.jdbc.SQLServerMSAL4JUtils.getSqlFedAuthTokenIntegrated(com.microsoft.sqlserver.jdbc.SQLServerConnection$SqlFedAuthInfo, java.lang.String, int) and 1 other context)
+Missing class javax.security.auth.kerberos.KerberosTicket (referenced from: boolean com.mongodb.KerberosSubjectProvider.needNewSubject(javax.security.auth.Subject))
+Missing class javax.security.auth.login.AppConfigurationEntry$LoginModuleControlFlag (referenced from: javax.security.auth.login.AppConfigurationEntry[] com.microsoft.sqlserver.jdbc.JaasConfiguration.generateDefaultConfiguration() and 1 other context)
+Missing class javax.security.auth.login.AppConfigurationEntry (referenced from: javax.security.auth.login.AppConfigurationEntry[] com.microsoft.sqlserver.jdbc.JaasConfiguration.defaultValue and 3 other contexts)
+Missing class javax.security.auth.login.Configuration (referenced from: javax.security.auth.login.Configuration com.microsoft.sqlserver.jdbc.JaasConfiguration.delegate and 3 other contexts)
+Missing class javax.security.auth.login.LoginContext (referenced from: javax.security.auth.login.LoginContext com.microsoft.sqlserver.jdbc.KerbAuthentication.lc and 5 other contexts)
+Missing class javax.security.sasl.Sasl (referenced from: javax.security.sasl.SaslClient com.mongodb.internal.connection.GSSAPIAuthenticator.createSaslClient(com.mongodb.ServerAddress, com.mongodb.internal.connection.OperationContext) and 1 other context)
+Missing class javax.sql.XAConnection (referenced from: org.mariadb.jdbc.MariaDbPoolConnection)
+Missing class javax.xml.stream.XMLInputFactory (referenced from: javax.xml.transform.Source org.postgresql.jdbc.PgSQLXML.getSource(java.lang.Class) and 4 other contexts)
+Missing class javax.xml.stream.XMLOutputFactory (referenced from: javax.xml.transform.Result org.postgresql.jdbc.PgSQLXML.setResult(java.lang.Class) and 3 other contexts)
+Missing class javax.xml.stream.XMLStreamException (referenced from: javax.xml.transform.Result org.postgresql.jdbc.PgSQLXML.setResult(java.lang.Class))
+Missing class javax.xml.stream.XMLStreamReader (referenced from: javax.xml.transform.Source org.postgresql.jdbc.PgSQLXML.getSource(java.lang.Class))
+Missing class javax.xml.stream.XMLStreamWriter (referenced from: javax.xml.transform.Result org.postgresql.jdbc.PgSQLXML.setResult(java.lang.Class))
+Missing class javax.xml.transform.stax.StAXResult (referenced from: javax.xml.transform.Result org.postgresql.jdbc.PgSQLXML.setResult(java.lang.Class))
+Missing class javax.xml.transform.stax.StAXSource (referenced from: javax.xml.transform.Source org.postgresql.jdbc.PgSQLXML.getSource(java.lang.Class))
+Missing class jnr.unixsocket.UnixSocket (referenced from: java.net.Socket com.mongodb.internal.connection.UnixSocketChannelStream.initializeSocket(com.mongodb.internal.connection.OperationContext))
+Missing class jnr.unixsocket.UnixSocketAddress (referenced from: java.net.Socket com.mongodb.internal.connection.UnixSocketChannelStream.initializeSocket(com.mongodb.internal.connection.OperationContext))
+Missing class jnr.unixsocket.UnixSocketChannel (referenced from: java.net.Socket com.mongodb.internal.connection.UnixSocketChannelStream.initializeSocket(com.mongodb.internal.connection.OperationContext))
+Missing class org.antlr.v4.runtime.ANTLRErrorListener (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerFMTQuery.<init>(java.lang.String))
+Missing class org.antlr.v4.runtime.BaseErrorListener (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerErrorListener.<init>() and 1 other context)
+Missing class org.antlr.v4.runtime.CharStream (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerFMTQuery.<init>(java.lang.String) and 1 other context)
+Missing class org.antlr.v4.runtime.CharStreams (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerFMTQuery.<init>(java.lang.String))
+Missing class org.antlr.v4.runtime.Lexer (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerLexer.<init>(org.antlr.v4.runtime.CharStream) and 1 other context)
+Missing class org.antlr.v4.runtime.RuntimeMetaData (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerLexer.<clinit>())
+Missing class org.antlr.v4.runtime.Token (referenced from: java.lang.String com.microsoft.sqlserver.jdbc.SQLServerParser.findColumnAfterParameter(com.microsoft.sqlserver.jdbc.SQLServerTokenIterator) and 11 other contexts)
+Missing class org.antlr.v4.runtime.Vocabulary (referenced from: org.antlr.v4.runtime.Vocabulary com.microsoft.sqlserver.jdbc.SQLServerLexer.VOCABULARY and 1 other context)
+Missing class org.antlr.v4.runtime.VocabularyImpl (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerLexer.<clinit>())
+Missing class org.antlr.v4.runtime.atn.ATN (referenced from: org.antlr.v4.runtime.atn.ATN com.microsoft.sqlserver.jdbc.SQLServerLexer._ATN and 2 other contexts)
+Missing class org.antlr.v4.runtime.atn.ATNDeserializer (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerLexer.<clinit>())
+Missing class org.antlr.v4.runtime.atn.ATNSimulator (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerLexer.<init>(org.antlr.v4.runtime.CharStream))
+Missing class org.antlr.v4.runtime.atn.DecisionState (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerLexer.<clinit>())
+Missing class org.antlr.v4.runtime.atn.LexerATNSimulator (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerLexer.<init>(org.antlr.v4.runtime.CharStream))
+Missing class org.antlr.v4.runtime.atn.PredictionContextCache (referenced from: org.antlr.v4.runtime.atn.PredictionContextCache com.microsoft.sqlserver.jdbc.SQLServerLexer._sharedContextCache and 2 other contexts)
+Missing class org.antlr.v4.runtime.dfa.DFA (referenced from: org.antlr.v4.runtime.dfa.DFA[] com.microsoft.sqlserver.jdbc.SQLServerLexer._decisionToDFA and 2 other contexts)
+Missing class org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters (referenced from: byte[] org.mariadb.jdbc.plugin.authentication.standard.ParsecPasswordPluginTool.process(byte[]))
+Missing class org.bouncycastle.crypto.params.Ed25519PublicKeyParameters (referenced from: byte[] org.mariadb.jdbc.plugin.authentication.standard.ParsecPasswordPluginTool.process(byte[]))
+Missing class org.bouncycastle.jce.provider.BouncyCastleProvider (referenced from: void com.microsoft.sqlserver.jdbc.SQLServerBouncyCastleLoader.loadBouncyCastle())
+Missing class org.bson.codecs.kotlin.ArrayCodecProvider (referenced from: void com.mongodb.KotlinCodecProvider.<clinit>())
+Missing class org.bson.codecs.kotlin.DataClassCodecProvider (referenced from: void com.mongodb.KotlinCodecProvider.<clinit>())
+Missing class org.bson.codecs.kotlinx.KotlinSerializerCodecProvider (referenced from: void com.mongodb.KotlinCodecProvider.<clinit>())
+Missing class org.bson.codecs.record.RecordCodecProvider (referenced from: void com.mongodb.Jep395RecordCodecProvider.<clinit>())
+Missing class org.ietf.jgss.ChannelBinding (referenced from: void com.microsoft.sqlserver.jdbc.KerbAuthentication.initAuthInit())
+Missing class org.ietf.jgss.GSSContext (referenced from: org.ietf.jgss.GSSContext com.microsoft.sqlserver.jdbc.KerbAuthentication.peerContext and 14 other contexts)
+Missing class org.ietf.jgss.GSSCredential (referenced from: org.ietf.jgss.GSSCredential com.microsoft.sqlserver.jdbc.KerbAuthentication.peerCredentials and 15 other contexts)
+Missing class org.ietf.jgss.GSSException (referenced from: byte[] com.microsoft.sqlserver.jdbc.KerbAuthentication.initAuthHandShake(byte[], boolean[]) and 8 other contexts)
+Missing class org.ietf.jgss.GSSManager (referenced from: org.ietf.jgss.GSSManager com.microsoft.sqlserver.jdbc.KerbAuthentication$1.val$gssManager and 12 other contexts)
+Missing class org.ietf.jgss.GSSName (referenced from: org.ietf.jgss.GSSCredential com.microsoft.sqlserver.jdbc.KerbAuthentication$1.run() and 5 other contexts)
+Missing class org.ietf.jgss.MessageProp (referenced from: org.ietf.jgss.MessageProp org.postgresql.gss.GSSInputStream.messageProp and 7 other contexts)
+Missing class org.ietf.jgss.Oid (referenced from: org.ietf.jgss.Oid com.microsoft.sqlserver.jdbc.KerbAuthentication$1.val$kerboid and 10 other contexts)
+Missing class org.slf4j.Logger (referenced from: org.slf4j.Logger com.mongodb.internal.diagnostics.logging.SLF4JLogger.delegate and 30 other contexts)
+Missing class org.slf4j.LoggerFactory (referenced from: void com.mongodb.internal.diagnostics.logging.SLF4JLogger.<init>(java.lang.String) and 1 other context)
+Missing class org.xerial.snappy.Snappy (referenced from: void com.mongodb.internal.connection.SnappyCompressor.compress(java.util.List, org.bson.io.BsonOutput))
+Missing class org.xerial.snappy.SnappyInputStream (referenced from: java.io.InputStream com.mongodb.internal.connection.SnappyCompressor.getInputStream(java.io.InputStream))
+Missing class reactor.core.publisher.FluxSink$OverflowStrategy (referenced from: void com.microsoft.sqlserver.jdbc.ScopeTokenCache.<init>(java.util.function.Function))
+Missing class reactor.core.publisher.FluxSink (referenced from: reactor.core.publisher.FluxSink com.microsoft.sqlserver.jdbc.ScopeTokenCache.sink and 1 other context)
+Missing class reactor.core.publisher.Mono (referenced from: reactor.core.publisher.Mono com.microsoft.sqlserver.jdbc.KeyVaultTokenCredential.authenticateWithConfidentialClient(com.azure.core.credential.TokenRequestContext) and 6 other contexts)
+Missing class reactor.core.publisher.ReplayProcessor (referenced from: reactor.core.publisher.ReplayProcessor com.microsoft.sqlserver.jdbc.ScopeTokenCache.emitterProcessor and 1 other context)
+Missing class software.amazon.awssdk.auth.credentials.AwsBasicCredentials (referenced from: void org.mariadb.jdbc.plugin.credential.aws.AwsCredentialGenerator.<init>(java.util.Properties, java.lang.String, org.mariadb.jdbc.HostAddress))
+Missing class software.amazon.awssdk.auth.credentials.AwsCredentials (referenced from: com.mongodb.AwsCredential com.mongodb.internal.authentication.AwsSdkV2CredentialSupplier.get() and 1 other context)
+Missing class software.amazon.awssdk.auth.credentials.AwsCredentialsProvider (referenced from: software.amazon.awssdk.auth.credentials.AwsCredentialsProvider com.mongodb.internal.authentication.AwsSdkV2CredentialSupplier.provider and 3 other contexts)
+Missing class software.amazon.awssdk.auth.credentials.AwsSessionCredentials (referenced from: com.mongodb.AwsCredential com.mongodb.internal.authentication.AwsSdkV2CredentialSupplier.get())
+Missing class software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider$Builder (referenced from: void org.mariadb.jdbc.plugin.credential.aws.AwsCredentialGenerator.<init>(java.util.Properties, java.lang.String, org.mariadb.jdbc.HostAddress))
+Missing class software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider (referenced from: void com.mongodb.internal.authentication.AwsSdkV2CredentialSupplier.<init>() and 1 other context)
+Missing class software.amazon.awssdk.auth.credentials.StaticCredentialsProvider (referenced from: void org.mariadb.jdbc.plugin.credential.aws.AwsCredentialGenerator.<init>(java.util.Properties, java.lang.String, org.mariadb.jdbc.HostAddress))
+Missing class software.amazon.awssdk.regions.Region (referenced from: void org.mariadb.jdbc.plugin.credential.aws.AwsCredentialGenerator.<init>(java.util.Properties, java.lang.String, org.mariadb.jdbc.HostAddress))
+Missing class software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain (referenced from: void org.mariadb.jdbc.plugin.credential.aws.AwsCredentialGenerator.<init>(java.util.Properties, java.lang.String, org.mariadb.jdbc.HostAddress))
+Missing class software.amazon.awssdk.services.rds.RdsUtilities$Builder (referenced from: void org.mariadb.jdbc.plugin.credential.aws.AwsCredentialGenerator.<init>(java.util.Properties, java.lang.String, org.mariadb.jdbc.HostAddress))
+Missing class software.amazon.awssdk.services.rds.RdsUtilities (referenced from: void org.mariadb.jdbc.plugin.credential.aws.AwsCredentialGenerator.<init>(java.util.Properties, java.lang.String, org.mariadb.jdbc.HostAddress))
+Missing class software.amazon.awssdk.services.rds.model.GenerateAuthenticationTokenRequest$Builder (referenced from: void org.mariadb.jdbc.plugin.credential.aws.AwsCredentialGenerator.<init>(java.util.Properties, java.lang.String, org.mariadb.jdbc.HostAddress) and 1 other context)
+Missing class waffle.windows.auth.IWindowsSecurityContext (referenced from: void org.mariadb.jdbc.plugin.authentication.addon.gssapi.WindowsNativeSspiAuthentication.authenticate(org.mariadb.jdbc.client.socket.Writer, org.mariadb.jdbc.client.socket.Reader, java.lang.String, java.lang.String))
+Missing class waffle.windows.auth.impl.WindowsSecurityContextImpl (referenced from: void org.mariadb.jdbc.plugin.authentication.addon.gssapi.WindowsNativeSspiAuthentication.authenticate(org.mariadb.jdbc.client.socket.Writer, org.mariadb.jdbc.client.socket.Reader, java.lang.String, java.lang.String))
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:minifyReleaseWithR8'.
+> A failure occurred while executing com.android.build.gradle.internal.tasks.R8Task$R8Runnable
+   > Compilation failed to complete
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 8s
+54 actionable tasks: 8 executed, 46 up-to-date

@@ -11,6 +11,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+internal fun discoveryFailureMessage(error: Throwable): String =
+    (if (error is WorkspaceRejected) error.explanation else Failures.classify(error).description) +
+        "。未取得列表；可检查扫描参数或权限，或手动填写已知目标。"
+
+data class DiscoveryUiState(val busy: Boolean = false, val result: DiscoveredDatabases? = null, val message: String = "")
+
 data class IndexMapping(val index: String, val json: String)
 
 // All JDBC work is dispatched to one bounded worker; UI only holds immutable snapshots.
@@ -46,6 +52,10 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     private val keyValueRunner = KeyValueRunner()
     private val documentRunner = DocumentRunner()
     private val searchRunner = SearchRunner()
+    private val discoveryRunner = DiscoveryRunner()
+    private val discovering = MutableStateFlow(DiscoveryUiState())
+    val discovery = discovering.asStateFlow()
+    private var discoveryEpoch = 0L
     private val mutable = MutableStateFlow(WorkspaceUiState())
     val state = mutable.asStateFlow()
     private val connections = MutableStateFlow<List<SavedConnection>>(emptyList())
@@ -115,7 +125,31 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         try { val fingerprint = withContext(Dispatchers.IO) { store.importCa(uri) }; done(fingerprint); message("CA 已导入，请核对 SHA-256 指纹；仅用于选择它的连接") }
         catch (_: Exception) { message("导入失败：需要有效的 X.509 CA 证书，文件不超过 64 KiB") }
     } }
+    fun cancelDiscovery() {
+        discoveryEpoch++
+        discoveryRunner.cancel()
+        discovering.value = DiscoveryUiState()
+    }
+    fun discover(connection: SavedConnection, hint: String, password: CharArray) {
+        if (mutable.value.busy || discovering.value.busy) { password.fill('\u0000'); return }
+        cancelDiscovery()
+        val profile = try { connection.copy(database = DiscoveryDefaults.database(connection.kind, hint)).profile(getApplication()) }
+        catch (_: Exception) { password.fill('\u0000'); discovering.value = DiscoveryUiState(message = "请检查服务器、账号和扫描参数"); return }
+        val credentials = Credentials(password); password.fill('\u0000')
+        val ticket = discoveryEpoch
+        discovering.value = DiscoveryUiState(busy = true, message = "正在验证服务器并扫描…")
+        val accepted = discoveryRunner.scan(profile, credentials) { result -> viewModelScope.launch {
+            if (ticket != discoveryEpoch) return@launch
+            result.fold(onSuccess = {
+                discovering.value = DiscoveryUiState(result = it, message = "扫描完成，请选择目标后连接")
+            }, onFailure = {
+                discovering.value = DiscoveryUiState(message = discoveryFailureMessage(it))
+            })
+        } }
+        if (!accepted) discovering.value = DiscoveryUiState(message = "上一扫描仍在清理，请稍后重试")
+    }
     fun connect(connection: SavedConnection, password: CharArray) {
+        cancelDiscovery()
         if (mutable.value.busy) { password.fill('\u0000'); return }
         val profile = try { connection.profile(getApplication()) } catch (_: Exception) {
             password.fill('\u0000'); message("连接信息无效，请检查主机、端口、库名和用户名"); return
@@ -169,6 +203,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后手动重试") }
     }
     fun disconnect() {
+        cancelDiscovery()
         if (!mutable.value.connected && !mutable.value.busy) return
         epoch++
         runner.disconnect(); keyValueRunner.disconnect(); documentRunner.disconnect(); searchRunner.disconnect()
@@ -246,5 +281,5 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             connected = mutable.value.connected && !lost, writable = mutable.value.writable && !lost,
             message = if (error is WorkspaceRejected) error.explanation else safe.description)
     }
-    override fun onCleared() { runner.close(); keyValueRunner.close(); documentRunner.close(); searchRunner.close(); super.onCleared() }
+    override fun onCleared() { discoveryRunner.close(); runner.close(); keyValueRunner.close(); documentRunner.close(); searchRunner.close(); super.onCleared() }
 }

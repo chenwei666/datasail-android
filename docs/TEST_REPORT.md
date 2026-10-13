@@ -1,51 +1,60 @@
-# V0.6.0 实际测试报告
+# V0.7.0 实际测试报告
 
-日期：2026-10-13。versionCode 8，applicationId `com.example.datasail`；沿用本地 Debug 签名。此次新增 Elasticsearch / OpenSearch；当前十种引擎是阶段性实现，不是全数据库或正式 Release 兼容声明。
+版本 0.7.0 / versionCode 9；2026-10-13（Asia/Bangkok）。保留 com.example.datasail 与既有 Debug 签名；这是实验性 Debug 交付，无 Release APK。
 
-## 主要变更文件
+## 本轮行为与变更
 
-- `core/.../SearchSession.kt`、`SearchJson.kt`、`SearchRunner.kt`：独立 HTTPS 搜索会话、有界严格 JSON/DSL、安全取消与线程执行；Model/DatabaseCatalog/JDBC 路由区分搜索能力。
-- `app/.../SearchScreen.kt`、`ConnectionsScreen.kt`、`WorkspaceViewModel.kt`：原生索引/映射/查询界面、索引范围连接表单和状态隔离。
-- `scripts/test-search-local.sh`、`scripts/fixtures/search-control.py`、SearchContract/Integration/Device/Ui/Policy 测试：独立真实服务、对抗传输与移动验收；升级和归档脚本、CI、当前版本文档同步。
+连接页支持目标库留空：先验证服务器并扫描可见数据库/逻辑库/索引，筛选选择后再连接工作台。SQLite 继续使用文件选择器。独立扫描任务在完成后关闭临时连接，修改参数、取消、页面离开及后台会作废旧列表和回调；密码不持久化。保留手动目标输入，权限不足不冒充空库。
 
-## 构建与静态检查
+主要变更：`core/.../DatabaseDiscovery.kt`、`JdbcConnector.kt`、`MongoSession.kt`、`KeyValueSession.kt`；`app/.../ConnectionsScreen.kt`、`WorkspaceViewModel.kt`；新增 DiscoveryContract/DiscoveryUiTest，更新夹具与升级测试。扫描语义、权限、列表上限及取消边界见 WORKSPACE。
 
-实际执行 `./gradlew :sqlserver-android:check :sasl-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain`，退出 0。映射归属修正后执行 `./gradlew :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain`，退出 0；此后 APK 保持冻结并用于最终设备检查。SQL Server profile 与两份 Harmony SASL 源码完整性检查执行通过；原有 SQL Server 11 项驱动测试任务 UP-TO-DATE，复用缓存，不计入本轮 53 项重新执行数。
+## 构建与 JVM
 
-`:app:assembleRelease` 退出 1，R8 缺失 **193** 个类型，与 V0.5.0 的集合完全一致；未加 blanket dontwarn，无 Release APK。完整构建/缺失类日志见 evidence/v060。修正映射标题归属后，重新构建最终 APK 并重跑两个引擎全部 Android 检查和覆盖升级；先前安装包的通过日志单列 diagnostics/pre-mapping-fix，不计入最终数量。
+实际命令：`./gradlew :sqlserver-android:check :sasl-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain`，退出 0。Debug、Lint 均通过（Lint 无 issue）。SQL Server 驱动模块 11 项单元测试为缓存 UP-TO-DATE，不计入本轮新增执行数；来源校验执行。
 
-## 本轮 JVM（53 项，0 失败/跳过，最终选定套件）
+| 套件 / 真实引擎 | 通过测试数 |
+|---|---:|
+| coreUnit | 46 |
+| appUnit | 7 |
+| SQL_SERVER | 15 |
+| MYSQL | 5 |
+| MARIADB | 5 |
+| POSTGRESQL | 5 |
+| REDIS | 3 |
+| VALKEY | 3 |
+| MONGODB | 3 |
+| ELASTICSEARCH | 3 |
+| OPENSEARCH | 3 |
 
-| 套件 | 数量 | 实际执行范围 |
-|---|---:|---|
-| core 单元 | 43 | 原有安全/会话/类型规则与严格 JSON/DSL、数值原文、重复键/非法 Unicode/深度拒绝 |
-| app 单元 | 4 | 状态与按引擎字段验证，包括索引范围和 Basic 用户名 |
-| Elasticsearch 8.19.5 | 3 | 真实索引/映射/分页/筛选/类型、TLS/认证/权限；独立对抗 HTTPS 传输测试 |
-| OpenSearch 2.19.4 | 3 | 同上，独立服务；最终读取用例连续十轮，仍按 3 个测试计数 |
+共 **98 项** JVM 测试通过，无失败、跳过。引擎合约新增扫描断言，断言数与重跑数不算独立用例。实际命令分别为 `scripts/test-jdbc-workspace-local.sh MYSQL/MARIADB/POSTGRESQL`（三个独立调用）、`scripts/test-key-value-local.sh REDIS/VALKEY`（独立调用）、`scripts/test-mongo-local.sh`、`scripts/test-sqlserver-local.sh`、`scripts/test-search-local.sh ELASTICSEARCH/OPENSEARCH`（独立调用），各退出 0。固定真实服务版本、镜像摘要见 DRIVER_MATRIX；只连接本机隔离 TLS 合成夹具。
 
-实际命令：`bash scripts/test-search-local.sh ELASTICSEARCH`；`bash scripts/test-search-local.sh OPENSEARCH`；诊断增强 `DATASAIL_SEARCH_READ_REPEATS=10 bash scripts/test-search-local.sh OPENSEARCH`。两个 image 的平台 manifest 固定 SHA256，服务版本见各自 server-version.json。服务管理员仅用于合成夹具；服务端验证 reader 的 PUT 文档返回 403。
+扫描覆盖九种网络引擎；MySQL/MariaDB/SQL Server 不指定目标库，PostgreSQL 从 postgres 入口发现 synthetic，MongoDB reader 仅发现授权 synthetic，Redis/Valkey 发现有键的 0/5 号库、无 INFO 权限时报错，Elasticsearch 从默认范围发现 synthetic；OpenSearch 单索引 reader 对默认 * 明确返回权限错误，再以已授权范围发现 synthetic。已有 TLS/SAN/CA/认证、只读、类型、分页与安全写入合约随对应套件执行。新增扫描名称身份回归：带前后空格的元数据名称必须禁用，不能经表单 trim 转成另一个库。取消测试同时检查关闭任务、丢弃晚到回调与释放凭据；错误提示测试禁止透出未清洗的远端异常文本。
 
-## 本轮 Android（最终 APK 28 项）
+`./gradlew :app:assembleRelease --console=plain` 退出 1。R8 仍缺 193 类，相比 V0.6.0 新增 0 类；未增加 blanket dontwarn，无 Release APK。保留完整构建日志和缺失清单。
 
-| 设备 | Elasticsearch | OpenSearch | 覆盖升级/Smoke | 合计 |
-|---|---:|---:|---:|---:|
-| Android 8 / API26 / x86_64 | 5 | 5 | 4 | 14 |
-| Android 11 / API30 / x86_64 | 5 | 5 | 4 | 14 |
+## Android：按实际 APK 区分
 
-真实运行 `DATASAIL_ANDROID_TESTS=1 DATASAIL_ANDROID_SERIALS='emulator-5556 emulator-5554' bash scripts/test-search-local.sh ELASTICSEARCH`；OpenSearch 同命令加 `DATASAIL_SKIP_JVM=1` 复用已完成 JVM 结果。每引擎每设备 3 项核心/传输合约 + 1 项真实 Compose 流程 + 1 项映射归属的纯 UI 回归，均 `OK (5 tests)`。传输故障项来自明确分开的本机 HTTPS 对抗服务，不能冒称真实引擎慢查询测试。Compose 实测连接、索引、100 条翻页、编辑条件禁用旧续页、term 筛选和映射。
+两个设备均为 AOSP x86_64 软件模拟器，无 KVM；API26/Android8 与 API30/Android11。型号与安装 SHA 见 devices.json。没有真机、arm64 或其它系统版本的验收。
 
-每设备执行 `ANDROID_SERIAL=... bash scripts/test-android-upgrade.sh --reset-synthetic-emulator`。在一次性模拟器安装不可变 V0.5.0/code7，写入 schema3 SQL Server/MongoDB（自定义 authDatabase）和 schema1 收藏，然后 `adb install -r` 安装 code8，保留私有标记、连接、生产只读策略与收藏；没有把清空安装当作覆盖升级。映射标题修正前已在两设备显式运行 ConnectionUiTest、QueryStoreTest、MobileWorkflowTest、SqliteDeviceTest，分别 `OK (8 tests)`，其 APK 为 `f51f1b59117d68893bbe69111857e4b6c3379745bee41a58de299afc0d358f7e`；相关源码未因映射标题修正改变，未重复这些 16 项，且不算作最终 APK 的 28 项。日志放在 diagnostics/pre-mapping-fix。Smoke 包含旧 SQL 驱动加载，早一构建的 16 项包含真实 SQLite 文件工作流；**不替代其它七种网络引擎本轮重新实连**。
+最终 APK SHA-256：`a0783e3967e9925d44ba2d4d2cd13200798b6f4c6a59a9686d716897263ff3e2`。测试 APK：`7b959ecd700401702544c4a9dbcfe791e9ba199d293b0c8342014f87e623b996`。
 
-## 失败、限制与证据边界
+- API26：PostgreSQL 实连及扫描界面 4、通用移动/SQLite/配置持久化 8、升级与启动 4，共 16 项。
+- API30：通用移动/SQLite/配置持久化 8、升级与启动 4，共 12 项。
+- 最终 APK 共 **28 项** Android 检查通过。PostgreSQL 界面从库名留空开始完成扫描、筛选、选择、连接，并验证修改主机会清除扫描列表、授权与密码。真实 PostgreSQL 夹具同时创建 synthetic 与带前后空格的独立库，界面断言后者不可选择，前者仍可连接，防止错连。
+- 另有提示完善前 APK `4fdfe450cf23d12b86eb0e5bb25ea850838d33699a897ad39ce81a6987c38717` 的 **22 项**通过：API26 MySQL/MariaDB/PostgreSQL 各 4、Redis/Valkey 各 3；API30 MySQL 4。它们包含真实扫描及原有工作台回归，保留于 diagnostics/pre-scan-feedback，**不计入最终 APK 数**。之后只调整扫描错误解释与入口参数错误提示，核心协议代码未改变。MySQL API26 首轮测试 APK 早于强化空密码断言，其后 MariaDB/PostgreSQL/API30 MySQL 使用强化后的断言。另有加入名称身份保护前 APK `d4c191846a20feafb523ddce88c8bc0c61fe2f8920c9e8a93824e888ff1cd83f` 的 **44 项**通过，包含 API26 PostgreSQL/SQL Server/MongoDB/Elasticsearch/OpenSearch 实连、两设备通用移动及覆盖升级；保留于 diagnostics/pre-name-identity，**不计入最终 APK 数**。核心协议代码没有改变；最终 APK 针对新增安全保护重新运行 PostgreSQL 实连/UI，以及两个系统的通用移动和覆盖升级。最终 APK 未重跑全部引擎/系统的排列组合。
 
-- OpenSearch 首次 JVM 运行在最后一次查询出现 `Unexpected end of file from server`，该轮 3 项中 1 项失败，原 XML/日志保留于 diagnostics，不计入通过数。增加服务端日志采集后复测及十轮完整读取未再现；根因未确认，不宣称已修复。客户端关闭会话并分类网络错误，无应用层自动重试。长期断连/弱网稳定性继续作为已知问题。
-- 官方 tarball URL 在此环境返回 403，改用 Docker Hub 固定 digest。vfs 复制镜像层曾耗尽磁盘；仅移除已确认闲置的可重下载镜像缓存，保留全部旧档案、源码和数据库卷；搜索服务顺序验证。无系统参数或证书绕过。
-- 前八种引擎的历史真实网络验收仍在 V0.5.0 等不可变档案中，本轮未重跑 SQL Server/MySQL/MariaDB/PostgreSQL/Redis/Valkey/MongoDB 服务端套件。安全/路由单元、驱动完整性与加载、移动流程、SQLite 已回归。
-- 未验证物理/arm64、其它服务版本、PIT/scroll、云认证、多节点故障转移、所有主流引擎、系统 CSV 文件提供者、正式身份/签名和长期性能。当前搜索只读，限制见 KNOWN_ISSUES。
-- 未执行远程 CI、归档源码独立重建、push、公开 Release 或云环境发布。start_skill 已保存草稿，未发布/验证新任务恢复。
+设备夹具命令加 `DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5556`；搜索脚本指定 `DATASAIL_ANDROID_SERIALS=emulator-5556`。通用移动用 `adb shell am instrument -w -e class com.example.datasail.ConnectionUiTest,com.example.datasail.MobileWorkflowTest,com.example.datasail.SqliteDeviceTest,com.example.datasail.QueryStoreTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner`，每设备 OK(8)。搜索对抗 HTTP 测试是独立模拟 peer，不冒充真实服务慢查询。
 
-## 产物绑定
+升级实际使用 `scripts/test-android-upgrade.sh --reset-synthetic-emulator`，只重置这两个专用模拟器。先安装不可变 V0.6.0/code8，写入合成元数据和私有标记，再 `adb install -r` 安装 code9；核对 SQL Server 生产策略、MongoDB custom_auth、OpenSearch logs-* 与 PostgreSQL 查询收藏保留。不是卸载后新装冒充升级；不承诺降级。
 
-最终 APK SHA256：`bf4c94cba29d9730f48475295bfa7c565ebc87543a7d4240b14df795c56d8a01`。两台设备 installed base.apk 均独立核对相同哈希，见 devices.json；源码提交及签名 SHA 由归档 manifest 记录。Debug 构建、源码快照、实际测试 APK 和版本必须相符，旧版本 ZIP 哈希另验。
+## 限制与交付
 
-交付路径：`versions/V0.6.0/apk/DataSail-V0.6.0-debug.apk`、`versions/V0.6.0.zip`。归档必须由干净本地提交生成并校验；本报告不等同发布声明。下一最小任务：ClickHouse 只读表与查询工作台，同时继续处理 Release 与真机门禁。
+扫描不代表服务器全部资产或后续一定可登录。SQL/MongoDB 受权限影响，PostgreSQL 入口库/HBA、Redis 空库/INFO 权限、搜索普通索引/范围限制均需遵守。库名限制仍为字母、数字、下划线、横线；不支持的名称不可选择。JDBC 未返回连接期间不能承诺即时中止 DNS/握手；过期回调立即失效，连接返回后关闭，依赖驱动登录超时收尾。
+
+本轮 OpenSearch 首次 JVM 读取用例因测试错误假设“单索引 reader 可枚举 *”而失败；服务端日志确认目录权限拒绝。随后测试显式要求宽范围权限失败、授权范围成功，不更改应用或扩大服务账号权限；初始 XML 和原因保留在 diagnostics/opensearch-wildcard-permission。
+
+V0.6.0 曾有一次 OpenSearch EOF，历史根因仍未确认，不因本轮通过宣称已修复。未执行长时间弱网、物理设备/arm64、大型目录压测、所有云认证和全主流数据库验收。当前十种引擎不是全部数据库；AI/跨引擎写入及正式发行门禁仍在路线图。
+
+交付由干净本地提交生成 `versions/V0.7.0/` 与 ZIP，完整源码、APK、文档、manifest、SHA256SUMS；不覆盖既有归档。归档校验结果在交付后另记录，不把源归档独立重构建当作已执行。没有推送、公开发布或远端 CI 声明。云环境 start_skill 已保存为待发布草稿；没有发布或新任务恢复验证。
+
+下一项最小任务：ClickHouse 表与查询工作台；继续推进 R8/真机发行门禁。

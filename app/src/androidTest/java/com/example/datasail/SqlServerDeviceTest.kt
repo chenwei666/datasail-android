@@ -26,6 +26,7 @@ class SqlServerDeviceTest {
             "datasail_v020", "sa", trustStore = if (trusted) TrustStoreSpec(trust.path) else null)
         fun connection(p: ConnectionProfile = profile()) = Credentials(config.getProperty("password").toCharArray()).use { JdbcConnector().connect(p, it) }
         try {
+            com.example.datasail.fixture.DiscoveryContract.verify(profile(), config.getProperty("password"))
             val untrusted = assertThrows(Exception::class.java) { connection(profile(false)).close() }
             assertEquals(diagnostic(untrusted, config.getProperty("password")), ErrorKind.TLS, Failures.classify(untrusted).kind)
             val mismatch = assertThrows(Exception::class.java) { connection(profile(host = "127.0.0.1")).close() }

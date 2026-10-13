@@ -94,6 +94,15 @@ class MongoSession(private val profile: ConnectionProfile) : DocumentSession {
         fresh.getDatabase(profile.database).runCommand(BsonDocument("ping", BsonInt32(1)))
         Unit
     }
+    fun databases(): List<String> = bounded {
+        val names = ArrayList<String>()
+        (client ?: throw WorkspaceRejected("请先连接服务器")).withTimeout(10, TimeUnit.SECONDS)
+            .listDatabases(BsonDocument::class.java).nameOnly(true).authorizedDatabasesOnly(true)
+            .maxTime(8, TimeUnit.SECONDS).iterator().use { cursor ->
+                while (cursor.hasNext() && names.size <= DiscoveredDatabases.LIMIT) names += cursor.next().getString("name").value
+            }
+        names
+    }
     override fun collections(): List<String> = bounded {
         val names = ArrayList<String>()
         database().listCollectionNames().batchSize(50).maxTime(8, TimeUnit.SECONDS).iterator().use { c ->

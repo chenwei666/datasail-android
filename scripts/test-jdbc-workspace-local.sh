@@ -64,12 +64,16 @@ for attempt in $(seq 1 90); do
  sleep 1
 done
 [[ "$ready" == true ]] || { echo 'Fixture not ready; no credentials logged.' >&2; exit 1; }
+# Deliberately distinct identifier: discovery must never trim this into synthetic.
+if [[ "$kind" == POSTGRESQL ]]; then
+ docker exec "$container" psql -U datasail -d postgres -c 'CREATE DATABASE " synthetic "' >/dev/null
+fi
 keytool -importcert -noprompt -alias fixture-ca -file "$fixture/tls/ca.pem" -keystore "$fixture/trust.p12" -storepass changeit >/dev/null 2>&1
 export DATASAIL_TEST_CONFIG="$fixture/database.properties"
 export DATASAIL_TEST_TRUSTSTORE="$fixture/trust.p12"
 ./gradlew :core:jdbcWorkspaceTest --console=plain
-mkdir -p "docs/evidence/v050/$kind"
-cp core/build/test-results/jdbcWorkspaceTest/TEST-*.xml "docs/evidence/v050/$kind/"
+mkdir -p "docs/evidence/v070/$kind"
+cp core/build/test-results/jdbcWorkspaceTest/TEST-*.xml "docs/evidence/v070/$kind/"
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb install -r app/build/outputs/apk/debug/app-debug.apk
  adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
@@ -77,7 +81,7 @@ if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb shell run-as com.example.datasail sh -c "'cat > files/jdbc-fixture.properties'" < "$fixture/database.properties"
  adb shell run-as com.example.datasail sh -c "'cat > files/jdbc-ca.pem'" < "$fixture/tls/ca.pem"
  adb reverse "tcp:$port" "tcp:$port"
- adb shell am instrument -w -e class com.example.datasail.JdbcWorkspaceDeviceTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
- rg -q 'OK \(2 tests\)' "$fixture/android-result.txt"
- cp "$fixture/android-result.txt" "docs/evidence/v050/$kind/android-${ANDROID_SERIAL}.txt"
+ adb shell am instrument -w -e class com.example.datasail.JdbcWorkspaceDeviceTest,com.example.datasail.DiscoveryUiTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
+ rg -q 'OK \(4 tests\)' "$fixture/android-result.txt"
+ cp "$fixture/android-result.txt" "docs/evidence/v070/$kind/android-${ANDROID_SERIAL}.txt"
 fi

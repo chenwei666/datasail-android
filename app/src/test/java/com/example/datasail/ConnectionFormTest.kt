@@ -5,6 +5,32 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ConnectionFormTest {
+    @Test fun scannedMetadataCannotNormalizeIntoAnotherDatabase() {
+        // These can be different PostgreSQL/SQL Server identifiers despite looking similar in a form.
+        for (kind in listOf(DatabaseKind.SQL_SERVER, DatabaseKind.POSTGRESQL, DatabaseKind.MYSQL, DatabaseKind.MARIADB)) {
+            val connection = SavedConnection(kind = kind)
+            assertTrue(connection.canSelectDiscoveredDatabase("synthetic"))
+            assertFalse(connection.canSelectDiscoveredDatabase(" synthetic"))
+            assertFalse(connection.canSelectDiscoveredDatabase("synthetic "))
+            assertFalse(connection.canSelectDiscoveredDatabase("synthetic\n"))
+            assertFalse(connection.canSelectDiscoveredDatabase("other.database"))
+        }
+    }
+    @Test fun discoveryExplainsLocalLimitsWithoutLeakingRemoteExceptionText() {
+        assertTrue(discoveryFailureMessage(com.example.datasail.core.WorkspaceRejected("索引超过 200 个，请缩小连接中的索引范围")).contains("请缩小"))
+        assertFalse(discoveryFailureMessage(IllegalStateException("synthetic-sensitive-response")).contains("synthetic-sensitive-response"))
+    }
+    @Test fun discoveryDoesNotRequireTargetButStillValidatesEndpointAndBootstrap() {
+        val base = SavedConnection(name = "server", host = "localhost", username = "reader")
+        DatabaseKind.entries.filter { it != DatabaseKind.SQLITE }.forEach { kind ->
+            val server = base.copy(kind = kind, port = kind.defaultPort.toString())
+            assertTrue("$kind must allow a blank target", server.discoveryErrors("").isEmpty())
+            assertTrue(server.fieldErrors().containsKey("database"))
+            assertTrue(server.copy(host = "https://localhost").discoveryErrors("").containsKey("host"))
+        }
+        assertTrue(base.copy(kind = DatabaseKind.POSTGRESQL).discoveryErrors("invalid/db").containsKey("database"))
+        assertTrue(base.copy(kind = DatabaseKind.OPENSEARCH).discoveryErrors("../secret").containsKey("database"))
+    }
     @Test fun validatesActualEngineFieldsWithoutDemandingNetworkForSqlite() {
         val local = SavedConnection(name = "file", kind = DatabaseKind.SQLITE, database = "a".repeat(64))
         assertTrue(local.fieldErrors().isEmpty())

@@ -15,6 +15,7 @@ class KeyValueContract(private val profile: ConnectionProfile, private val passw
         catch (error: Exception) { session.close(); throw error }
     }
     fun reads() = connect().use { session ->
+        DiscoveryContract.verify(profile, password)
         val keys = mutableSetOf<BinaryKey>(); var cursor = "0"; var pages = 0
         do {
             val page = session.scan(cursor); cursor = page.cursor; keys.addAll(page.keys)

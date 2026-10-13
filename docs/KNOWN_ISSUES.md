@@ -1,4 +1,4 @@
-# V0.6.0 已知问题与未验证项
+# V0.7.0 已知问题与未验证项
 
 1. **覆盖仍在扩展：** 当前十种连接类型有实现，除 SQL Server 外均只读；Oracle、Db2、ClickHouse等范围见 DATABASE_SCOPE，尚不可连接。目录不是兼容承诺。
 2. **Release 阻塞：** R8 仍缺少 Android JDBC/JNDI/XA/management 及可选云认证等 API；本轮仍报告 193 项缺失类，与 V0.5.0 相同，其中包含 50 项 MongoDB 可选运行时依赖（Netty、Unix socket、加密等）。没有 Release APK，未添加批量 dontwarn。Debug 实连不能替代正式发行门禁。
@@ -23,3 +23,7 @@ MongoDB 当前限定单个地址直连、SCRAM-SHA-256、库内集合只读。�
 OpenSearch 首次 JVM 验收曾出现一次 `Unexpected end of file from server`（网络断连），带日志复测及随后十轮读取未再现；根因尚未确认。保留失败 XML/日志，客户端会关闭会话并提示网络失败，不自动重试。长时间弱网和服务器断连稳定性仍需后续验证。
 
 当前搜索 runner 对失败采取断开策略，非法 DSL 等本地校验失败也可能需要重新连接；尚未实现保留搜索草稿的多标签编辑体验。
+
+服务器扫描不是全服务器资产清单：SQL 和 MongoDB 列表受账号可见性限制，PostgreSQL 需要可访问入口库，Redis/Valkey INFO keyspace 不含空库，搜索只列出范围内普通索引。扫描完成后会关闭临时连接，选库后重新认证；不跨用户等待持有事务。库名的现有限制仍在，列表中的不支持名称不可选择。具体时限与取消边界见 WORKSPACE。
+
+OpenSearch 受限账号可能拒绝默认 `*` 的目录扫描，即使能读取指定索引。当前夹具的单索引 reader 正是如此；填写已授权的扫描范围后可枚举。客户端保留权限失败提示，不自动扩大权限或将拒绝当作空列表。Elasticsearch 与 OpenSearch 的目录可见性策略不能相互推断。

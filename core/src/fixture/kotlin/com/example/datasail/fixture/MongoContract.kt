@@ -18,6 +18,7 @@ class MongoContract(private val profile: ConnectionProfile, private val password
         catch (error: Exception) { session.close(); throw error }
     }
     fun reads() = connect().use { session ->
+        DiscoveryContract.verify(profile, password)
         assertEquals(setOf("documents", "oversized"), session.collections().toSet())
         val pages = mutableListOf<DocumentPage>(); pages += session.find("documents", "{}")
         // Reading a page must not spend the next page's client timeout while the user inspects it.

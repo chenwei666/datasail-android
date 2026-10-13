@@ -36,7 +36,7 @@ Android 数据库测试显式启用；不由默认 UI 测试顺带连接。脚�
 bash scripts/test-android-upgrade.sh --reset-synthetic-emulator
 ```
 
-先安装不可变 V0.5.0/code7 APK，写入 schema 3 的 SQL Server/MongoDB 合成连接、schema 1 收藏和私有文件标记，再 `adb install -r` 覆盖 V0.6.0/code8。测试核对旧连接、生产策略、MongoDB 自定义 authDatabase 与收藏保留，并再次保存/读回搜索引擎的索引范围。保持 applicationId 和签名；不代表可降级。
+先安装不可变 V0.6.0/code8 APK，写入 schema 3 的 SQL Server/MongoDB/OpenSearch 合成连接、schema 1 收藏和私有文件标记，再 `adb install -r` 覆盖 V0.7.0/code9。测试核对旧连接、生产策略、MongoDB 自定义 authDatabase 与收藏保留，以及旧版保存的搜索引擎索引范围。保持 applicationId 和签名；不代表可降级。
 
 ## Release 与未验证项
 
@@ -112,6 +112,15 @@ SearchContract 前两项为真实服务：205 条 100/100/5 分页、映射、te
 
 `DATASAIL_SKIP_JVM=1` 仅允许已有 JVM 结果时避免重复；不会产生新的 JVM 通过证据。脚本串行遍历设备，安装前核对 APK SHA。默认 connected 测试排除 SearchDeviceTest/SearchUiTest，需由夹具显式调用。脚本退出清理自己的容器/数据卷、证书、密码、对抗 HTTP 进程、ADB 反向端口和 app-private 测试文件。
 
-本轮覆盖升级基线为 V0.5.0/code7，保留 schema3 SQL Server/MongoDB 自定义 authDatabase 及 SQL 收藏后安装 code8。归档只收集 summary.requiredJvmReports 中本轮明确要求的 JVM 报告及 app/driver 报告；旧引擎历史证据仍在原不可变档案中，不把遗留 build 目录测试报告算作本轮执行。
+V0.6.0 历史覆盖升级基线为 V0.5.0/code7，保留 schema3 SQL Server/MongoDB 自定义 authDatabase 及 SQL 收藏后安装 code8。归档只收集 summary.requiredJvmReports 中本轮明确要求的 JVM 报告及 app/driver 报告；旧引擎历史证据仍在原不可变档案中，不把遗留 build 目录测试报告算作本轮执行。
 
 `DATASAIL_SEARCH_READ_REPEATS=10 bash scripts/test-search-local.sh OPENSEARCH` 可诊断瞬态问题：同一 JVM 读取测试重复十轮完整流程，仍报告 3 个测试，不能把重复断言当作新增独立测试。首次 EOF 失败单独归档；复测不等于根因已修复。服务端日志仅落临时 `/tmp/datasail-search-server-ENGINE.log`，需检查敏感信息后才可摘录到证据。
+
+
+## V0.7.0 服务器数据库扫描
+
+- `:core:test` 包含扫描取消关闭、过期回调丢弃、凭据释放、重复请求拒绝和列表上限测试；`:app:testDebugUnitTest` 验证无需目标库名即可扫描，但服务器及 PostgreSQL 入口库仍须有效。
+- 现有九种网络引擎的真实服务读取合约加入 `DiscoveryContract.verify`，在 JVM 与 Android 执行同一断言：从服务器元数据发现合成库/索引。OpenSearch 单索引 reader 明确验证默认 * 被拒绝、已授权范围成功；不假设两个搜索引擎具有相同目录权限策略。Redis/Valkey 额外在 5 号库写入合成标记，验证只发现 0/5、不虚构空库，并验证缺少 INFO 权限时报权限错误。MongoDB reader 应只发现获授权的 synthetic。
+- `DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5556 scripts/test-jdbc-workspace-local.sh MYSQL`（或 MARIADB、POSTGRESQL）同时执行 JdbcWorkspaceDeviceTest 和 DiscoveryUiTest，期望 `OK (4 tests)`。界面从目标库名留空开始，扫描、筛选、选中、连接；另一用例验证修改主机使列表、授权、密码失效。默认普通 connected tests 排除依赖服务器的 DiscoveryUiTest。
+- 当前脚本报告写入 `docs/evidence/v070/`，不覆盖历史报告。测试数量保持各引擎原合约数量（新增的是合约内断言），不要把断言或重跑次数算作独立测试数。
+- 本轮覆盖升级以 V0.6.0/code8 为基线，安装 code9；核对 SQL Server 生产策略、MongoDB authDatabase、OpenSearch 索引范围与 SQL 收藏。

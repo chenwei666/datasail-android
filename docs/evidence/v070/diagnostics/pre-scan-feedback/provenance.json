@@ -1,0 +1,17 @@
+{
+  "apkSha256": "4fdfe450cf23d12b86eb0e5bb25ea850838d33699a897ad39ce81a6987c38717",
+  "status": "22 Android checks passed before the local discovery-limit message and bootstrap validation feedback improvement. Core protocol code unchanged. Excluded from final APK count.",
+  "checks": {
+    "emulator-5556": {
+      "MYSQL": 4,
+      "MARIADB": 4,
+      "POSTGRESQL": 4,
+      "REDIS": 3,
+      "VALKEY": 3
+    },
+    "emulator-5554": {
+      "MYSQL": 4
+    }
+  },
+  "testApkNote": "MySQL API26 first run predates strengthening the UI empty-password assertion; subsequent runs use the strengthened assertion."
+}

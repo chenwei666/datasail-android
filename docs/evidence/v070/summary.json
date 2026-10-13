@@ -1,0 +1,82 @@
+{
+  "version": "0.7.0",
+  "versionCode": 9,
+  "requiredJvmReports": [
+    "test",
+    "jdbcWorkspaceTest",
+    "keyValueTest",
+    "mongoTest",
+    "sqlServerTest",
+    "searchTest"
+  ],
+  "jvm": {
+    "coreUnit": 46,
+    "appUnit": 7,
+    "SQL_SERVER": 15,
+    "MYSQL": 5,
+    "MARIADB": 5,
+    "POSTGRESQL": 5,
+    "REDIS": 3,
+    "VALKEY": 3,
+    "MONGODB": 3,
+    "ELASTICSEARCH": 3,
+    "OPENSEARCH": 3
+  },
+  "jvmTotal": 98,
+  "cachedDriverUnit": 11,
+  "driverTaskStatus": "UP-TO-DATE, not counted as newly executed tests; profile integrity check executed",
+  "android": {
+    "emulator-5556": {
+      "POSTGRESQL": 4,
+      "upgradeAndSmoke": 4,
+      "mobileAndSqlite": 8
+    },
+    "emulator-5554": {
+      "upgradeAndSmoke": 4,
+      "mobileAndSqlite": 8
+    }
+  },
+  "androidTotal": 28,
+  "preScanFeedbackAndroid": {
+    "apkSha256": "4fdfe450cf23d12b86eb0e5bb25ea850838d33699a897ad39ce81a6987c38717",
+    "status": "22 Android checks passed before the local discovery-limit message and bootstrap validation feedback improvement. Core protocol code unchanged. Excluded from final APK count.",
+    "checks": {
+      "emulator-5556": {
+        "MYSQL": 4,
+        "MARIADB": 4,
+        "POSTGRESQL": 4,
+        "REDIS": 3,
+        "VALKEY": 3
+      },
+      "emulator-5554": {
+        "MYSQL": 4
+      }
+    },
+    "testApkNote": "MySQL API26 first run predates strengthening the UI empty-password assertion; subsequent runs use the strengthened assertion."
+  },
+  "preNameIdentityAndroid": {
+    "apkSha256": "d4c191846a20feafb523ddce88c8bc0c61fe2f8920c9e8a93824e888ff1cd83f",
+    "checks": 44,
+    "status": "44 Android checks passed before the scanned-name identity guard. Preserved separately, excluded from final APK count. Core discovery protocol code unchanged; final PostgreSQL UI additionally checks that a real padded database name is disabled rather than trimmed into another target.",
+    "testApkNote": "The OpenSearch fixture assertion was corrected to require permission failure for broad scope and success for the authorized scope. Other engine tests predate this fixture-only correction."
+  },
+  "debug": "passed",
+  "lintDebug": "passed",
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "addedSinceV060": [],
+    "removedSinceV060": [],
+    "releaseApkProduced": false,
+    "blanketSuppressionsAdded": false
+  },
+  "finalApkSha256": "a0783e3967e9925d44ba2d4d2cd13200798b6f4c6a59a9686d716897263ff3e2",
+  "androidTestApkSha256": "7b959ecd700401702544c4a9dbcfe791e9ba199d293b0c8342014f87e623b996",
+  "limitations": [
+    "Physical devices and arm64 not tested; no Release APK",
+    "Nine network engine JVM discovery contracts passed; exact ART coverage is split between final and pre-feedback APK evidence",
+    "JDBC login cancellation relies on bounded driver timeouts until the driver returns the connection; callbacks are invalidated immediately",
+    "SQL/Mongo enumeration follows account visibility; PostgreSQL needs a bootstrap DB; Redis INFO keyspace excludes empty DBs; search lists ordinary indices only",
+    "No independent archive-source rebuild, remote CI, push, public release or fresh environment restoration claimed"
+  ]
+}

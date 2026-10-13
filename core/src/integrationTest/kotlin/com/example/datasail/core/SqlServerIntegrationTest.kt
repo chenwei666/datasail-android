@@ -40,6 +40,7 @@ class SqlServerIntegrationTest {
         }
     }
     @Test fun browseTypesAndSafeWrites() = fixture { s, table ->
+        com.example.datasail.fixture.DiscoveryContract.verify(profile(), config.getProperty("password"), "datasail_v020")
         assertTrue("datasail_v020" in s.catalogs()); assertTrue("dbo" in s.schemas())
         val page = s.page(table)
         assertEquals(DbValue.Text("00123 · 数舟 · Tiếng Việt"), page.rows[0][1])

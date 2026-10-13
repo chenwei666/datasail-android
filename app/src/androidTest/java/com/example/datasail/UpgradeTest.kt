@@ -24,9 +24,10 @@ class UpgradeTest {
         val mongo = ConnectionStore(context).load().single { it.id == "upgrade-mongo" }
         assertEquals("custom_auth", mongo.authDatabase)
         assertEquals(com.example.datasail.core.DatabaseKind.MONGODB, mongo.kind)
-        val search = saved.copy(id = "upgrade-search", kind = com.example.datasail.core.DatabaseKind.OPENSEARCH, database = "logs-*")
-        ConnectionStore(context).save(listOf(saved, mongo, search))
-        assertEquals("logs-*", ConnectionStore(context).load().single { it.id == "upgrade-search" }.database)
+        val search = ConnectionStore(context).load().single { it.id == "upgrade-search" }
+        assertEquals(com.example.datasail.core.DatabaseKind.OPENSEARCH, search.kind)
+        assertEquals("logs-*", search.database)
+        assertTrue(search.production)
         assertEquals(ConnectionEnvironment.PRODUCTION, saved.profile(context).environment)
     }
 }

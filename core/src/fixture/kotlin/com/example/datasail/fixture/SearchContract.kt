@@ -12,6 +12,7 @@ class SearchContract(private val profile: ConnectionProfile, private val passwor
         ConnectionProfile(this.profile.kind, host, port, scope, user, trustStore = trust)
     private fun HttpsSearchSession.login(secret: String = password) = login(Credentials(secret.toCharArray()))
     fun reads() {
+        DiscoveryContract.verify(profile, password, "synthetic")
         HttpsSearchSession(profile).use { session ->
             session.login()
             assertEquals(listOf("synthetic"), session.indices())

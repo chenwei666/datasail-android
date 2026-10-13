@@ -35,6 +35,7 @@ class JdbcWorkspaceIntegrationTest {
         }
     }
     @Test fun browsingPreservesTypesAndPaginationAndClosesTransactions() = fixture { session, table ->
+        com.example.datasail.fixture.DiscoveryContract.verify(profile(), config.getProperty("password"))
         assertTrue(session.catalogs().contains("synthetic"))
         val description = session.describe(table)
         assertEquals(listOf("id"), description.keys.map { it.name })

@@ -1,0 +1,26 @@
+{
+  "workflow": "native Android direct database client; existing checkout reused",
+  "configDraft": {
+    "id": "e06750c1-3f7b-42e9-93a8-719fc8a22d89~cecfgdraft_6accbad7269c81a195647d382ebfb4ee",
+    "status": "saved",
+    "requiresPublish": true,
+    "fields": [
+      "start_skill"
+    ],
+    "source": "docs/CLOUD_START.md",
+    "sourceSha256": "82072ef3ddd633d23d9632dda30269b03120a5d26b743930cda71eadbd1ef567"
+  },
+  "freshTaskRestoreVerified": false,
+  "published": false,
+  "newDependencies": false,
+  "reproducibleImageCachesEvicted": [
+    "mysql",
+    "mariadb",
+    "postgres",
+    "mongo",
+    "mcr.microsoft.com/mssql/server",
+    "elasticsearch",
+    "opensearchproject/opensearch"
+  ],
+  "cleanupScope": "Only identified unused pinned image caches; no database/user volumes, source or prior archives pruned."
+}

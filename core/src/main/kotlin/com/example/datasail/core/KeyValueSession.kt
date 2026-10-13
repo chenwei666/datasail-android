@@ -42,7 +42,7 @@ class RespKeyValueSession(private val profile: ConnectionProfile) : KeyValueSess
     private var reader: RespReader? = null
     private var output: OutputStream? = null
 
-    fun login(credentials: Credentials) {
+    fun login(credentials: Credentials, selectDatabase: Boolean = true) {
         require(profile.kind.isKeyValue)
         try { bounded(30) {
             raw.connect(InetSocketAddress(profile.host, profile.port), 15000)
@@ -58,9 +58,16 @@ class RespKeyValueSession(private val profile: ConnectionProfile) : KeyValueSess
             reader = RespReader(BufferedInputStream(tls.inputStream))
             output = BufferedOutputStream(tls.outputStream)
             credentials.usePassword { password -> command("AUTH", profile.username, password).expectOk() }
-            command("SELECT", profile.database).expectOk()
+            if (selectDatabase) command("SELECT", profile.database).expectOk()
             check(command("PING").text() == "PONG")
         } } catch (error: Exception) { close(); throw error } finally { credentials.close() }
+    }
+    fun databases(): List<String> = bounded {
+        command("INFO", "keyspace").text().lineSequence().filter { it.startsWith("db") }.map { line ->
+            val id = line.substringBefore(':').removePrefix("db")
+            require(id.matches(Regex("0|[1-9][0-9]{0,4}")) && id.toInt() <= 65535)
+            id
+        }.take(DiscoveredDatabases.LIMIT + 1).toList()
     }
     override fun scan(cursor: String, pattern: String): KeyScan = bounded {
         validCursor(cursor)

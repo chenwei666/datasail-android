@@ -1,0 +1,6 @@
+{
+  "apkSha256": "d4c191846a20feafb523ddce88c8bc0c61fe2f8920c9e8a93824e888ff1cd83f",
+  "checks": 44,
+  "status": "44 Android checks passed before the scanned-name identity guard. Preserved separately, excluded from final APK count. Core discovery protocol code unchanged; final PostgreSQL UI additionally checks that a real padded database name is disabled rather than trimmed into another target.",
+  "testApkNote": "The OpenSearch fixture assertion was corrected to require permission failure for broad scope and success for the authorized scope. Other engine tests predate this fixture-only correction."
+}

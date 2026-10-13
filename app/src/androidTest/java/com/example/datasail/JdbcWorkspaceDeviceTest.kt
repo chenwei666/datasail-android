@@ -26,6 +26,7 @@ class JdbcWorkspaceDeviceTest {
         finally { trust.delete() }
     }
     @Test fun tlsIdentityAndWorkbenchReadOnArt() = fixture { profile, config ->
+        com.example.datasail.fixture.DiscoveryContract.verify(profile, config.getProperty("password"))
         fun connection(p: ConnectionProfile) = Credentials(config.getProperty("password").toCharArray()).use { JdbcConnector().connect(p, it) }
         for (p in listOf(ConnectionProfile(profile.kind, "127.0.0.1", profile.port, "synthetic", "datasail", trustStore = profile.trustStore),
             ConnectionProfile(profile.kind, "localhost", profile.port, "synthetic", "datasail"))) {

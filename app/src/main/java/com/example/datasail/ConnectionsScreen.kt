@@ -35,9 +35,19 @@ internal fun SavedConnection.fieldErrors(): Map<String, String> = buildMap {
     }
 }
 
+// Metadata names are identities, not editable input: never normalize a scanned name into another target.
+internal fun SavedConnection.canSelectDiscoveredDatabase(name: String): Boolean =
+    name == name.trim() && copy(database = name).fieldErrors()["database"] == null
+
+internal fun SavedConnection.discoveryErrors(hint: String): Map<String, String> =
+    copy(database = DiscoveryDefaults.database(kind, hint)).fieldErrors()
+
 @Composable
 internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
     val saved by model.saved.collectAsStateWithLifecycle()
+    val discovery by model.discovery.collectAsStateWithLifecycle()
+    var discoveryHint by remember { mutableStateOf("") }
+    var databaseSearch by remember { mutableStateOf("") }
     var stage by remember { mutableStateOf("list") }
     var search by remember { mutableStateOf("") }
     var draft by remember { mutableStateOf(SavedConnection()) }
@@ -47,20 +57,20 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
     var deleting by remember { mutableStateOf<SavedConnection?>(null) }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) { password = ""; authorized = false } }
-        lifecycle.addObserver(observer); onDispose { lifecycle.removeObserver(observer); password = "" }
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) { password = ""; authorized = false; model.cancelDiscovery() } }
+        lifecycle.addObserver(observer); onDispose { lifecycle.removeObserver(observer); password = ""; model.cancelDiscovery() }
     }
     // A delayed file-picker result must not modify a different draft/connection.
     var importTarget by remember { mutableStateOf<Pair<String, DatabaseKind>?>(null) }
     val caPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         val target = importTarget
-        uri?.let { model.importCa(it) { hash -> if (target == (draft.id to draft.kind)) { draft = draft.copy(ca = hash); authorized = false } } }
+        uri?.let { model.importCa(it) { hash -> if (target == (draft.id to draft.kind)) { draft = draft.copy(ca = hash); authorized = false; model.cancelDiscovery() } } }
     }
     val sqlitePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         val target = importTarget
         uri?.let { model.importSqlite(it) { id -> if (target == (draft.id to draft.kind)) { draft = draft.copy(database = id); authorized = false } } }
     }
-    fun edit(connection: SavedConnection) { draft = connection; password = ""; authorized = false; advanced = false; stage = "form" }
+    fun edit(connection: SavedConnection) { model.cancelDiscovery(); discoveryHint = ""; databaseSearch = ""; draft = connection; password = ""; authorized = false; advanced = false; stage = "form" }
     if (stage == "list") {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("我的连接", style = MaterialTheme.typography.titleLarge)
@@ -104,8 +114,8 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
         } }
     } else {
         val errors = draft.fieldErrors()
-        fun change(value: SavedConnection) { draft = value; authorized = false }
-        TextButton(enabled = !state.busy, onClick = { stage = "list"; password = ""; authorized = false; search = "" }) { Text("返回我的连接") }
+        fun change(value: SavedConnection) { model.cancelDiscovery(); draft = value; authorized = false }
+        TextButton(enabled = !state.busy, onClick = { stage = "list"; password = ""; authorized = false; search = ""; model.cancelDiscovery() }) { Text("返回我的连接") }
         Text("配置 ${draft.kind.label}", style = MaterialTheme.typography.titleLarge)
         Text(DatabaseCatalog.targets.first { it.connectionKind == draft.kind }.capability, style = MaterialTheme.typography.bodySmall)
         ConnectionField("连接名称", draft.name, errors["name"]) { change(draft.copy(name = it)) }
@@ -118,14 +128,13 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                 ConnectionField("服务器 DNS / IPv4", draft.host, errors["host"], Modifier.weight(2f)) { change(draft.copy(host = it)); password = "" }
                 ConnectionField("端口", draft.port, errors["port"], Modifier.weight(1f), KeyboardType.Number) { change(draft.copy(port = it)); password = "" }
             }
-            ConnectionField(if (draft.kind.isSearch) "索引范围（如 logs-*）" else if (draft.kind.isKeyValue) "数据库编号" else "数据库", draft.database, errors["database"], keyboard = if (draft.kind.isKeyValue) KeyboardType.Number else KeyboardType.Text) { change(draft.copy(database = it)) }
             if (draft.kind.isSearch) Text("HTTPS · Basic 认证 · 仅浏览指定范围的普通索引；账号需具备读取、索引监控和映射查看权限。", style = MaterialTheme.typography.bodySmall)
             if (draft.kind.isDocument) {
                 ConnectionField("认证数据库", draft.authDatabase, errors["authDatabase"]) { change(draft.copy(authDatabase = it)); password = "" }
                 Text("单个服务器直连 · SCRAM-SHA-256 · 只读集合与文档", style = MaterialTheme.typography.bodySmall)
             }
             ConnectionField(if (draft.kind.isKeyValue) "ACL 用户名" else "用户名", draft.username, errors["username"]) { change(draft.copy(username = it)); password = "" }
-            OutlinedTextField(password, { password = it }, Modifier.fillMaxWidth(), label = { Text("密码（不保存）") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
+            OutlinedTextField(password, { model.cancelDiscovery(); password = it }, Modifier.fillMaxWidth(), label = { Text("密码（不保存）") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
             Row { Checkbox(draft.production, { change(draft.copy(production = it)) }); Text("生产环境（只读）") }
             Text("连接使用 TLS，验证证书及服务器身份。", style = MaterialTheme.typography.bodySmall)
             TextButton(onClick = { advanced = !advanced }) { Text(if (advanced) "收起证书设置" else "证书设置 · ${if (draft.ca == null) "系统 CA" else "自选 CA"}") }
@@ -136,11 +145,45 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                     TextButton(onClick = { change(draft.copy(ca = null)) }) { Text("恢复系统 CA") } }
             }
         }
-        Row { Checkbox(authorized, { authorized = it }); Text("我已获准访问上述数据库") }
-        if (errors.isNotEmpty()) Text("请补全：" + errors.keys.joinToString("、") { when (it) { "name" -> "名称"; "host" -> "服务器"; "port" -> "端口"; "username" -> "用户名"; else -> "数据库" } }, style = MaterialTheme.typography.bodySmall)
+        Row { Checkbox(authorized, { authorized = it; if (!it) model.cancelDiscovery() }); Text("我已获准访问上述数据库") }
+        if (draft.kind != DatabaseKind.SQLITE) {
+            Text("1. 连接服务器并扫描", style = MaterialTheme.typography.titleMedium)
+            if (draft.kind == DatabaseKind.POSTGRESQL || draft.kind.isSearch) {
+                ConnectionField(if (draft.kind.isSearch) "扫描索引范围（默认 *）" else "扫描入口库（默认 postgres）", discoveryHint, draft.discoveryErrors(discoveryHint)["database"]) {
+                    model.cancelDiscovery(); discoveryHint = it
+                }
+                if (draft.kind == DatabaseKind.POSTGRESQL) Text("PostgreSQL 需先登录一个可访问的库才能扫描；若 postgres 不可用，请填写已知库名。", style = MaterialTheme.typography.bodySmall)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(enabled = draft.discoveryErrors(discoveryHint).isEmpty() && authorized && password.isNotEmpty() && !state.busy && !discovery.busy,
+                    onClick = { databaseSearch = ""; model.discover(draft, discoveryHint, password.toCharArray()) }) {
+                    Text(if (discovery.busy) "扫描中…" else "连接服务器并扫描")
+                }
+                if (discovery.busy) TextButton(onClick = model::cancelDiscovery) { Text("取消扫描") }
+            }
+            if (discovery.message.isNotEmpty()) Text(discovery.message, style = MaterialTheme.typography.bodySmall)
+            Text("2. 选择目标并连接", style = MaterialTheme.typography.titleMedium)
+            discovery.result?.let { result ->
+                Text(result.note, style = MaterialTheme.typography.bodySmall)
+                if (result.limited) Text("仅显示前 200 项，可手动填写未显示的目标。")
+                if (result.names.isEmpty()) Text("未发现可见目标；空列表不表示服务器没有数据库。")
+                else {
+                    ConnectionField("筛选扫描结果", databaseSearch, null) { databaseSearch = it }
+                    val matches = result.names.filter { it.contains(databaseSearch, ignoreCase = true) }
+                    if (matches.isEmpty()) Text("没有匹配的目标")
+                    matches.forEach { name ->
+                        val selectable = draft.canSelectDiscoveredDatabase(name)
+                        FilterChip(selected = draft.database == name, enabled = selectable && !state.busy && !discovery.busy,
+                            onClick = { draft = draft.copy(database = name) }, label = { Text(name + if (selectable) "" else "（暂不支持此名称）") })
+                    }
+                }
+            }
+            Text("也可手动填写已知目标；密码仅在当前页面内存中保留，离开即清除。", style = MaterialTheme.typography.bodySmall)
+            ConnectionField(if (draft.kind.isSearch) "索引范围（如 logs-*）" else if (draft.kind.isKeyValue) "数据库编号" else "数据库", draft.database, errors["database"], keyboard = if (draft.kind.isKeyValue) KeyboardType.Number else KeyboardType.Text) { draft = draft.copy(database = it) }
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(enabled = errors.isEmpty() && !state.busy, onClick = { model.save(draft) }) { Text("保存配置") }
-            Button(enabled = errors.isEmpty() && authorized && !state.busy && (draft.kind == DatabaseKind.SQLITE || password.isNotEmpty()), onClick = {
+            OutlinedButton(enabled = errors.isEmpty() && !state.busy && !discovery.busy, onClick = { model.save(draft) }) { Text("保存配置") }
+            Button(enabled = errors.isEmpty() && authorized && !state.busy && !discovery.busy && (draft.kind == DatabaseKind.SQLITE || password.isNotEmpty()), onClick = {
                 val secret = password.toCharArray(); password = ""; model.connect(draft, secret)
             }) { Text(if (state.busy) "连接中…" else "连接数据库") }
         }
