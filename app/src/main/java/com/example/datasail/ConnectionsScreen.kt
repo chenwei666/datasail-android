@@ -8,6 +8,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -54,6 +59,14 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
     var databaseSearch by remember { mutableStateOf("") }
     var stage by remember { mutableStateOf("list") }
     var search by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf("全部") }
+    val focus = androidx.compose.ui.platform.LocalFocusManager.current
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    fun dismissInput() { focus.clearFocus(); keyboard?.hide() }
+    val stageLocation = remember { BringIntoViewRequester() }
+    LaunchedEffect(stage) { dismissInput(); stageLocation.bringIntoView() }
+    val securityLocation = remember { BringIntoViewRequester() }
+    LaunchedEffect(discovery.tlsFailure) { if (discovery.tlsFailure) securityLocation.bringIntoView() }
     var draft by remember { mutableStateOf(SavedConnection()) }
     var password by remember { mutableStateOf("") }
     var authorized by remember { mutableStateOf(false) }
@@ -75,10 +88,11 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
         uri?.let { model.importSqlite(it) { id -> if (target == (draft.id to draft.kind)) { draft = draft.copy(database = id); authorized = false } } }
     }
     fun edit(connection: SavedConnection) { model.cancelDiscovery(); discoveryHint = ""; databaseSearch = ""; draft = connection; password = ""; authorized = false; advanced = false; stage = "form" }
+    Spacer(Modifier.height(1.dp).bringIntoViewRequester(stageLocation))
     if (stage == "list") {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("我的连接", style = MaterialTheme.typography.titleLarge)
-            Button(onClick = { stage = "type"; search = "" }, enabled = !state.busy) { Text("新建连接") }
+            Button(onClick = { stage = "type"; search = ""; category = "全部" }, enabled = !state.busy) { Text("新建连接") }
         }
         Text("${DatabaseKind.entries.size} 种已接入引擎 · 连接配置只保存在本机，密码每次输入。", style = MaterialTheme.typography.bodySmall)
         if (saved.isEmpty()) {
@@ -92,7 +106,13 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
             if (matches.isEmpty()) Text("没有匹配的连接")
             matches.forEach { connection -> OutlinedCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(connection.name, style = MaterialTheme.typography.titleMedium)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        EngineBadge(connection.kind)
+                        Column(Modifier.weight(1f)) {
+                            Text(connection.name, style = MaterialTheme.typography.titleMedium)
+                            Text(connection.kind.connectionCategory, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
                     Text("${connection.kind.label} · ${if (connection.production) "生产 · 只读" else "测试"}")
                     Text(if (connection.kind == DatabaseKind.SQLITE) "本机只读文件副本" else "${connection.host}:${connection.port} / ${connection.database}", style = MaterialTheme.typography.bodySmall)
                     Row {
@@ -107,21 +127,28 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
         TextButton(onClick = { stage = "list"; search = "" }) { Text("返回我的连接") }
         Text("选择数据库", style = MaterialTheme.typography.titleLarge)
         OutlinedTextField(search, { search = it }, Modifier.fillMaxWidth(), label = { Text("搜索可连接的数据库") }, singleLine = true)
-        val targets = DatabaseCatalog.targets.filter { it.connectionKind != null && it.name.contains(search, true) }
-        if (targets.isEmpty()) Text("此数据库尚未接入。完整开发范围可在设置中查看。")
-        targets.forEach { target -> OutlinedCard(onClick = {
-            val kind = target.connectionKind!!
+        Text("选择引擎，再配置连接。仅展示已接入的数据库。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("全部", "关系型", "键值", "文档", "搜索", "本地文件").forEach { item ->
+                FilterChip(selected = category == item, onClick = { category = item }, label = { Text(item) })
+            }
+        }
+        val kinds = DatabaseKind.entries.filter { it.label.contains(search, true) && (category == "全部" || it.connectionCategory == category) }
+        if (kinds.isEmpty()) Text("没有匹配的数据库，请更换分类或关键词。")
+        EngineGrid(kinds) { kind ->
             edit(SavedConnection(kind = kind, name = kind.label, port = kind.defaultPort.toString(),
                 database = if (kind.isKeyValue) "0" else "", username = if (kind.isKeyValue) "default" else ""))
-        }, modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp)) { Text(target.name, style = MaterialTheme.typography.titleMedium); Text(target.capability, style = MaterialTheme.typography.bodySmall) }
-        } }
+        }
     } else {
         val errors = draft.fieldErrors()
         fun change(value: SavedConnection) { model.cancelDiscovery(); draft = value.withoutMovedTrust(); authorized = false }
         TextButton(enabled = !state.busy, onClick = { stage = "list"; password = ""; authorized = false; search = ""; model.cancelDiscovery() }) { Text("返回我的连接") }
-        Text("配置 ${draft.kind.label}", style = MaterialTheme.typography.titleLarge)
-        Text(DatabaseCatalog.targets.first { it.connectionKind == draft.kind }.capability, style = MaterialTheme.typography.bodySmall)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            EngineBadge(draft.kind)
+            Column { Text("配置 ${draft.kind.label}", style = MaterialTheme.typography.titleLarge)
+                Text("服务器 → 扫描目标 → 连接", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
+        ConnectionSection("01", "连接信息", "连接名称仅用于本机识别")
         ConnectionField("连接名称", draft.name, errors["name"]) { change(draft.copy(name = it)) }
         if (draft.kind == DatabaseKind.SQLITE) {
             Text("选择已导出的完整文件（≤64 MiB、非 WAL），保存只读副本。")
@@ -140,22 +167,34 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
             ConnectionField(if (draft.kind.isKeyValue) "ACL 用户名" else "用户名", draft.username, errors["username"]) { change(draft.copy(username = it)); password = "" }
             OutlinedTextField(password, { model.cancelDiscovery(); password = it }, Modifier.fillMaxWidth(), label = { Text("密码（不保存）") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
             Row { Checkbox(draft.production, { change(draft.copy(production = it)) }); Text("生产环境（只读）") }
-            Text(if (draft.certificateTrust == null) "连接使用 TLS，验证证书及服务器身份。" else "连接使用 TLS，仅信任已确认的服务器证书指纹。", style = MaterialTheme.typography.bodySmall)
-            TextButton(onClick = { advanced = !advanced }) { Text(if (advanced) "收起证书设置" else "证书设置 · ${if (draft.certificateTrust != null) "已确认服务器证书" else if (draft.ca == null) "系统 CA" else "自选 CA"}") }
-            if (advanced) {
-                Text(if (draft.certificateTrust != null) "服务器证书 SHA-256：${draft.certificateTrust!!.sha256}" else
-                    if (draft.ca == null) "使用系统信任的 CA。内部 CA 可导入；默认自签名证书可在下方获取并确认。" else "CA SHA-256：${draft.ca}")
-                Text("请核对证书来源与指纹。")
-                Row { TextButton(onClick = { importTarget = draft.id to draft.kind; caPicker.launch("*/*") }) { Text("选择 CA 证书") }
-                    TextButton(onClick = { change(draft.copy(ca = null, certificateTrust = null)) }) { Text("恢复系统 CA") } }
-                OutlinedButton(enabled = draft.discoveryErrors(discoveryHint).isEmpty() && authorized && !state.busy && !discovery.busy,
-                    onClick = { model.inspectCertificate(draft, discoveryHint) }) { Text("获取并核对服务器证书") }
-                Text("无需密码。确认指纹后仅对当前连接生效；修改服务器或端口、复制连接需要重新确认。恢复系统 CA 后请保存配置。", style = MaterialTheme.typography.bodySmall)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(authorized, { authorized = it; if (!it) model.cancelDiscovery() }); Text("我已获准访问上述数据库") }
+        if (draft.kind != DatabaseKind.SQLITE) {
+            Card(modifier = Modifier.fillMaxWidth().bringIntoViewRequester(securityLocation),
+                colors = CardDefaults.cardColors(containerColor = if (discovery.tlsFailure) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainer)) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(if (discovery.tlsFailure) "需要确认服务器证书" else "连接安全 · TLS 加密", style = MaterialTheme.typography.titleMedium)
+                    Text(when {
+                        draft.certificateTrust != null -> "已确认服务器证书 · 此连接下次可直接扫描"
+                        draft.ca != null -> "自选 CA · 验证服务器身份"
+                        else -> "系统 CA · 首次连接自签名服务器，可直接在这里确认其证书。"
+                    }, style = MaterialTheme.typography.bodyMedium)
+                    if (discovery.tlsFailure) Text(discovery.message, style = MaterialTheme.typography.bodySmall)
+                    OutlinedButton(enabled = draft.discoveryErrors(discoveryHint).isEmpty() && authorized && !state.busy && !discovery.busy,
+                        onClick = { dismissInput(); model.inspectCertificate(draft, discoveryHint) }) { Text("获取并核对服务器证书") }
+                    if (!authorized) Text("请先勾选访问授权；获取证书无需密码。", style = MaterialTheme.typography.bodySmall)
+                    TextButton(onClick = { advanced = !advanced }) { Text(if (advanced) "收起证书详情" else "证书详情与 CA 设置") }
+                    if (advanced) {
+                        Text(draft.certificateTrust?.let { "服务器证书 SHA-256：${it.sha256}" } ?: draft.ca?.let { "CA SHA-256：$it" } ?: "使用系统信任的 CA。")
+                        TextButton(onClick = { importTarget = draft.id to draft.kind; caPicker.launch("*/*") }) { Text("选择 CA 证书") }
+                        TextButton(onClick = { change(draft.copy(ca = null, certificateTrust = null)) }) { Text("恢复系统 CA") }
+                        Text("恢复后请保存配置。修改服务器、端口或复制连接，需要重新确认。", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
             }
         }
-        Row { Checkbox(authorized, { authorized = it; if (!it) model.cancelDiscovery() }); Text("我已获准访问上述数据库") }
         if (draft.kind != DatabaseKind.SQLITE) {
-            Text("1. 连接服务器并扫描", style = MaterialTheme.typography.titleMedium)
+            ConnectionSection("02", "发现数据库", "扫描当前账号可以访问的目标")
             if (draft.kind == DatabaseKind.POSTGRESQL || draft.kind.isSearch) {
                 ConnectionField(if (draft.kind.isSearch) "扫描索引范围（默认 *）" else "扫描入口库（默认 postgres）", discoveryHint, draft.discoveryErrors(discoveryHint)["database"]) {
                     model.cancelDiscovery(); discoveryHint = it
@@ -163,15 +202,17 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                 if (draft.kind == DatabaseKind.POSTGRESQL) Text("PostgreSQL 需先登录一个可访问的库才能扫描；若 postgres 不可用，请填写已知库名。", style = MaterialTheme.typography.bodySmall)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(enabled = draft.discoveryErrors(discoveryHint).isEmpty() && authorized && password.isNotEmpty() && !state.busy && !discovery.busy,
-                    onClick = { databaseSearch = ""; model.discover(draft, discoveryHint, password.toCharArray()) }) {
+                Button(modifier = Modifier.weight(1f), enabled = draft.discoveryErrors(discoveryHint).isEmpty() && authorized && password.isNotEmpty() && !state.busy && !discovery.busy,
+                    onClick = { dismissInput(); databaseSearch = ""; model.discover(draft, discoveryHint, password.toCharArray()) }) {
                     Text(if (discovery.busy) "扫描中…" else "连接服务器并扫描")
                 }
                 if (discovery.busy) TextButton(onClick = model::cancelDiscovery) { Text("取消扫描") }
             }
-            if (discovery.message.isNotEmpty()) Text(discovery.message, style = MaterialTheme.typography.bodySmall)
-            Text("2. 选择目标并连接", style = MaterialTheme.typography.titleMedium)
+            if (discovery.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+            if (discovery.message.isNotEmpty() && !discovery.tlsFailure) Text(discovery.message, style = MaterialTheme.typography.bodySmall)
+            ConnectionSection("03", "选择数据库", "选择扫描结果，或手动填写已知目标")
             discovery.result?.let { result ->
+                Text("发现 ${result.names.size} 个目标", style = MaterialTheme.typography.titleSmall)
                 Text(result.note, style = MaterialTheme.typography.bodySmall)
                 if (result.limited) Text("仅显示前 200 项，可手动填写未显示的目标。")
                 if (result.names.isEmpty()) Text("未发现可见目标；空列表不表示服务器没有数据库。")
@@ -181,8 +222,9 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                     if (matches.isEmpty()) Text("没有匹配的目标")
                     matches.forEach { name ->
                         val selectable = draft.canSelectDiscoveredDatabase(name)
-                        FilterChip(selected = draft.database == name, enabled = selectable && !state.busy && !discovery.busy,
-                            onClick = { draft = draft.copy(database = name) }, label = { Text(name + if (selectable) "" else "（暂不支持此名称）") })
+                        DatabaseTargetRow(name, draft.database == name, selectable && !state.busy && !discovery.busy, selectable) {
+                            draft = draft.copy(database = name)
+                        }
                     }
                 }
             }
@@ -192,6 +234,7 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(enabled = errors.isEmpty() && !state.busy && !discovery.busy, onClick = { model.save(draft) }) { Text("保存配置") }
             Button(enabled = errors.isEmpty() && authorized && !state.busy && !discovery.busy && (draft.kind == DatabaseKind.SQLITE || password.isNotEmpty()), onClick = {
+                dismissInput()
                 val secret = password.toCharArray(); password = ""; model.connect(draft, secret)
             }) { Text(if (state.busy) "连接中…" else "连接数据库") }
         }

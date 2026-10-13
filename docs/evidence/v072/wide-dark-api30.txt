@@ -1,0 +1,8 @@
+
+com.example.datasail.ConnectionUiTest:.
+
+Time: 65.116
+
+OK (1 test)
+
+

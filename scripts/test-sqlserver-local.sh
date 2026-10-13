@@ -58,8 +58,8 @@ if [[ "${DATASAIL_SQLSERVER_AUTOCERT:-0}" == 1 ]]; then
  task=sqlServerAutoCertificateTest; suite=SQL_SERVER_AUTOCERT; android_class=com.example.datasail.CertificateTrustUiTest
 fi
 ./gradlew ":core:$task" --console=plain
-mkdir -p "docs/evidence/v071/$suite"
-cp core/build/test-results/"$task"/TEST-*.xml "docs/evidence/v071/$suite/"
+mkdir -p "docs/evidence/v072/$suite"
+cp core/build/test-results/"$task"/TEST-*.xml "docs/evidence/v072/$suite/"
 
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
@@ -73,5 +73,5 @@ if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb shell am instrument -w -e class "$android_class" com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  adb shell run-as com.example.datasail rm -f files/fixture.properties files/fixture-ca.pem
  rg -q 'OK \(2 tests\)' "$fixture/android-result.txt"
- cp "$fixture/android-result.txt" "docs/evidence/v071/$suite/android-${ANDROID_SERIAL}.txt"
+ cp "$fixture/android-result.txt" "docs/evidence/v072/$suite/android-${ANDROID_SERIAL}.txt"
 fi

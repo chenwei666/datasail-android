@@ -1,0 +1,11 @@
+
+com.example.datasail.ConnectionUiTest:..
+com.example.datasail.MobileWorkflowTest:.
+com.example.datasail.QueryStoreTest:...
+com.example.datasail.SqliteDeviceTest:..
+
+Time: 89.346
+
+OK (8 tests)
+
+

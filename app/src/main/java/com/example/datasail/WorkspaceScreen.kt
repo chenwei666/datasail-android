@@ -41,19 +41,23 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
         listOf("连接", "工作台", "AI 助手", "收藏", "设置").forEach { title ->
             val available = title != "AI 助手"
             NavigationBarItem(selected = page == title, onClick = { page = title }, enabled = available,
-                icon = { Text(if (available) "●" else "—") }, label = { Text(title) })
+                icon = { NavigationGlyph(title) }, label = { Text(title) })
         }
     } }) { padding -> Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("数舟", style = MaterialTheme.typography.headlineMedium)
-            Text("DataSail · V0.7.0 · 多数据库实验性工作台")
-            Text("${state.target} / ${state.catalog} / ${state.schema}\n${if (state.production) "生产" else "测试"} · ${if (state.writable) "可写" else "只读"} · ${if (state.connected) "已连接" else "未连接"}", style = MaterialTheme.typography.labelMedium)
-            Text(state.message, style = MaterialTheme.typography.bodySmall)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Text("数舟", style = MaterialTheme.typography.titleLarge)
+                Text("DataSail · V${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Text(if (state.connected || state.busy) "${state.target} / ${state.catalog} / ${state.schema} · ${if (state.production) "生产" else "测试"} · ${if (state.writable) "可写" else "只读"} · ${if (state.connected) "已连接" else "连接中"}" else "未连接 · 默认只读",
+                style = MaterialTheme.typography.labelMedium)
+            if (state.message != "请选择已授权的数据库连接；默认只读。") Text(state.message, style = MaterialTheme.typography.bodySmall)
             if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
             if (state.connected || state.busy) TextButton(onClick = model::disconnect) { Text("取消 / 断开连接") }
         }
         HorizontalDivider()
-        Column(Modifier.weight(1f).verticalScroll(contentScroll).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.weight(1f).widthIn(max = 960.dp).fillMaxWidth().align(androidx.compose.ui.Alignment.CenterHorizontally).verticalScroll(contentScroll).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             when (page) {
                 "连接" -> Connections(model, state)
                 "工作台" -> Workbench(model, state) { exportPreview = state.target + " / " + state.catalog to it }

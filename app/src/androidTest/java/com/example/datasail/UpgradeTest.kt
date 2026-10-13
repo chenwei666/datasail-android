@@ -17,6 +17,9 @@ class UpgradeTest {
         assertEquals("1433", saved.port)
         assertEquals(com.example.datasail.core.DatabaseKind.SQL_SERVER, saved.kind)
         assertNull(saved.ca)
+        assertEquals("a".repeat(64), saved.certificateTrust!!.sha256)
+        assertTrue(saved.certificateTrust!!.matches(saved))
+        assertEquals(123L, saved.certificateTrust!!.confirmedAt)
         assertEquals("admin", saved.authDatabase)
         val favorite = QueryStore(context).load().single { it.id == "upgrade-query" }
         assertEquals("SELECT 1", favorite.sql)

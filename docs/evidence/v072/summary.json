@@ -1,0 +1,37 @@
+{
+  "version": "0.7.2",
+  "versionCode": 11,
+  "finalApkSha256": "9fe9bcd48b550be7d90781c29dc285bb964e242e5a7cc961f0d6a01cd7fa0619",
+  "androidTestApkSha256": "16688e6baac0000bfa13a3187a2b86f6fa3949286ab0a5bc13fafcf4257cdf47",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerAutoCertificateTest"
+  ],
+  "jvmTests": {
+    "core-unit": 54,
+    "app-unit": 9,
+    "driver-profile": 11,
+    "sqlserver-autocert": 1
+  },
+  "androidTests": {
+    "upgrade-api30.txt": 4,
+    "mobile-api30.txt": 8,
+    "upgrade-api26.txt": 4,
+    "mobile-api26.txt": 8,
+    "SQL_SERVER_AUTOCERT/android-emulator-5556.txt": 2,
+    "wide-dark-api30.txt": 1
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "Connection UI/theme only; SQL Server automatic-certificate scenario rerun. Other eight network engines use unchanged V0.7.1 driver evidence, not current-version retests.",
+  "unverified": [
+    "physical/arm64",
+    "fresh cloud restoration",
+    "user database server",
+    "complete DBeaver capabilities",
+    "full nine-engine current-version matrix"
+  ]
+}

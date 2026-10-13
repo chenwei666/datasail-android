@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -28,7 +29,7 @@ class MainActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
+            MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme(primary = Color(0xFF82D5C3), onPrimary = Color(0xFF00382E), secondaryContainer = Color(0xFF254C43), onSecondaryContainer = Color(0xFFB8EDDD), surface = Color(0xFF111917), background = Color(0xFF111917)) else lightColorScheme(primary = Color(0xFF146B58), onPrimary = Color.White, primaryContainer = Color(0xFFD6F3E8), secondaryContainer = Color(0xFFE0EFE9), onSecondaryContainer = Color(0xFF173D32), surface = Color(0xFFFCFDFB), background = Color(0xFFF5F7F4), surfaceContainer = Color(0xFFEDF2EE), outlineVariant = Color(0xFFD6DFD8))) {
                 WorkspaceApp(workspace, model)
             }
         }

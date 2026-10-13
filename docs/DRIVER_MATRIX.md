@@ -16,7 +16,7 @@
 | Elasticsearch | 自有平台 HTTPS / 严格 JSON（Apache-2.0） | 索引、映射、受限 DSL、100 条分页 | 未开放 | Basic、指定索引范围、前 1000 条，单响应 2 MiB |
 | OpenSearch | 同上，独立服务器验收 | 同上 | 未开放 | 不以 REST 接口相似推断兼容 |
 
-本轮具体 JVM、Android、UI 和升级检查见 TEST_REPORT 与 `docs/evidence/v071/summary.json`。历史设备结果不冒充本轮结果；正式 Release 和真机仍是独立门禁。
+V0.7.1 的完整引擎矩阵见 `docs/evidence/v071/summary.json`；V0.7.2 只改连接界面，具体重跑范围见 TEST_REPORT 与 `docs/evidence/v072/summary.json`。历史设备结果不冒充本轮结果；正式 Release 和真机仍是独立门禁。
 
 所有网络连接默认校验证书链与主机身份；SQL Server、PostgreSQL 通过严格 TrustManager，MySQL/MariaDB 通过 StrictTlsPlugin 的平台链校验与共享 SAN 匹配器。支持连接专用公共 CA；默认拒绝 CN-only。V0.7.1 新增显式服务器指纹模式，要求叶证书 SHA-256 相同且有效，以此替代链/SAN；没有信任全部或明文回退。MySQL/MariaDB/PostgreSQL 连接预算 15 秒，PostgreSQL 总登录预算 30 秒，socket 15 秒、工作台语句 10 秒。
 

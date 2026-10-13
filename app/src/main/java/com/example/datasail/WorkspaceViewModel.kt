@@ -13,13 +13,13 @@ import kotlinx.coroutines.withContext
 
 internal fun discoveryFailureMessage(error: Throwable): String =
     if (Failures.classify(error).kind == ErrorKind.TLS)
-        "TLS 校验失败，未取得列表。请展开证书设置：导入 CA，或获取并核对服务器证书。已信任的证书也可能已变更或过期。未降级为明文。"
+        "TLS 校验失败，未取得列表。请点击下方按钮获取并核对服务器证书，或在证书详情中导入 CA。已信任的证书也可能已变更或过期。未降级为明文。"
     else (if (error is WorkspaceRejected) error.explanation else Failures.classify(error).description) +
         "。未取得列表；可检查扫描参数或权限，或手动填写已知目标。"
 
 data class PendingCertificate(val connection: SavedConnection, val preview: CertificatePreview)
 
-data class DiscoveryUiState(val busy: Boolean = false, val result: DiscoveredDatabases? = null, val message: String = "")
+data class DiscoveryUiState(val busy: Boolean = false, val result: DiscoveredDatabases? = null, val message: String = "", val tlsFailure: Boolean = false)
 
 data class IndexMapping(val index: String, val json: String)
 
@@ -182,7 +182,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             result.fold(onSuccess = {
                 discovering.value = DiscoveryUiState(result = it, message = "扫描完成，请选择目标后连接")
             }, onFailure = {
-                discovering.value = DiscoveryUiState(message = discoveryFailureMessage(it))
+                discovering.value = DiscoveryUiState(message = discoveryFailureMessage(it), tlsFailure = Failures.classify(it).kind == ErrorKind.TLS)
             })
         } }
         if (!accepted) discovering.value = DiscoveryUiState(message = "上一扫描仍在清理，请稍后重试")
@@ -318,7 +318,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         val lost = safe.kind in setOf(ErrorKind.TIMEOUT, ErrorKind.NETWORK, ErrorKind.CANCELLED, ErrorKind.UNSUPPORTED)
         mutable.value = mutable.value.copy(busy = false, preview = null, result = null, documents = null, searchPage = null, mapping = null, keys = null, keyContent = null,
             connected = mutable.value.connected && !lost, writable = mutable.value.writable && !lost,
-            message = if (error is WorkspaceRejected) error.explanation else if (safe.kind == ErrorKind.TLS) "TLS 校验失败。请到连接的证书设置导入 CA，或获取并核对服务器证书；已信任证书可能已变更或过期。" else safe.description)
+            message = if (error is WorkspaceRejected) error.explanation else if (safe.kind == ErrorKind.TLS) "TLS 校验失败。请在连接页点击“获取并核对服务器证书”，或导入 CA；已信任证书可能已变更或过期。" else safe.description)
     }
     override fun onCleared() {
         certificateReview?.close(); discoveryRunner.close(); runner.close(); keyValueRunner.close(); documentRunner.close(); searchRunner.close(); super.onCleared() }

@@ -1,6 +1,10 @@
 package com.example.datasail
 
 import androidx.compose.ui.test.*
+import androidx.compose.ui.graphics.asAndroidBitmap
+import android.graphics.Bitmap
+import android.view.WindowManager
+import java.io.File
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.datasail.core.DatabaseKind
@@ -26,6 +30,14 @@ class ConnectionUiTest {
     @get:Rule val rules: RuleChain = RuleChain.outerRule(fixture).around(compose)
     @Test fun engineSearchAdaptsFormAndPreventsInvalidConnection() {
         compose.onNodeWithText("新建连接").performClick()
+        // Only synthetic metadata is present; allow test screenshots without changing production FLAG_SECURE.
+        compose.runOnIdle { compose.activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+        compose.waitForIdle()
+        compose.onRoot().captureToImage().asAndroidBitmap().let { bitmap ->
+            File(compose.activity.filesDir, "v072-engine-picker.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+        compose.onNodeWithText("键值", useUnmergedTree = true).performClick()
+        compose.onNodeWithText("MySQL").assertDoesNotExist()
         compose.onNodeWithText("搜索可连接的数据库").performTextInput("Valkey")
         compose.onNode(hasText("Valkey") and !hasSetTextAction()).performScrollTo().performClick()
         compose.onNodeWithText("配置 Valkey").assertIsDisplayed()

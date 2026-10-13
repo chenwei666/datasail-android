@@ -1,0 +1,21 @@
+Night mode: yes
+
+Exception occurred while executing 'put':
+java.lang.IllegalArgumentException: Invalid value: null for setting: font_scale
+	at com.android.providers.settings.SettingsProvider.validateSystemSettingValue(SettingsProvider.java:1829)
+	at com.android.providers.settings.SettingsProvider.mutateSystemSetting(SettingsProvider.java:1793)
+	at com.android.providers.settings.SettingsProvider.insertSystemSetting(SettingsProvider.java:1717)
+	at com.android.providers.settings.SettingsProvider.call(SettingsProvider.java:413)
+	at android.content.ContentProvider.call(ContentProvider.java:2448)
+	at android.content.ContentProvider$Transport.call(ContentProvider.java:517)
+	at com.android.providers.settings.SettingsService$MyShellCommand.putForUser(SettingsService.java:375)
+	at com.android.providers.settings.SettingsService$MyShellCommand.onCommand(SettingsService.java:277)
+	at android.os.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:98)
+	at android.os.ShellCommand.exec(ShellCommand.java:44)
+	at com.android.providers.settings.SettingsService.onShellCommand(SettingsService.java:49)
+	at android.os.Binder.shellCommand(Binder.java:929)
+	at android.os.Binder.onTransact(Binder.java:813)
+	at android.os.Binder.execTransactInternal(Binder.java:1159)
+	at android.os.Binder.execTransact(Binder.java:1123)
+
+UI test passed. Initial cleanup tried to restore an absent font_scale as the literal null and was rejected. Corrected with settings delete system font_scale and cmd uimode night no; size and density already restored. No APK change or UI test rerun needed.

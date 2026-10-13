@@ -1,0 +1,11 @@
+# Executed in /workspace/datasail-android with DATASAIL_TOOLS_DIR=/workspace/toolchains and source scripts/env.sh.
+./gradlew :core:test :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain
+./gradlew :core:test :app:testDebugUnitTest :sqlserver-android:test :app:lintDebug --rerun-tasks --console=plain
+./gradlew :app:assembleDebug :app:assembleDebugAndroidTest :app:testDebugUnitTest :app:lintDebug --console=plain
+./gradlew :app:assembleRelease --console=plain
+# For each of emulator-5554 and emulator-5556, sequentially:
+ANDROID_SERIAL=<serial> bash scripts/test-android-upgrade.sh --reset-synthetic-emulator
+adb -s <serial> shell am instrument -w -e class com.example.datasail.ConnectionUiTest,com.example.datasail.MobileWorkflowTest,com.example.datasail.QueryStoreTest,com.example.datasail.SqliteDeviceTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner
+DATASAIL_SQLSERVER_AUTOCERT=1 DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5556 bash scripts/test-sqlserver-local.sh
+# Additional API30 synthetic UI check, temporary 1600x900 / density 240 / font_scale 1.3 / night yes; restored after test.
+adb -s emulator-5554 shell am instrument -w -e class 'com.example.datasail.ConnectionUiTest#engineSearchAdaptsFormAndPreventsInvalidConnection' com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner
