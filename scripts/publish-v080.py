@@ -40,7 +40,10 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 def gh(*args):
-    return subprocess.check_output(["gh", *args], text=True)
+    result = subprocess.run(["gh", *args], text=True, capture_output=True)
+    if result.returncode:
+        raise RuntimeError("GitHub command failed: " + result.stderr.strip()[:1500])
+    return result.stdout
 
 def api(path):
     return json.loads(gh("api", path))
@@ -93,13 +96,14 @@ def publish(expected):
     with tempfile.TemporaryDirectory(prefix="datasail-publish-") as tmp:
         folder = Path(tmp)
         if not matching:
-            notes = folder / "notes.md"
-            notes.write_text(NOTES)
-            gh("release", "create", TAG, "--repo", REPO, "--target", SOURCE,
-               "--draft", "--prerelease", "--title", TITLE, "--notes-file", str(notes))
-            releases = json.loads(gh("api", "--paginate", "--slurp", f"repos/{REPO}/releases?per_page=100"))
-            matching = [r for page in releases for r in page if r["tag_name"] == TAG]
-        release = matching[0]
+            payload = folder / "release.json"
+            payload.write_text(json.dumps({"tag_name": TAG, "target_commitish": SOURCE,
+                                           "name": TITLE, "body": NOTES, "draft": True, "prerelease": True}))
+            # Use the creation response directly; a fresh draft need not appear
+            # immediately in the paginated list.
+            release = json.loads(gh("api", "--method", "POST", f"repos/{REPO}/releases", "--input", str(payload)))
+        else:
+            release = matching[0]
         if release["target_commitish"] != SOURCE or not release["prerelease"]:
             raise RuntimeError("Existing release has a different source or channel")
         uploaded = {a["name"]: a for a in release["assets"]}
