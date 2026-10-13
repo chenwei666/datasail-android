@@ -29,8 +29,8 @@ class MongoUiTest {
     @Test fun connectionCollectionPagingAndTypedFilter() {
         compose.onNodeWithText("打开连接").performScrollTo().performClick()
         compose.onNodeWithText("认证数据库").performScrollTo().assertTextContains("admin")
-        compose.onNodeWithText("密码（不保存）").performScrollTo().performTextInput(password)
-        compose.onAllNodes(isToggleable())[1].performScrollTo().performClick()
+        compose.onNodeWithText("密码").performScrollTo().performTextInput(password)
+        compose.onNodeWithTag("connection-authorization").performScrollTo().performClick()
         compose.onNodeWithText("连接数据库").performScrollTo().assertIsEnabled().performClick()
         var model: WorkspaceViewModel? = null
         compose.runOnIdle { model = androidx.lifecycle.ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java] }

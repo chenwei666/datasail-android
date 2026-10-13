@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -62,11 +63,9 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
                 "连接" -> Connections(model, state)
                 "工作台" -> Workbench(model, state) { exportPreview = state.target + " / " + state.catalog to it }
                 "收藏" -> QueryLibrary(model, state) { page = "工作台" }
-                else -> {
+                else -> SettingsScreen(model) {
                     Text("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。")
-                    Text("Android 8.0 为最低构建目标；各系统实测范围见交付测试报告。密码不持久化，进入后台会断开连接，不自动重试。")
-                    Text("SQL Server：mssql-jdbc 13.6.0.jre8（MIT）\nMySQL / MariaDB：MariaDB Connector/J 3.5.10（LGPL-2.1-or-later）\nPostgreSQL：pgjdbc 42.7.14（BSD-2-Clause）\nMongoDB：Java Driver 5.6.5（Apache-2.0）")
-                    Text("AI 尚未实现；新增数据库当前只读。SQL 过滤不是授权边界，生产连接请使用数据库只读账号。")
+                    Text("当前十种引擎；除 SQL Server 测试会话外只读。AI 尚未实现。")
                     DatabaseSupport()
                     val probeState by probe.state.collectAsStateWithLifecycle()
                     ProbeForm(probe, probeState)
@@ -96,22 +95,31 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
     if (state.kind.isDocument) { DocumentWorkbench(model, state); return }
     if (state.kind.isKeyValue) { KeyValueWorkbench(model, state); return }
     var search by remember { mutableStateOf("") }
+    var showEditor by remember { mutableStateOf(state.message.startsWith("已载入草稿")) }
     val sql by model.draftSql.collectAsStateWithLifecycle()
+    val settings by model.settings.collectAsStateWithLifecycle()
     var savingQuery by remember { mutableStateOf(false) }
     var queryName by remember { mutableStateOf("") }
+    var showStructure by remember { mutableStateOf(false) }
     var selected by remember(state.result) { mutableStateOf<Int?>(null) }
     var editing by remember(state.result) { mutableStateOf<MutationKind?>(null) }
     Choice("数据库", state.catalogs, state.catalog, !state.busy, model::switchCatalog)
     Choice("Schema", state.schemas, state.schema, !state.busy, model::tables)
-    Row { Switch(state.writable, { model.writable(it) }, enabled = !state.busy && !state.production && state.kind == DatabaseKind.SQL_SERVER); Text("允许本次测试会话写入（单行确认）") }
+    Row { Switch(state.writable, { model.writable(it) }, modifier = Modifier.testTag("allow-session-write"), enabled = !state.busy && !state.production && state.kind == DatabaseKind.SQL_SERVER); Text("允许本次测试会话写入（单行确认）") }
     OutlinedTextField(search, { search = it }, label = { Text("筛选表 / 视图") }, singleLine = true)
     // Object chooser remains bounded; data rows are limited by the core to 100.
     val matching = state.tables.filter { it.name.contains(search, ignoreCase = true) }
     Choice("表 / 视图（${matching.size}）", matching.map { it.name }, state.result?.tableSchema?.table?.name ?: "选择对象", !state.busy) { name -> model.page(matching.first { it.name == name }) }
-    OutlinedTextField(sql, model::editSql, label = { Text("单条 SELECT 查询") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(selected = !showEditor, onClick = { showEditor = false }, label = { Text("数据浏览") })
+        FilterChip(selected = showEditor, onClick = { showEditor = true }, label = { Text("SQL 编辑器") })
+    }
+    if (showEditor) {
+    SqlEditor(sql, model::editSql, state, settings)
     Text("查询结果只读，最多显示 100 行 / 64 列；不支持 CTE、变量、多语句和写 SQL。请使用最小权限账号。")
     Button(enabled = !state.busy, onClick = { model.query(sql) }) { Text("执行查询") }
     TextButton(enabled = !state.busy, onClick = { savingQuery = true; queryName = "" }) { Text("收藏查询") }
+    }
     if (savingQuery) AlertDialog(onDismissRequest = { savingQuery = false }, title = { Text("收藏 SELECT 草稿") }, text = {
         Column { Text("仅保存在本机。SQL 可能含业务内容，请确认没有密码或密钥。载入后需要手动执行。"); OutlinedTextField(queryName, { queryName = it }, label = { Text("查询名称") }, singleLine = true) }
     }, confirmButton = { TextButton(enabled = queryName.isNotBlank() && queryName.length <= 80, onClick = { model.saveQuery(queryName); savingQuery = false }) { Text("保存收藏") } }, dismissButton = { TextButton(onClick = { savingQuery = false }) { Text("取消") } })
@@ -123,18 +131,11 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
         if (result.rows.isEmpty()) Text("执行成功，没有记录。")
         result.tableSchema?.let { schema ->
             Text(schema.readOnlyReason ?: "支持安全单行编辑；自增、计算列及主键修改禁用。")
-            Text(schema.columns.joinToString("\n") { "${it.name} · ${it.typeName}(${it.size},${it.scale})${if (it.primaryKeyOrder > 0) " · PK" else ""}${if (it.nullable) " · NULL" else " · NOT NULL"}${if (it.identity) " · 自增" else ""}" })
+            TextButton(onClick = { showStructure = !showStructure }) { Text(if (showStructure) "收起表结构" else "查看表结构") }
+            if (showStructure) Text(schema.columns.joinToString("\n") { "${it.name} · ${it.typeName}(${it.size},${it.scale})${if (it.primaryKeyOrder > 0) " · PK" else ""}${if (it.nullable) " · NULL" else " · NOT NULL"}${if (it.identity) " · 自增" else ""}" })
         }
-        Column(Modifier.horizontalScroll(rememberScrollState())) {
-            Row { result.columns.forEach { column -> Text("${column.name}\n${column.typeName}",
-                modifier = Modifier.width(180.dp), style = MaterialTheme.typography.labelLarge, maxLines = 2) } }
-            LazyColumn(Modifier.width((180 * result.columns.size.coerceAtLeast(1)).dp).height(320.dp)) {
-                itemsIndexed(result.rows) { rowIndex, row -> Row {
-                    row.forEach { cell -> TextButton(onClick = { selected = rowIndex }, modifier = Modifier.width(180.dp).height(52.dp)) {
-                        Text((if (selected == rowIndex) "✓ " else "") + Values.display(cell).ifEmpty { "（空字符串）" }, maxLines = 2)
-                    } }
-                } }
-            }
+        ResultGrid(result, state, settings, { selected = it }) { row, inputs ->
+            model.preview(MutationKind.UPDATE, row, inputs)
         }
         result.tableSchema?.let { schema ->
             Row {

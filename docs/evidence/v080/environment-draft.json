@@ -1,0 +1,11 @@
+{
+  "status": "saved",
+  "requires_publish": true,
+  "published": false,
+  "draft_id": "e06750c1-3f7b-42e9-93a8-719fc8a22d89~cecfgdraft_6accbad7269c81a195647d382ebfb4ee",
+  "updatedFields": [
+    "start_skill"
+  ],
+  "startSkillSha256": "260b11a471ca16844ecebf1635916213da509c747ca1833e58e8ed72f2346069",
+  "freshTaskRestorationVerified": false
+}

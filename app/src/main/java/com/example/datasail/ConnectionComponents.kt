@@ -64,20 +64,23 @@ internal fun EngineBadge(kind: DatabaseKind) {
 internal fun EngineGrid(kinds: List<DatabaseKind>, select: (DatabaseKind) -> Unit) {
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val scale = LocalDensity.current.fontScale
-        val columns = when { maxWidth / scale >= 720.dp -> 3; maxWidth / scale >= 340.dp -> 2; else -> 1 }
+        val columns = when { maxWidth / scale >= 1000.dp -> 3; maxWidth / scale >= 600.dp -> 2; else -> 1 }
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             kinds.chunked(columns).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
                     row.forEach { kind ->
                         OutlinedCard(onClick = { select(kind) }, modifier = Modifier.weight(1f).fillMaxHeight(),
-                            shape = RoundedCornerShape(20.dp),
+                            shape = RoundedCornerShape(10.dp),
                             colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
-                            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 EngineBadge(kind)
-                                Text(kind.label, style = MaterialTheme.typography.titleMedium)
-                                Text(kind.connectionCategory + if (kind == DatabaseKind.SQLITE) " · 只读副本" else " · TLS",
-                                    style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(kind.label, style = MaterialTheme.typography.titleMedium)
+                                    Text(kind.connectionCategory + if (kind == DatabaseKind.SQLITE) " · 本机文件" else " · 服务器连接",
+                                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Text("›", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }

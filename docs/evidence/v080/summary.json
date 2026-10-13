@@ -1,0 +1,42 @@
+{
+  "version": "0.8.0",
+  "versionCode": 12,
+  "finalApkSha256": "b90e3dba9afdfc882abe6542ec711f585baaa4a2d447953720f19e10802267ec",
+  "androidTestApkSha256": "abc700c3c3eed0f8bddca1da40c33760e65ebe7608c21209b852197e149d51c8",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest",
+    "sqlServerAutoCertificateTest"
+  ],
+  "jvmTests": {
+    "core-unit": 55,
+    "app-unit": 13,
+    "driver-profile": 11,
+    "sqlserver": 15,
+    "sqlserver-autocert": 1
+  },
+  "androidTests": {
+    "upgrade-api30.txt": 4,
+    "mobile-api30.txt": 13,
+    "upgrade-api26.txt": 4,
+    "mobile-api26.txt": 13,
+    "SQL_SERVER/android-emulator-5556.txt": 3,
+    "SQL_SERVER_AUTOCERT/android-emulator-5556.txt": 2
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "Encrypted passwords, settings, SQL editor and grid workflow. Actual SQL Server TLS/certificate/commit/conflict coverage; protocol drivers unchanged; shared SQL runner reconnect cleanup fixed; other engine live matrix not rerun.",
+  "unverified": [
+    "physical/arm64",
+    "fresh cloud restoration",
+    "user database server",
+    "full DBeaver features",
+    "other network engine current-version matrix",
+    "hardware-backed key attestation",
+    "biometric/app lock",
+    "multi-cell paste or batch write"
+  ]
+}

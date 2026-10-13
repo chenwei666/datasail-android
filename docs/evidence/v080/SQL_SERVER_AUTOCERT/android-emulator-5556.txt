@@ -1,0 +1,6 @@
+
+com.example.datasail.CertificateTrustUiTest:..
+
+Time: 60.434
+
+OK (2 tests)

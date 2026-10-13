@@ -1,0 +1,10 @@
+{
+  "priorApkSha256": "a6f76ee6dd14a62b926755ce920bd7a6b36c1900710d0b33d2e8916d8eb908e6",
+  "finalRebuiltApkSha256": "b90e3dba9afdfc882abe6542ec711f585baaa4a2d447953720f19e10802267ec",
+  "changedZipEntries": [
+    "classes6.dex"
+  ],
+  "finalApkRetested": true,
+  "finalSqlServerApkRetested": true,
+  "finalCertificateApkRetested": true
+}

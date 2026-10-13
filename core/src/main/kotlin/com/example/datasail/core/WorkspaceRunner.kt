@@ -13,7 +13,8 @@ data class SessionReply<T>(val result: Result<T>, val session: SessionSnapshot)
 /** One bounded worker owns the session. Cancellation invalidates all old callbacks and approvals. */
 class WorkspaceRunner(private val connector: SqlConnector = JdbcConnector(),
     private val localFactory: ((ConnectionProfile) -> SqlWorkspaceSession)? = null) : AutoCloseable {
-    private val worker = ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, ArrayBlockingQueue(1))
+    // At most one cleanup and one admitted operation; busy still rejects parallel work.
+    private val worker = ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, ArrayBlockingQueue(2))
     private val control = ThreadPoolExecutor(2, 2, 0, TimeUnit.SECONDS, ArrayBlockingQueue(4))
     private val statement = AtomicReference<Statement?>(null)
     private val connection = AtomicReference<AutoCloseable?>(null)
@@ -21,6 +22,7 @@ class WorkspaceRunner(private val connector: SqlConnector = JdbcConnector(),
     private var generation = 0L
     private var busy = false
     private var closed = false
+    private var cleanupQueued = false
 
     fun connect(profile: ConnectionProfile, credentials: Credentials, done: (Result<Unit>) -> Unit): Boolean {
         val accepted = submit(done) {
@@ -79,9 +81,15 @@ class WorkspaceRunner(private val connector: SqlConnector = JdbcConnector(),
         val oldConnection = connection.getAndSet(null)
         control { try { (oldConnection as? SqlWorkspaceSession)?.cancel(); oldStatement?.cancel() } catch (_: Exception) { } }
         control { try { oldConnection?.close() } catch (_: Exception) { } }
-        // Ordered behind current work; a new connect cannot overtake disposal.
-        try { worker.execute { session?.close(); session = null } }
-        catch (_: java.util.concurrent.RejectedExecutionException) { }
+        // Coalesce repeated disconnects. A redundant cleanup must not occupy the
+        // bounded queue capacity needed by a manually requested reconnect.
+        if (!cleanupQueued && (oldConnection != null || busy)) {
+            cleanupQueued = true
+            try { worker.execute {
+                try { session?.close(); session = null }
+                finally { synchronized(this) { cleanupQueued = false } }
+            } } catch (_: java.util.concurrent.RejectedExecutionException) { cleanupQueued = false }
+        }
     }
     private fun control(action: () -> Unit) {
         try { control.execute(action) } catch (_: java.util.concurrent.RejectedExecutionException) { }

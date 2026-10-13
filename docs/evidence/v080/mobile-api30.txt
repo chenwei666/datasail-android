@@ -1,0 +1,12 @@
+
+com.example.datasail.ConnectionUiTest:..
+com.example.datasail.MobileWorkflowTest:.
+com.example.datasail.QueryStoreTest:...
+com.example.datasail.SqliteDeviceTest:..
+com.example.datasail.PasswordVaultTest:...
+com.example.datasail.PasswordWorkflowTest:.
+com.example.datasail.SettingsUiTest:.
+
+Time: 211.29
+
+OK (13 tests)

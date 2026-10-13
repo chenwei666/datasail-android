@@ -40,7 +40,8 @@ class MobileWorkflowTest {
             compose.onNodeWithText("打开连接").performScrollTo().performClick()
             compose.onNode(isToggleable()).performScrollTo().performClick()
             compose.onNodeWithText("连接数据库").performScrollTo().performClick()
-            compose.waitUntil(10000) { compose.onAllNodesWithText("单条 SELECT 查询").fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(10000) { compose.onAllNodesWithText("SQL 编辑器").fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithText("SQL 编辑器").performScrollTo().performClick()
             compose.onNodeWithText("单条 SELECT 查询").performScrollTo().performTextReplacement("SELECT id, name FROM mobile_fixture")
             compose.onNodeWithText("执行查询").performScrollTo().performClick()
             compose.waitUntil(10000) { compose.onAllNodesWithText("导出当前页 CSV").fetchSemanticsNodes().isNotEmpty() }

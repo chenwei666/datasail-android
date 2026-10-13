@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.SqlServerAutoCertificateIntegrationTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-13T10:19:17.219Z" hostname="10651f2473f2" time="0.468">
+  <properties/>
+  <testcase name="automaticSelfSignedCertificateOverIpRequiresExplicitFingerprintTrust" classname="com.example.datasail.core.SqlServerAutoCertificateIntegrationTest" time="0.468"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

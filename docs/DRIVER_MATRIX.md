@@ -1,10 +1,10 @@
-# V0.7.1 驱动与能力矩阵
+# V0.8.0 驱动与能力矩阵
 
 当前实际实现十种连接类型；下表区分功能实现与测试证据。完整验收命令和系统范围见 TEST_REPORT。
 
 | 引擎 | 驱动 | 工作台实现 | 图形写入 | 特有约束 |
 |---|---|---|---|---|
-| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.1 / MIT | 库、Schema、表/视图、字段、分页、SELECT | 测试环境安全单行确认 | 现有保护保持，生产只读 |
+| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.1 / MIT | 库、Schema、表/视图、字段、分页、SELECT | 测试环境单元格/单行预览确认 | 现有保护保持，生产只读 |
 | MySQL | MariaDB Connector/J 3.5.10 / LGPL-2.1-or-later | 库、表/视图、字段、主键分页、SELECT | 未开放 | 每操作服务器只读事务；无符号 BIGINT 用精确 Decimal |
 | MariaDB | 同上，独立服务器验收 | 同上 | 未开放 | 不以复用驱动推断兼容 |
 | PostgreSQL | pgjdbc 42.7.14 / BSD-2-Clause | Schema、表/视图、字段、主键分页、SELECT | 未开放 | 一连接一库；参数化系统目录绕开 Android 缺少的 closeOnCompletion |
@@ -16,7 +16,7 @@
 | Elasticsearch | 自有平台 HTTPS / 严格 JSON（Apache-2.0） | 索引、映射、受限 DSL、100 条分页 | 未开放 | Basic、指定索引范围、前 1000 条，单响应 2 MiB |
 | OpenSearch | 同上，独立服务器验收 | 同上 | 未开放 | 不以 REST 接口相似推断兼容 |
 
-V0.7.1 的完整引擎矩阵见 `docs/evidence/v071/summary.json`；V0.7.2 只改连接界面，具体重跑范围见 TEST_REPORT 与 `docs/evidence/v072/summary.json`。历史设备结果不冒充本轮结果；正式 Release 和真机仍是独立门禁。
+V0.7.1 的完整引擎矩阵见 `docs/evidence/v071/summary.json`；V0.8.0 重做应用工作流，具体重跑范围见 TEST_REPORT 与 `docs/evidence/v080/summary.json`。历史设备结果不冒充本轮结果；正式 Release 和真机仍是独立门禁。
 
 所有网络连接默认校验证书链与主机身份；SQL Server、PostgreSQL 通过严格 TrustManager，MySQL/MariaDB 通过 StrictTlsPlugin 的平台链校验与共享 SAN 匹配器。支持连接专用公共 CA；默认拒绝 CN-only。V0.7.1 新增显式服务器指纹模式，要求叶证书 SHA-256 相同且有效，以此替代链/SAN；没有信任全部或明文回退。MySQL/MariaDB/PostgreSQL 连接预算 15 秒，PostgreSQL 总登录预算 30 秒，socket 15 秒、工作台语句 10 秒。
 

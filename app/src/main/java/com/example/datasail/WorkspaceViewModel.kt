@@ -9,6 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 internal fun discoveryFailureMessage(error: Throwable): String =
@@ -44,6 +46,16 @@ internal fun WorkspaceUiState.withSession(actual: SessionSnapshot): WorkspaceUiS
 }
 class WorkspaceViewModel(application: Application) : AndroidViewModel(application) {
     private val store = ConnectionStore(application)
+    private val passwords = PasswordVault(application)
+    private val passwordOperations = Mutex()
+    private val settingsStore = AppSettingsStore(application)
+    private val preferences = MutableStateFlow(AppSettings())
+    val settings = preferences.asStateFlow()
+    private val passwordCountState = MutableStateFlow(0)
+    val passwordCount = passwordCountState.asStateFlow()
+    private var settingsReady = false
+    private val settingsOperations = Mutex()
+    private var persistedSettings = AppSettings()
     private val queryStore = QueryStore(application)
     private val queryList = MutableStateFlow<List<SavedQuery>>(emptyList())
     val queries = queryList.asStateFlow()
@@ -76,6 +88,53 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         try { queryList.value = withContext(Dispatchers.IO) { queryStore.load() }; queryStorageValid = true }
         catch (_: Exception) { message("收藏读取失败，禁止覆盖原文件") }
     } }
+    init { viewModelScope.launch {
+        try { preferences.value = withContext(Dispatchers.IO) { settingsStore.load() }; passwordCountState.value = withContext(Dispatchers.IO) { passwords.count() } }
+        catch (_: Exception) { message("设置读取失败，使用本次默认值") }
+        finally { persistedSettings = preferences.value; settingsReady = true }
+    } }
+    fun updateSettings(value: AppSettings) {
+        if (!settingsReady) { message("设置正在加载，请稍后重试"); return }
+        preferences.value = value
+        viewModelScope.launch { settingsOperations.withLock {
+            try { withContext(Dispatchers.IO) { settingsStore.save(value) }; persistedSettings = value }
+            catch (_: Exception) {
+                if (preferences.value == value) preferences.value = persistedSettings
+                message("设置保存失败，已恢复上次保存值")
+            }
+        } }
+    }
+    fun loadPassword(connection: SavedConnection, done: (CharArray?) -> Unit) { viewModelScope.launch {
+        var secret: CharArray? = null
+        try { secret = withContext(Dispatchers.IO) { passwords.load(connection) }; done(secret) }
+        catch (_: Exception) { message("已存密码无法解密，请重新输入并保存；原密文保留") }
+        finally { secret?.fill('\u0000') }
+    } }
+    fun forgetPassword(id: String? = null) { viewModelScope.launch {
+        try {
+            passwordOperations.withLock { withContext(Dispatchers.IO) { if (id == null) passwords.clear() else passwords.delete(id) } }
+            passwordCountState.value = withContext(Dispatchers.IO) { passwords.count() }
+            message(if (id == null) "已清除全部保存的密码" else "已忘记此连接的密码")
+        } catch (_: Exception) { message("密码清除失败，请重试") }
+    } }
+    fun saveLogin(connection: SavedConnection, password: CharArray, remember: Boolean, announce: Boolean = true) {
+        if (!storageValid || saving) { password.fill('\u0000'); message("配置尚未加载或正在保存，请稍后重试"); return }
+        val errors = if (connection.kind == DatabaseKind.SQLITE || connection.database.isNotBlank()) connection.fieldErrors() else connection.discoveryErrors("")
+        if (errors.isNotEmpty() || (remember && password.isEmpty())) { password.fill('\u0000'); message("请检查连接信息与要保存的密码"); return }
+        saving = true
+        val values = connections.value.filterNot { it.id == connection.id } + connection
+        viewModelScope.launch {
+            try { passwordOperations.withLock {
+                withContext(Dispatchers.IO) { store.save(values) }; connections.value = values
+                try {
+                    withContext(Dispatchers.IO) { if (remember) passwords.save(connection, password) else passwords.delete(connection.id) }
+                    passwordCountState.value = withContext(Dispatchers.IO) { passwords.count() }
+                    if (announce) message(if (remember) "连接及加密密码已保存到此设备" else "连接已保存，不保存密码")
+                } catch (_: Exception) { message("连接配置已保存，但密码保存或移除失败，请重试") }
+            } } catch (_: Exception) { message("配置保存失败，原配置保留") }
+            finally { password.fill('\u0000'); saving = false }
+        }
+    }
     fun editSql(value: String) { if (value.length <= 16000) queryText.value = value }
     fun useQuery(query: SavedQuery): Boolean {
         if (!mutable.value.connected || mutable.value.kind != query.kind) { message("请先连接同类型数据库，再载入草稿"); return false }
@@ -116,7 +175,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         catch (_: Exception) { message("请填写连接名称、有效服务器、端口、数据库和用户名"); return }
         persist(connections.value.filterNot { it.id == connection.id } + connection)
     }
-    fun delete(id: String) { if (storageValid) persist(connections.value.filterNot { it.id == id }) }
+    fun delete(id: String) { if (storageValid) { persist(connections.value.filterNot { it.id == id }); forgetPassword(id) } }
     private fun persist(values: List<SavedConnection>) {
         if (saving) { message("配置正在保存，请稍后重试"); return }; saving = true
         viewModelScope.launch {
@@ -257,9 +316,24 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     fun writable(enabled: Boolean) = execute({ it.setWritable(enabled) }) { copy(writable = enabled) }
     fun preview(kind: MutationKind, row: Int?, inputs: Map<String, CellInput>) = execute({ it.preview(kind, row, inputs) }) { copy(preview = it) }
     fun discardPreview() = execute({ it.discardPreview() }) { copy(preview = null) }
-    fun confirm(token: String) = execute({ it.confirm(token) }) {
-        copy(preview = null, result = null, connected = connected && it.status != MutationStatus.UNKNOWN,
-            writable = writable && it.status != MutationStatus.UNKNOWN, message = it.message)
+    private data class ConfirmedPage(val mutation: MutationResult, val page: ResultPage?, val refreshFailed: Boolean)
+    fun confirm(token: String) {
+        val original = mutable.value.result
+        val schema = original?.tableSchema
+        execute({ session ->
+            val mutation = session.confirm(token)
+            var refreshed: ResultPage? = null
+            var failed = false
+            if (mutation.status != MutationStatus.UNKNOWN && schema != null) {
+                try { refreshed = session.page(schema.table, original.offset) }
+                catch (_: Exception) { failed = true; runCatching { session.close() } }
+            }
+            ConfirmedPage(mutation, refreshed, failed)
+        }) {
+            copy(preview = null, result = it.page, connected = connected && !it.refreshFailed && it.mutation.status != MutationStatus.UNKNOWN,
+                writable = writable && !it.refreshFailed && it.mutation.status != MutationStatus.UNKNOWN,
+                message = it.mutation.message + if (it.refreshFailed) "；刷新失败，已断开。请重新连接核对，不会重放修改。" else "")
+        }
     }
     private fun <T> execute(operation: (SqlWorkspaceSession) -> T, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
         if (mutable.value.busy) return

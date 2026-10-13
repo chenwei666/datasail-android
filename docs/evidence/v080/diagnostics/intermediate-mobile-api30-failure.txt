@@ -1,0 +1,25 @@
+
+com.example.datasail.ConnectionUiTest:..
+com.example.datasail.MobileWorkflowTest:.
+com.example.datasail.QueryStoreTest:...
+com.example.datasail.SqliteDeviceTest:..
+com.example.datasail.PasswordVaultTest:...
+com.example.datasail.PasswordWorkflowTest:
+Error in saveReopenAutofillAndForgetWithoutRevealingPassword(com.example.datasail.PasswordWorkflowTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.PasswordWorkflowTest.saveReopenAutofillAndForgetWithoutRevealingPassword(PasswordWorkflowTest.kt:30)
+
+com.example.datasail.SettingsUiTest:.
+
+Time: 250.403
+There was 1 failure:
+1) saveReopenAutofillAndForgetWithoutRevealingPassword(com.example.datasail.PasswordWorkflowTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.PasswordWorkflowTest.saveReopenAutofillAndForgetWithoutRevealingPassword(PasswordWorkflowTest.kt:30)
+
+FAILURES!!!
+Tests run: 13,  Failures: 1

@@ -34,7 +34,7 @@ class ConnectionUiTest {
         compose.runOnIdle { compose.activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
         compose.waitForIdle()
         compose.onRoot().captureToImage().asAndroidBitmap().let { bitmap ->
-            File(compose.activity.filesDir, "v072-engine-picker.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            File(compose.activity.filesDir, "v080-engine-picker.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
         compose.onNodeWithText("键值", useUnmergedTree = true).performClick()
         compose.onNodeWithText("MySQL").assertDoesNotExist()
@@ -49,7 +49,7 @@ class ConnectionUiTest {
         compose.onNodeWithText("搜索可连接的数据库").performTextInput("SQLite")
         compose.onNode(hasText("SQLite") and !hasSetTextAction()).performScrollTo().performClick()
         compose.onNodeWithText("选择 SQLite 文件").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("密码（不保存）").assertDoesNotExist()
+        compose.onNodeWithText("密码").assertDoesNotExist()
     }
     @Test fun searchAndDeleteRequireConfirmation() {
         compose.onNodeWithText("搜索连接名称、数据库或主机").performTextInput("missing")

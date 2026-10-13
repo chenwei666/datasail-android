@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.relocation.BringIntoViewRequester
@@ -51,6 +52,7 @@ internal fun SavedConnection.discoveryErrors(hint: String): Map<String, String> 
 @Composable
 internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
     val saved by model.saved.collectAsStateWithLifecycle()
+    val settings by model.settings.collectAsStateWithLifecycle()
     val discovery by model.discovery.collectAsStateWithLifecycle()
     val pendingCertificate by model.pendingCertificate.collectAsStateWithLifecycle()
     var fingerprintChecked by remember { mutableStateOf(false) }
@@ -69,13 +71,15 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
     LaunchedEffect(discovery.tlsFailure) { if (discovery.tlsFailure) securityLocation.bringIntoView() }
     var draft by remember { mutableStateOf(SavedConnection()) }
     var password by remember { mutableStateOf("") }
+    var rememberPassword by remember { mutableStateOf(false) }
+    var passwordRequest by remember { mutableIntStateOf(0) }
     var authorized by remember { mutableStateOf(false) }
     var advanced by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf<SavedConnection?>(null) }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) { password = ""; authorized = false; model.cancelDiscovery() } }
-        lifecycle.addObserver(observer); onDispose { lifecycle.removeObserver(observer); password = ""; model.cancelDiscovery() }
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) { passwordRequest++; password = ""; authorized = false; model.cancelDiscovery() } }
+        lifecycle.addObserver(observer); onDispose { lifecycle.removeObserver(observer); passwordRequest++; password = ""; model.cancelDiscovery() }
     }
     // A delayed file-picker result must not modify a different draft/connection.
     var importTarget by remember { mutableStateOf<Pair<String, DatabaseKind>?>(null) }
@@ -87,14 +91,23 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
         val target = importTarget
         uri?.let { model.importSqlite(it) { id -> if (target == (draft.id to draft.kind)) { draft = draft.copy(database = id); authorized = false } } }
     }
-    fun edit(connection: SavedConnection) { model.cancelDiscovery(); discoveryHint = ""; databaseSearch = ""; draft = connection; password = ""; authorized = false; advanced = false; stage = "form" }
+    fun edit(connection: SavedConnection) {
+        model.cancelDiscovery(); discoveryHint = ""; databaseSearch = ""; draft = connection; password = ""; rememberPassword = false
+        authorized = false; advanced = false; stage = "form"
+        val ticket = ++passwordRequest
+        if (connection.kind != DatabaseKind.SQLITE) model.loadPassword(connection) { secret ->
+            if (ticket == passwordRequest && stage == "form" && draft == connection && secret != null) {
+                password = String(secret); rememberPassword = true
+            }
+        }
+    }
     Spacer(Modifier.height(1.dp).bringIntoViewRequester(stageLocation))
     if (stage == "list") {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("我的连接", style = MaterialTheme.typography.titleLarge)
             Button(onClick = { stage = "type"; search = ""; category = "全部" }, enabled = !state.busy) { Text("新建连接") }
         }
-        Text("${DatabaseKind.entries.size} 种已接入引擎 · 连接配置只保存在本机，密码每次输入。", style = MaterialTheme.typography.bodySmall)
+        Text("${DatabaseKind.entries.size} 种已接入引擎 · 本机连接管理 · 可选择加密保存密码。", style = MaterialTheme.typography.bodySmall)
         if (saved.isEmpty()) {
             OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("从第一个数据库开始", style = MaterialTheme.typography.titleMedium)
@@ -136,12 +149,12 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
         val kinds = DatabaseKind.entries.filter { it.label.contains(search, true) && (category == "全部" || it.connectionCategory == category) }
         if (kinds.isEmpty()) Text("没有匹配的数据库，请更换分类或关键词。")
         EngineGrid(kinds) { kind ->
-            edit(SavedConnection(kind = kind, name = kind.label, port = kind.defaultPort.toString(),
+            edit(SavedConnection(kind = kind, name = kind.label, production = settings.defaultProduction, port = kind.defaultPort.toString(),
                 database = if (kind.isKeyValue) "0" else "", username = if (kind.isKeyValue) "default" else ""))
         }
     } else {
         val errors = draft.fieldErrors()
-        fun change(value: SavedConnection) { model.cancelDiscovery(); draft = value.withoutMovedTrust(); authorized = false }
+        fun change(value: SavedConnection) { passwordRequest++; model.cancelDiscovery(); draft = value.withoutMovedTrust(); authorized = false }
         TextButton(enabled = !state.busy, onClick = { stage = "list"; password = ""; authorized = false; search = ""; model.cancelDiscovery() }) { Text("返回我的连接") }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             EngineBadge(draft.kind)
@@ -165,10 +178,16 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                 Text("单个服务器直连 · SCRAM-SHA-256 · 只读集合与文档", style = MaterialTheme.typography.bodySmall)
             }
             ConnectionField(if (draft.kind.isKeyValue) "ACL 用户名" else "用户名", draft.username, errors["username"]) { change(draft.copy(username = it)); password = "" }
-            OutlinedTextField(password, { model.cancelDiscovery(); password = it }, Modifier.fillMaxWidth(), label = { Text("密码（不保存）") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
+            OutlinedTextField(password, { passwordRequest++; model.cancelDiscovery(); password = it }, Modifier.fillMaxWidth(), label = { Text("密码") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(rememberPassword, { passwordRequest++; rememberPassword = it })
+                Text("在此设备保存密码", Modifier.weight(1f))
+                TextButton(onClick = { passwordRequest++; password = ""; rememberPassword = false; model.forgetPassword(draft.id) }) { Text("忘记密码") }
+            }
+            Text("保存配置或连接时生效，密码由 Android Keystore 加密。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row { Checkbox(draft.production, { change(draft.copy(production = it)) }); Text("生产环境（只读）") }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(authorized, { authorized = it; if (!it) model.cancelDiscovery() }); Text("我已获准访问上述数据库") }
+        Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(authorized, { authorized = it; if (!it) model.cancelDiscovery() }, modifier = Modifier.testTag("connection-authorization")); Text("我已获准访问上述数据库") }
         if (draft.kind != DatabaseKind.SQLITE) {
             Card(modifier = Modifier.fillMaxWidth().bringIntoViewRequester(securityLocation),
                 colors = CardDefaults.cardColors(containerColor = if (discovery.tlsFailure) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainer)) {
@@ -228,14 +247,14 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                     }
                 }
             }
-            Text("也可手动填写已知目标；密码仅在当前页面内存中保留，离开即清除。", style = MaterialTheme.typography.bodySmall)
+            Text("也可手动填写已知目标；未保存的密码离开页面即清除。", style = MaterialTheme.typography.bodySmall)
             ConnectionField(if (draft.kind.isSearch) "索引范围（如 logs-*）" else if (draft.kind.isKeyValue) "数据库编号" else "数据库", draft.database, errors["database"], keyboard = if (draft.kind.isKeyValue) KeyboardType.Number else KeyboardType.Text) { draft = draft.copy(database = it) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(enabled = errors.isEmpty() && !state.busy && !discovery.busy, onClick = { model.save(draft) }) { Text("保存配置") }
+            OutlinedButton(enabled = (if (draft.kind == DatabaseKind.SQLITE) errors.isEmpty() else draft.discoveryErrors(discoveryHint).isEmpty()) && !state.busy && !discovery.busy, onClick = { model.saveLogin(draft, password.toCharArray(), rememberPassword && draft.kind != DatabaseKind.SQLITE) }) { Text("保存配置") }
             Button(enabled = errors.isEmpty() && authorized && !state.busy && !discovery.busy && (draft.kind == DatabaseKind.SQLITE || password.isNotEmpty()), onClick = {
                 dismissInput()
-                val secret = password.toCharArray(); password = ""; model.connect(draft, secret)
+                val secret = password.toCharArray(); model.saveLogin(draft, password.toCharArray(), rememberPassword && draft.kind != DatabaseKind.SQLITE, announce = false); passwordRequest++; password = ""; model.connect(draft, secret)
             }) { Text(if (state.busy) "连接中…" else "连接数据库") }
         }
     }

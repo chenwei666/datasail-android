@@ -1,0 +1,7 @@
+
+com.example.datasail.SqlServerDeviceTest:..
+com.example.datasail.SpreadsheetSqlServerUiTest:.
+
+Time: 111.483
+
+OK (3 tests)

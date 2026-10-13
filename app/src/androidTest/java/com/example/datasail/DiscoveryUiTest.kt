@@ -34,8 +34,8 @@ class DiscoveryUiTest {
     private fun scan(): WorkspaceViewModel {
         compose.onNodeWithText("打开连接").performScrollTo().performClick()
         compose.onNodeWithText("连接数据库").performScrollTo().assertIsNotEnabled()
-        compose.onNodeWithText("密码（不保存）").performScrollTo().performTextInput(password)
-        compose.onAllNodes(isToggleable())[1].performScrollTo().performClick()
+        compose.onNodeWithText("密码").performScrollTo().performTextInput(password)
+        compose.onNodeWithTag("connection-authorization").performScrollTo().performClick()
         compose.onNodeWithText("连接服务器并扫描").performScrollTo().assertIsEnabled().performClick()
         lateinit var model: WorkspaceViewModel
         compose.runOnIdle { model = androidx.lifecycle.ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java] }
@@ -62,7 +62,7 @@ class DiscoveryUiTest {
         compose.runOnIdle { assertNull(model.discovery.value.result) }
         compose.onNodeWithText("筛选扫描结果").assertDoesNotExist()
         compose.onNodeWithText("连接服务器并扫描").performScrollTo().assertIsNotEnabled()
-        compose.onNodeWithText("密码（不保存）").assert(SemanticsMatcher.expectValue(
+        compose.onNodeWithText("密码").assert(SemanticsMatcher.expectValue(
             androidx.compose.ui.semantics.SemanticsProperties.EditableText, androidx.compose.ui.text.AnnotatedString("")))
     }
 }

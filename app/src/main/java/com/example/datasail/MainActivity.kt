@@ -29,7 +29,9 @@ class MainActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme(primary = Color(0xFF82D5C3), onPrimary = Color(0xFF00382E), secondaryContainer = Color(0xFF254C43), onSecondaryContainer = Color(0xFFB8EDDD), surface = Color(0xFF111917), background = Color(0xFF111917)) else lightColorScheme(primary = Color(0xFF146B58), onPrimary = Color.White, primaryContainer = Color(0xFFD6F3E8), secondaryContainer = Color(0xFFE0EFE9), onSecondaryContainer = Color(0xFF173D32), surface = Color(0xFFFCFDFB), background = Color(0xFFF5F7F4), surfaceContainer = Color(0xFFEDF2EE), outlineVariant = Color(0xFFD6DFD8))) {
+            val preferences by workspace.settings.collectAsStateWithLifecycle()
+            val dark = when (preferences.theme) { ThemeMode.SYSTEM -> isSystemInDarkTheme(); ThemeMode.LIGHT -> false; ThemeMode.DARK -> true }
+            MaterialTheme(colorScheme = if (dark) darkColorScheme(primary = Color(0xFFADC9FF), onPrimary = Color(0xFF10315F), secondaryContainer = Color(0xFF293C56), onSecondaryContainer = Color(0xFFD2E4FF), surface = Color(0xFF10151C), background = Color(0xFF10151C)) else lightColorScheme(primary = Color(0xFF285DA3), onPrimary = Color.White, primaryContainer = Color(0xFFD6E5FC), secondaryContainer = Color(0xFFE3ECF8), onSecondaryContainer = Color(0xFF183755), surface = Color(0xFFFFFFFF), background = Color(0xFFF3F5F8), surfaceContainer = Color(0xFFEDF1F7), outlineVariant = Color(0xFFD7DEE8))) {
                 WorkspaceApp(workspace, model)
             }
         }

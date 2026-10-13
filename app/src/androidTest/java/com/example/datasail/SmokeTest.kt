@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.*
 import org.junit.Rule
@@ -24,7 +25,8 @@ class SmokeTest {
         compose.onNodeWithText("收藏").performClick()
         compose.onNodeWithText("常用查询").assertIsDisplayed()
         compose.onNodeWithText("设置").performClick()
-        compose.onNodeWithText("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。").assertIsDisplayed()
+        compose.onNodeWithText("开发诊断与数据库支持").performScrollTo().performClick()
+        compose.onNodeWithText("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。").performScrollTo().assertIsDisplayed()
     }
     @Test fun jdbcEntryPointsLoadOnAndroid() {
         // Class loading alone is not TLS/login/database compatibility evidence.

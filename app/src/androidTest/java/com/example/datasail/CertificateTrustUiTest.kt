@@ -30,10 +30,10 @@ class CertificateTrustUiTest {
     @get:Rule val rules: RuleChain = RuleChain.outerRule(fixture).around(compose)
     @Test fun inspectConfirmPersistScanAndConnectWithAutomaticCertificate() {
         compose.onNodeWithText("打开连接").performScrollTo().performClick()
-        compose.onAllNodes(isToggleable())[1].performScrollTo().performClick()
+        compose.onNodeWithTag("connection-authorization").performScrollTo().performClick()
         lateinit var model: WorkspaceViewModel
         compose.runOnIdle { model = ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java] }
-        compose.onNodeWithText("密码（不保存）").performScrollTo().performTextReplacement(config.getProperty("password"))
+        compose.onNodeWithText("密码").performScrollTo().performTextReplacement(config.getProperty("password"))
         compose.onNodeWithText("连接服务器并扫描").performScrollTo().performClick()
         compose.waitUntil(45000) { !model.discovery.value.busy }
         assertTrue(model.discovery.value.tlsFailure)
@@ -52,7 +52,7 @@ class CertificateTrustUiTest {
         assertEquals(stored.id, stored.certificateTrust!!.connectionId)
         assertEquals("127.0.0.1", stored.certificateTrust!!.host)
         assertEquals(stored.certificateTrust!!.sha256, stored.copy(database = "master").profile(context).certificatePin)
-        compose.onNodeWithText("密码（不保存）").performScrollTo().performTextReplacement(config.getProperty("password"))
+        compose.onNodeWithText("密码").performScrollTo().performTextReplacement(config.getProperty("password"))
         compose.onNodeWithText("连接服务器并扫描").performScrollTo().performClick()
         compose.waitUntil(45000) { !model.discovery.value.busy }
         assertTrue(model.discovery.value.message, "master" in model.discovery.value.result!!.names)

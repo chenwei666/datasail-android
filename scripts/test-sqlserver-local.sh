@@ -53,13 +53,14 @@ export DATASAIL_SQLSERVER_CONFIG="$fixture/database.properties"
 export DATASAIL_SQLSERVER_TRUSTSTORE="$fixture/trust.p12"
 task=sqlServerTest
 suite=SQL_SERVER
-android_class=com.example.datasail.SqlServerDeviceTest
+android_class=com.example.datasail.SqlServerDeviceTest,com.example.datasail.SpreadsheetSqlServerUiTest
+android_count=3
 if [[ "${DATASAIL_SQLSERVER_AUTOCERT:-0}" == 1 ]]; then
- task=sqlServerAutoCertificateTest; suite=SQL_SERVER_AUTOCERT; android_class=com.example.datasail.CertificateTrustUiTest
+ android_count=2; task=sqlServerAutoCertificateTest; suite=SQL_SERVER_AUTOCERT; android_class=com.example.datasail.CertificateTrustUiTest
 fi
 ./gradlew ":core:$task" --console=plain
-mkdir -p "docs/evidence/v072/$suite"
-cp core/build/test-results/"$task"/TEST-*.xml "docs/evidence/v072/$suite/"
+mkdir -p "docs/evidence/v080/$suite"
+cp core/build/test-results/"$task"/TEST-*.xml "docs/evidence/v080/$suite/"
 
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
@@ -72,6 +73,7 @@ if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb reverse "tcp:$port" "tcp:$port"
  adb shell am instrument -w -e class "$android_class" com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  adb shell run-as com.example.datasail rm -f files/fixture.properties files/fixture-ca.pem
- rg -q 'OK \(2 tests\)' "$fixture/android-result.txt"
- cp "$fixture/android-result.txt" "docs/evidence/v072/$suite/android-${ANDROID_SERIAL}.txt"
+ rg -q "OK \($android_count tests\)" "$fixture/android-result.txt"
+ cp "$fixture/android-result.txt" "docs/evidence/v080/$suite/android-${ANDROID_SERIAL}.txt"
+ if [[ "$suite" == SQL_SERVER ]]; then adb exec-out run-as com.example.datasail cat files/v080-grid.png > "docs/evidence/v080/$suite/grid-${ANDROID_SERIAL}.png"; fi
 fi

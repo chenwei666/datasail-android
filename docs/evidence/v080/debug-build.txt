@@ -1,0 +1,329 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+
+> Task :sqlserver-android:prepareProfile
+patching file com/microsoft/sqlserver/jdbc/SQLServerCertificateUtils.java
+patching file com/microsoft/sqlserver/jdbc/MaxResultBufferParser.java
+patching file com/microsoft/sqlserver/jdbc/SQLServerSQLXML.java
+
+> Task :sqlserver-android:compileJava
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes
+> Task :sqlserver-android:jar
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:processResources
+> Task :core:processTestResources
+
+> Task :sqlserver-android:compileTestJava
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+
+> Task :sqlserver-android:processTestResources
+> Task :sqlserver-android:testClasses
+
+> Task :sqlserver-android:test
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+AndroidProfileTest > malformedAndNonPositiveLimitsReject PASSED
+
+AndroidProfileTest > explicitBudgetUsesDecimalBytesAndHeapCeiling PASSED
+
+AndroidProfileTest > staxRequestsFailRatherThanReturningEmptySuccess PASSED
+
+AndroidProfileTest > supportedXmlStreamStillPreservesContentAndSingleUse PASSED
+
+AndroidProfileTest > pkcs1KeysFailExplicitlyWithoutLoadingOptionalCrypto PASSED
+
+AndroidProfileTest > matchingCommonNameCannotOverrideWrongSan PASSED
+
+AndroidProfileTest > largeMultipliersCannotWrapToNegativeOrSmallLimits PASSED
+
+AndroidProfileTest > matchingSanWorksDespiteDifferentCommonName PASSED
+
+AndroidProfileTest > percentagesUseRuntimeHeapWithoutJmx PASSED
+
+AndroidProfileTest > commonNameAloneCannotAuthenticateServer PASSED
+
+AndroidProfileTest > absentLimitKeepsUpstreamSentinel PASSED
+
+> Task :sasl-android:verifyUpstream
+Apache Harmony SASL API sources and notices match pinned upstream bytes.
+
+> Task :sasl-android:compileJava
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+
+> Task :sasl-android:processResources
+> Task :sasl-android:classes
+> Task :sasl-android:jar
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig
+> Task :app:processDebugNavigationResources
+> Task :app:checkDebugAarMetadata
+> Task :app:generateDebugResValues
+> Task :app:compileDebugNavigationResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:mergeDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:javaPreCompileDebug
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:checkDebugDuplicateClasses
+> Task :app:desugarDebugFileDependencies
+> Task :app:processDebugResources
+> Task :app:mergeDebugJniLibFolders
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:preDebugAndroidTestBuild SKIPPED
+> Task :app:processDebugAndroidTestManifest
+> Task :app:generateDebugAndroidTestBuildConfig
+> Task :app:checkDebugAndroidTestAarMetadata
+> Task :app:processDebugAndroidTestNavigationResources
+> Task :app:compileDebugAndroidTestNavigationResources
+> Task :app:generateDebugAndroidTestResValues
+> Task :app:mapDebugAndroidTestSourceSetPaths
+> Task :app:generateDebugAndroidTestResources
+> Task :app:mergeExtDexDebug
+
+> Task :core:compileKotlin
+w: file:///workspace/datasail-android/core/src/main/kotlin/com/example/datasail/core/ClosingTlsContext.kt:12:60 'constructor(p0: String!, p1: Double, p2: String!): Provider' is deprecated. Deprecated in Java.
+w: file:///workspace/datasail-android/core/src/main/kotlin/com/example/datasail/core/SearchSession.kt:101:26 'constructor(p0: String!, p1: String!, p2: Int, p3: String!): URL' is deprecated. Deprecated in Java.
+
+> Task :core:compileJava NO-SOURCE
+> Task :core:classes
+> Task :core:jar
+> Task :app:mergeDebugAndroidTestResources
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugNativeLibs
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libconscrypt_jni.so. Run with --info option to learn more.
+
+> Task :app:processDebugAndroidTestResources
+> Task :app:javaPreCompileDebugAndroidTest
+> Task :app:mergeDebugAndroidTestShaders
+> Task :app:compileDebugAndroidTestShaders NO-SOURCE
+> Task :app:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :app:mergeDebugAndroidTestAssets
+> Task :app:compressDebugAndroidTestAssets
+> Task :app:checkDebugAndroidTestDuplicateClasses
+> Task :app:desugarDebugAndroidTestFileDependencies
+> Task :app:mergeExtDexDebugAndroidTest
+> Task :app:mergeLibDexDebugAndroidTest
+> Task :app:mergeDebugAndroidTestJniLibFolders
+> Task :app:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebugAndroidTest
+> Task :app:writeDebugAndroidTestSigningConfigVersions
+> Task :app:extractProguardFiles
+> Task :core:compileTestKotlin
+> Task :core:compileTestJava NO-SOURCE
+> Task :core:testClasses
+
+> Task :core:test
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+CertificateTrustTest > HTTPS hostname exception requires both expected endpoint and exact valid certificate PASSED
+
+CertificateTrustTest > inspection always aborts handshake even with an already matching pin PASSED
+
+CertificateTrustTest > concurrent reviews are isolated and an expired preview is not confirmable PASSED
+
+CertificateTrustTest > pin options propagate without plaintext downgrade or JDBC trust-all PASSED
+
+CertificateTrustTest > wrong pin cannot fall back even when CA and SAN verification would succeed PASSED
+
+CertificateTrustTest > pin never permits an expired certificate or an empty chain PASSED
+
+CertificateTrustTest > cancelled inspection cannot accept trust or deliver late metadata PASSED
+
+CertificateTrustTest > untrusted CN-only leaf is rejected by default and accepted only by exact pin PASSED
+
+DatabaseDiscoveryTest > cancellationClosesTransportDiscardsLateCallbackAndCredentials PASSED
+
+DatabaseDiscoveryTest > taskConstructionFailureAlsoDisposesCredentials PASSED
+
+DatabaseDiscoveryTest > bootstrapAndBoundedResultsAreHonest PASSED
+
+DocumentPolicyTest > failedSessionConstructionClosesCredentials PASSED
+
+DocumentPolicyTest > closedTlsRegistryRejectsLateSockets PASSED
+
+DocumentPolicyTest > filterAllowsTypedComparisonsAndRejectsExecutionAndDeepInput PASSED
+
+DocumentPolicyTest > canonicalPreviewPreservesTypesAndExplicitlyRejectsLargeValues PASSED
+
+MultiDatabaseTest > postgresLoginTimeoutIsNotMisreportedAsNetworkFailure PASSED
+
+MultiDatabaseTest > timestampsAreNotSqlServerRowversionsAcrossEngines PASSED
+
+MultiDatabaseTest > cleanupFailureCannotMaskQueryTimeout PASSED
+
+MultiDatabaseTest > dialectGateRejectsExecutableCommentsAndAmbiguousQuotes PASSED
+
+MultiDatabaseTest > postgresRequiresStrictTlsWithoutReconnectOrPasswordPersistence PASSED
+
+PageCsvTest > quotingNullBinaryAndExactNumbersRemainDistinct PASSED
+
+PageCsvTest > spreadsheetFormulasAreNeutralizedAndIncompleteValuesCannotExport PASSED
+
+ProbeRunnerTest > success checks actual returned values and closes all resources PASSED
+
+ProbeRunnerTest > close failure cannot masquerade as disconnected success PASSED
+
+ProbeRunnerTest > TLS connection failure never reports success or retries PASSED
+
+ProbeRunnerTest > cancel invokes driver cancel and close and reports unknown without retry PASSED
+
+ProbeRunnerTest > late cancellation cannot overwrite a terminal result PASSED
+
+ProbeRunnerTest > type corruption must fail instead of reporting success PASSED
+
+ProbeRunnerTest > closed runner rejects new work and destroys supplied credentials PASSED
+
+RespReaderTest > cancellationDuringHandshakeDisposesConnectionAndSuppressesLateSuccess PASSED
+
+RespReaderTest > binaryIdentityAndProtocolErrorsStaySafe PASSED
+
+RespReaderTest > rejectsUnboundedAndMalformedFramesBeforeAllocation PASSED
+
+SafetyTest > credentials are copied closed and redacted PASSED
+
+SafetyTest > driver raw log output is disabled before connection PASSED
+
+SafetyTest > nested certificate errors take precedence and exception text is never logged PASSED
+
+SafetyTest > connection strings cannot inject options through host or database PASSED
+
+SafetyTest > both drivers require verified TLS and disallow risky options PASSED
+
+SafetyTest > values preserve null empty string leading zero decimal and binary ownership PASSED
+
+SafetyTest > error classes remain distinct PASSED
+
+SafetyTest > MariaDB hostname mismatch without nested cause is safely classified PASSED
+
+SearchPolicyTest > onlyBoundedSearchConditionsAreAccepted PASSED
+
+SearchPolicyTest > statusClassificationDoesNotLeakServerBody PASSED
+
+SearchPolicyTest > jsonPreservesNumericLexemesAndRejectsAmbiguities PASSED
+
+WorkspaceRunnerTest > connect owns credentials and closes them after login PASSED
+
+WorkspaceRunnerTest > closed runner cannot retain credentials or create sessions PASSED
+
+WorkspaceRunnerTest > disconnect during login disposes late connection and never delivers stale success PASSED
+
+WorkspaceRunnerTest > successful operation that closes connection cannot report a live session PASSED
+
+WorkspaceRunnerTest > repeated disconnect leaves room for reconnect behind unfinished cleanup PASSED
+
+WorkspaceSafetyTest > query gate handles strings comments and escaped identifiers PASSED
+
+WorkspaceSafetyTest > invalid ranges precision scale and nullability reject before SQL PASSED
+
+WorkspaceSafetyTest > identifier quoting cannot introduce a statement PASSED
+
+WorkspaceSafetyTest > views triggers unsupported keys and tables without keys stay read only PASSED
+
+WorkspaceSafetyTest > query gate rejects write forms batches and ambiguous syntax PASSED
+
+WorkspaceSafetyTest > SAN identity does not fall back to CN or match wrong hosts PASSED
+
+WorkspaceSafetyTest > typed inputs distinguish null empty text leading zeros and exact decimal PASSED
+
+> Task :app:compileDebugKotlin
+
+> Task :app:compileDebugJavaWithJavac
+Java compiler version 21 has deprecated support for compiling with source/target version 8.
+Try one of the following options:
+    1. [Recommended] Use Java toolchain with a lower language version
+    2. Set a higher source/target version
+    3. Use a lower version of the JDK running the build (if you're not using Java toolchain)
+For more details on how to configure these settings, see https://developer.android.com/build/jdks.
+To suppress this warning, set android.javaCompile.suppressSourceTargetDeprecationWarning=true in gradle.properties.
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+
+> Task :app:processDebugJavaRes
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:mergeDebugJavaResource
+> Task :app:dexBuilderDebug
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes
+
+> Task :app:testDebugUnitTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+> Task :app:mergeProjectDexDebug
+> Task :app:generateDebugAndroidTestLintModel
+> Task :app:generateDebugLintReportModel
+> Task :app:generateDebugUnitTestLintModel
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+> Task :app:compileDebugAndroidTestKotlin
+
+> Task :app:compileDebugAndroidTestJavaWithJavac
+Java compiler version 21 has deprecated support for compiling with source/target version 8.
+Try one of the following options:
+    1. [Recommended] Use Java toolchain with a lower language version
+    2. Set a higher source/target version
+    3. Use a lower version of the JDK running the build (if you're not using Java toolchain)
+For more details on how to configure these settings, see https://developer.android.com/build/jdks.
+To suppress this warning, set android.javaCompile.suppressSourceTargetDeprecationWarning=true in gradle.properties.
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+
+> Task :app:processDebugAndroidTestJavaRes
+> Task :app:mergeDebugAndroidTestJavaResource
+> Task :app:dexBuilderDebugAndroidTest
+> Task :app:mergeProjectDexDebugAndroidTest
+> Task :app:packageDebugAndroidTest
+> Task :app:createDebugAndroidTestApkListingFileRedirect
+> Task :app:assembleDebugAndroidTest
+> Task :app:lintAnalyzeDebugUnitTest
+> Task :app:lintAnalyzeDebugAndroidTest
+> Task :app:lintAnalyzeDebug
+> Task :app:lintReportDebug
+> Task :app:lintDebug
+
+[Incubating] Problems report is available at: file:///workspace/datasail-android/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 1m 12s
+99 actionable tasks: 99 executed
