@@ -1,0 +1,13 @@
+{
+  "version": "0.9.0",
+  "versionCode": 14,
+  "gitSha": "164da605829ce8c659a68fb165fee5154a724ec3",
+  "verifiedFiles": 1090,
+  "zipCrcVerified": true,
+  "zipSha256": "e77a03003df6e65b8c40846f4e39ab405275ae435f27b12c0c6bad84eb7344ee",
+  "unchangedPriorArchives": 13,
+  "signingUnchanged": true,
+  "debugApkSha256": "de7ebcb649dd4ca784070e60d12f4626a7787467933e559ba0e6637e6072795f",
+  "independentArchivedSourceBuild": false,
+  "published": false
+}
