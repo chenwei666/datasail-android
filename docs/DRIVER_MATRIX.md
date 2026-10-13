@@ -1,4 +1,4 @@
-# V0.7.0 驱动与能力矩阵
+# V0.7.1 驱动与能力矩阵
 
 当前实际实现十种连接类型；下表区分功能实现与测试证据。完整验收命令和系统范围见 TEST_REPORT。
 
@@ -16,9 +16,9 @@
 | Elasticsearch | 自有平台 HTTPS / 严格 JSON（Apache-2.0） | 索引、映射、受限 DSL、100 条分页 | 未开放 | Basic、指定索引范围、前 1000 条，单响应 2 MiB |
 | OpenSearch | 同上，独立服务器验收 | 同上 | 未开放 | 不以 REST 接口相似推断兼容 |
 
-本轮具体 JVM、Android、UI 和升级检查见 TEST_REPORT 与 `docs/evidence/v070/summary.json`。历史设备结果不冒充本轮结果；正式 Release 和真机仍是独立门禁。
+本轮具体 JVM、Android、UI 和升级检查见 TEST_REPORT 与 `docs/evidence/v071/summary.json`。历史设备结果不冒充本轮结果；正式 Release 和真机仍是独立门禁。
 
-所有网络连接均校验证书链与主机身份；SQL Server、PostgreSQL 通过严格 TrustManager，MySQL/MariaDB 通过 StrictTlsPlugin 的平台链校验与共享 SAN 匹配器。支持连接专用公共 CA；拒绝 CN-only，无信任全部或明文回退。MySQL/MariaDB/PostgreSQL 连接预算 15 秒，PostgreSQL 总登录预算 30 秒，socket 15 秒、工作台语句 10 秒。
+所有网络连接默认校验证书链与主机身份；SQL Server、PostgreSQL 通过严格 TrustManager，MySQL/MariaDB 通过 StrictTlsPlugin 的平台链校验与共享 SAN 匹配器。支持连接专用公共 CA；默认拒绝 CN-only。V0.7.1 新增显式服务器指纹模式，要求叶证书 SHA-256 相同且有效，以此替代链/SAN；没有信任全部或明文回退。MySQL/MariaDB/PostgreSQL 连接预算 15 秒，PostgreSQL 总登录预算 30 秒，socket 15 秒、工作台语句 10 秒。
 
 服务端固定镜像：
 
@@ -35,8 +35,8 @@ JVM 使用 Temurin 21.0.8+9；设备是 Android 8/API26 与 Android 11/API30 AOS
 
 其它引擎见 DATABASE_SCOPE，全部仍为规划项目。下一批优先 ClickHouse；Oracle、Db2、国产及兼容协议数据库逐项接入，不能将协议相似推断为已支持。
 
-MongoDB 复用严格 TrustManager 并启用驱动 endpoint identification；保留证书失败分类，不解析异常文本。登录预算 30 秒，后续读取驱动超时 10 秒、每页截止 12 秒，关闭实际 TLS socket；不启用自动重试、SRV 或自动副本集发现。仅验证表列版本，不推断 DocumentDB 或其它兼容服务。
+MongoDB 复用共享 TrustManager；默认启用驱动 endpoint identification，显式指纹模式在 TrustManager 校验具体证书后替代域名匹配；保留证书失败分类，不解析异常文本。登录预算 30 秒，后续读取驱动超时 10 秒、每页截止 12 秒，关闭实际 TLS socket；不启用自动重试、SRV 或自动副本集发现。仅验证表列版本，不推断 DocumentDB 或其它兼容服务。
 
 搜索服务测试固定 Elasticsearch 8.19.5（官方 image amd64 digest `7a159fec8fc8a7b15ae74dcc01f418b39147a93ae097236774fec0b23e40364a`）及 OpenSearch 2.19.4（官方 image amd64 digest `16effbdfb018599a0f5cf5102e15b7ecce1aacbc9959a2203ff4769ff23d375f`）。这不是最新版本声明。APK 不打包这两个服务器或桌面 Java 客户端，只使用 Android 平台 HTTPS 和有界 JSON 实现；两个服务分别验收。V0.5.0/V0.6.0 历史实连证据保留在不可变归档；本轮扫描及工作台回归的实际执行范围以 TEST_REPORT 为准。
 
-V0.7.0 增加九种网络引擎的服务器发现入口；SQLite 继续使用文件选择器。引擎扫描语义、权限与上限见 WORKSPACE。实测结果以本轮 TEST_REPORT 为准。
+V0.7.1 增加九种网络引擎的服务器发现入口；SQLite 继续使用文件选择器。引擎扫描语义、权限与上限见 WORKSPACE。实测结果以本轮 TEST_REPORT 为准。

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.RespReaderTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-13T08:04:22.282Z" hostname="10651f2473f2" time="0.325">
+  <properties/>
+  <testcase name="cancellationDuringHandshakeDisposesConnectionAndSuppressesLateSuccess" classname="com.example.datasail.core.RespReaderTest" time="0.313"/>
+  <testcase name="binaryIdentityAndProtocolErrorsStaySafe" classname="com.example.datasail.core.RespReaderTest" time="0.005"/>
+  <testcase name="rejectsUnboundedAndMalformedFramesBeforeAllocation" classname="com.example.datasail.core.RespReaderTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

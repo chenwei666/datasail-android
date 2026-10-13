@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.MultiDatabaseTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-13T08:04:22.168Z" hostname="10651f2473f2" time="0.036">
+  <properties/>
+  <testcase name="postgresLoginTimeoutIsNotMisreportedAsNetworkFailure" classname="com.example.datasail.core.MultiDatabaseTest" time="0.008"/>
+  <testcase name="timestampsAreNotSqlServerRowversionsAcrossEngines" classname="com.example.datasail.core.MultiDatabaseTest" time="0.001"/>
+  <testcase name="cleanupFailureCannotMaskQueryTimeout" classname="com.example.datasail.core.MultiDatabaseTest" time="0.026"/>
+  <testcase name="dialectGateRejectsExecutableCommentsAndAmbiguousQuotes" classname="com.example.datasail.core.MultiDatabaseTest" time="0.001"/>
+  <testcase name="postgresRequiresStrictTlsWithoutReconnectOrPasswordPersistence" classname="com.example.datasail.core.MultiDatabaseTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-13",
+  "timezone": "Asia/Bangkok",
+  "configDraft": {
+    "draft_id": "e06750c1-3f7b-42e9-93a8-719fc8a22d89~cecfgdraft_6accbad7269c81a195647d382ebfb4ee",
+    "status": "saved",
+    "requires_publish": true
+  },
+  "startSkillSha256": "64b5c68425d4222511a77f334de025ec58190fa6b8ac1453fe7362f868e56ceb",
+  "fieldsWritten": [
+    "start_skill"
+  ],
+  "published": false,
+  "freshTaskRestoreVerified": false,
+  "notes": [
+    "Local environment reused with pinned toolchain; no new dependency.",
+    "Reusable fixture caches may be evicted individually after use; no unknown database volumes removed.",
+    "Local-only commits are not evidence of remotely reproducible or fresh-task restoration."
+  ]
+}

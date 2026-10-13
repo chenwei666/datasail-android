@@ -5,6 +5,21 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ConnectionFormTest {
+    @Test fun certificateTrustCannotMoveToAnotherEndpointEngineOrConnection() {
+        val base = SavedConnection(name = "pin", host = "127.0.0.1", username = "reader")
+        val pinned = base.copy(certificateTrust = SavedCertificateTrust(base.id, base.kind, base.host, 1433, "a".repeat(64), 123L))
+        assertNotNull(pinned.copy(database = "other", username = "other").withoutMovedTrust().certificateTrust)
+        for (changed in listOf(pinned.copy(id = "copy"), pinned.copy(host = "127.0.0.2"), pinned.copy(port = "1434"), pinned.copy(kind = DatabaseKind.MYSQL))) {
+            assertFalse(pinned.certificateTrust!!.matches(changed))
+            assertNull(changed.withoutMovedTrust().certificateTrust)
+        }
+    }
+    @Test fun tlsScanFailureGivesCertificateGuidanceWithoutSuggestingManualDatabaseBypass() {
+        val message = discoveryFailureMessage(javax.net.ssl.SSLHandshakeException("private details"))
+        assertTrue(message.contains("获取并核对服务器证书"))
+        assertFalse(message.contains("private details"))
+        assertFalse(message.contains("手动填写"))
+    }
     @Test fun scannedMetadataCannotNormalizeIntoAnotherDatabase() {
         // These can be different PostgreSQL/SQL Server identifiers despite looking similar in a form.
         for (kind in listOf(DatabaseKind.SQL_SERVER, DatabaseKind.POSTGRESQL, DatabaseKind.MYSQL, DatabaseKind.MARIADB)) {

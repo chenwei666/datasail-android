@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.CertificateTrustTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-13T08:04:21.712Z" hostname="10651f2473f2" time="0.296">
+  <properties/>
+  <testcase name="HTTPS hostname exception requires both expected endpoint and exact valid certificate" classname="com.example.datasail.core.CertificateTrustTest" time="0.048"/>
+  <testcase name="inspection always aborts handshake even with an already matching pin" classname="com.example.datasail.core.CertificateTrustTest" time="0.092"/>
+  <testcase name="concurrent reviews are isolated and an expired preview is not confirmable" classname="com.example.datasail.core.CertificateTrustTest" time="0.004"/>
+  <testcase name="pin options propagate without plaintext downgrade or JDBC trust-all" classname="com.example.datasail.core.CertificateTrustTest" time="0.005"/>
+  <testcase name="wrong pin cannot fall back even when CA and SAN verification would succeed" classname="com.example.datasail.core.CertificateTrustTest" time="0.115"/>
+  <testcase name="pin never permits an expired certificate or an empty chain" classname="com.example.datasail.core.CertificateTrustTest" time="0.012"/>
+  <testcase name="cancelled inspection cannot accept trust or deliver late metadata" classname="com.example.datasail.core.CertificateTrustTest" time="0.002"/>
+  <testcase name="untrusted CN-only leaf is rejected by default and accepted only by exact pin" classname="com.example.datasail.core.CertificateTrustTest" time="0.017"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

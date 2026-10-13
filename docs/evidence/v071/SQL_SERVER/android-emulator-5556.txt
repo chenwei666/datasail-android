@@ -1,0 +1,6 @@
+
+com.example.datasail.SqlServerDeviceTest:..
+
+Time: 22.14
+
+OK (2 tests)

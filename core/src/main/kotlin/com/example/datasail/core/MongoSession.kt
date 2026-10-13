@@ -55,8 +55,7 @@ class MongoSession(private val profile: ConnectionProfile) : DocumentSession {
     private val stopped = AtomicBoolean(false)
     private val tlsFailure = java.util.concurrent.atomic.AtomicReference<java.security.cert.CertificateException?>()
     private val sockets = ClosingTlsContext(SSLContext.getInstance("TLS").apply {
-        val spec = profile.trustStore
-        val strict = SqlServerTrustManager(listOf(profile.host, spec?.type ?: "", spec?.path ?: "").joinToString("\n"))
+        val strict = SqlServerTrustManager(CertificateTrust.configuration(profile))
         val tracking = object : javax.net.ssl.X509TrustManager {
             override fun getAcceptedIssuers() = strict.acceptedIssuers
             override fun checkClientTrusted(chain: Array<java.security.cert.X509Certificate>, auth: String) = strict.checkClientTrusted(chain, auth)
@@ -83,7 +82,7 @@ class MongoSession(private val profile: ConnectionProfile) : DocumentSession {
             try { MongoClientSettings.builder()
                 .credential(MongoCredential.createScramSha256Credential(profile.username, profile.authDatabase, chars))
                 .applyToClusterSettings { b -> b.hosts(listOf(ServerAddress(profile.host, profile.port))).mode(ClusterConnectionMode.SINGLE).serverSelectionTimeout(15, TimeUnit.SECONDS) }
-                .applyToSslSettings { b -> b.enabled(true).invalidHostNameAllowed(false).context(sockets) }
+                .applyToSslSettings { b -> b.enabled(true).invalidHostNameAllowed(profile.certificatePin != null).context(sockets) }
                 .applyToSocketSettings { b -> b.connectTimeout(15, TimeUnit.SECONDS).readTimeout(15, TimeUnit.SECONDS) }
                 .applyToConnectionPoolSettings { b -> b.maxSize(1).minSize(0).maxConnecting(1) }
                 .timeout(30, TimeUnit.SECONDS).retryReads(false).retryWrites(false).applicationName("DataSail").build()

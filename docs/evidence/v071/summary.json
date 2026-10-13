@@ -1,0 +1,77 @@
+{
+  "version": "0.7.1",
+  "versionCode": 10,
+  "date": "2026-10-13",
+  "timezone": "Asia/Bangkok",
+  "finalApkSha256": "9520c3345315cbffbb0961248de6722ea4a1f37a8094378c732af98ac23fe182",
+  "testApkSha256": "4e2dd3401ad327cd243602424029aa15465426959f7866e43f5036ed866d1802",
+  "jvm": {
+    "unit-core": 54,
+    "unit-app": 9,
+    "SQL_SERVER": 15,
+    "SQL_SERVER_AUTOCERT": 1,
+    "MYSQL": 5,
+    "MARIADB": 5,
+    "POSTGRESQL": 5,
+    "REDIS": 3,
+    "VALKEY": 3,
+    "MONGODB": 3,
+    "ELASTICSEARCH": 3,
+    "OPENSEARCH": 3
+  },
+  "jvmPassed": 109,
+  "android": {
+    "SQL_SERVER/emulator-5556": 2,
+    "SQL_SERVER_AUTOCERT/emulator-5554": 2,
+    "MYSQL/emulator-5556": 4,
+    "MARIADB/emulator-5556": 4,
+    "POSTGRESQL/emulator-5556": 4,
+    "REDIS/emulator-5556": 3,
+    "VALKEY/emulator-5556": 3,
+    "MONGODB/emulator-5556": 4,
+    "ELASTICSEARCH/emulator-5556": 5,
+    "OPENSEARCH/emulator-5556": 5,
+    "mobile/emulator-5556": 8,
+    "upgrade/emulator-5556": 4,
+    "mobile/emulator-5554": 8,
+    "upgrade/emulator-5554": 4
+  },
+  "androidPassed": 60,
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest",
+    "sqlServerAutoCertificateTest",
+    "jdbcWorkspaceTest",
+    "keyValueTest",
+    "mongoTest",
+    "searchTest"
+  ],
+  "checks": {
+    "unit": 0,
+    "lintDebug": 0,
+    "assembleDebug": 0,
+    "assembleDebugAndroidTest": 0,
+    "assembleRelease": 1
+  },
+  "releaseMissingClasses": 193,
+  "releaseAddedMissingClasses": 0,
+  "upgradeBaseline": {
+    "version": "0.7.0",
+    "versionCode": 9
+  },
+  "intermediateAndroid": {
+    "tests": 2,
+    "evidence": "diagnostics/intermediate-autocert-api26.txt",
+    "countedInFinalApkTests": false,
+    "reason": "Earlier build before source comment line-number changes; APK hash was not captured."
+  },
+  "driverProfileTests": "11 cached unchanged tests; integrity verifyProfile rerun; excluded from new JVM count",
+  "limitations": [
+    "Debug only; Release R8 remains blocked by 193 missing classes",
+    "No physical/arm64 or user-server test",
+    "Servers must support TLS; no plaintext or legacy TLS downgrade",
+    "Only the nine implemented network engines; SQLite is a local file",
+    "No independent archive rebuild or fresh cloud restoration"
+  ],
+  "published": false
+}

@@ -1,14 +1,14 @@
-# V0.7.0 已知问题与未验证项
+# V0.7.1 已知问题与未验证项
 
 1. **覆盖仍在扩展：** 当前十种连接类型有实现，除 SQL Server 外均只读；Oracle、Db2、ClickHouse等范围见 DATABASE_SCOPE，尚不可连接。目录不是兼容承诺。
-2. **Release 阻塞：** R8 仍缺少 Android JDBC/JNDI/XA/management 及可选云认证等 API；本轮仍报告 193 项缺失类，与 V0.5.0 相同，其中包含 50 项 MongoDB 可选运行时依赖（Netty、Unix socket、加密等）。没有 Release APK，未添加批量 dontwarn。Debug 实连不能替代正式发行门禁。
+2. **Release 阻塞：** R8 仍缺少 Android JDBC/JNDI/XA/management 及可选云认证等 API；本轮仍报告 193 项缺失类，与 V0.7.0 相同，其中包含 50 项 MongoDB 可选运行时依赖（Netty、Unix socket、加密等）。没有 Release APK，未添加批量 dontwarn。Debug 实连不能替代正式发行门禁。
 3. **系统范围：** 只对测试报告列出的服务器版本与 API26/API30 x86_64 模拟器作声明；未验证真机、arm64、云厂商认证、多版本服务器或大库性能。
 4. **写入：** 仅 SQL Server 测试会话开放已验证的安全类型单行编辑；视图、无主键、启用触发器、复杂类型组合只读。新增引擎没有写 SQL/DDL/图形编辑。SQL Server 短事务使用表锁，可能阻塞其他写入。
 5. **只读边界：** PostgreSQL/MySQL/MariaDB 每操作重设服务端只读事务；仍须最小权限账号。函数、扩展、临时表和外部系统副作用不能仅由 SQL 语法或事务只读保证；不应使用管理员账号浏览不可信 SQL。
 6. **结果限制：** 100 行、64 列、每字段 2048 字符/256 字节二进制、总字符预算；JDBC 驱动内部缓冲与 SQLite CursorWindow 另有限制，不宣称应用堆的硬上限。复杂类型标记未加载，超大查询可能直接失败。分页不是一致性快照，无主键只显示首批。
 7. **SQLite：** 64 MiB 私有副本，拒绝 WAL 格式主文件，须先导出完整一致性文件。系统 SQLite 版本不同，较新文件特性可能无法读取。只读且不写回；删除连接不会自动删除共享副本，暂未提供文件清理界面。
 8. **方言：** 单条受限 SELECT；无 CTE、多语句、变量、美元引用、反斜线转义、可执行注释、DDL、批量事务。PostgreSQL 每个连接绑定一个库，元数据查询使用当前已测试系统目录，旧版服务器需独立验收。
-9. **安全连接：** 系统 CA 或连接专用公共 CA；严格证书链/主机身份，无明文降级。暂无 IPv6、mTLS、Windows/Kerberos/Entra、云 IAM、多主机故障转移。PostgreSQL 认证采用 pgjdbc，受限登录预算不等于所有设备时延保证。
+9. **安全连接：** 默认系统 CA 或连接专用公共 CA，严格证书链/主机身份；也可显式确认具体服务器证书指纹，详见 CERTIFICATE_TRUST。首次信任需独立核对指纹；SQL Server 自动证书可能在重启后变化，需要重新确认。不支持明文端口，未启用 TLS 的 Redis/MongoDB/搜索服务需要先配置服务端 TLS。暂无 IPv6、mTLS、Windows/Kerberos/Entra、云 IAM、多主机故障转移。PostgreSQL 认证采用 pgjdbc，受限登录预算不等于所有设备时延保证。
 10. **状态与发行：** 取消/断网不证明服务端停止，未知写入不重放。进入后台/旋转断开，密码不保存，String 内存不可保证擦除。com.example.datasail 为占位，保持本地 Debug 签名；无公开发布或推送。AI、全表导出与数据库备份尚未实现；仅有显式查询收藏和当前页 CSV。
 
 11. **Redis / Valkey：** 仅单节点 RESP2/TLS 与 ACL 用户，支持六类键只读预览；无集群/Sentinel、模块、写入及任意命令。SCAN 是游标而非快照，COUNT 非严格页长。响应超限会关闭连接。JVM 系统 DNS 解析可能不立即响应取消，但已作废回调不能复活会话。

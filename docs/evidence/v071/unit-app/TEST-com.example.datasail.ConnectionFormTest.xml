@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.ConnectionFormTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-13T07:26:02.340Z" hostname="10651f2473f2" time="0.066">
+  <properties/>
+  <testcase name="discoveryDoesNotRequireTargetButStillValidatesEndpointAndBootstrap" classname="com.example.datasail.ConnectionFormTest" time="0.021"/>
+  <testcase name="tlsScanFailureGivesCertificateGuidanceWithoutSuggestingManualDatabaseBypass" classname="com.example.datasail.ConnectionFormTest" time="0.014"/>
+  <testcase name="validatesActualEngineFieldsWithoutDemandingNetworkForSqlite" classname="com.example.datasail.ConnectionFormTest" time="0.017"/>
+  <testcase name="scannedMetadataCannotNormalizeIntoAnotherDatabase" classname="com.example.datasail.ConnectionFormTest" time="0.001"/>
+  <testcase name="certificateTrustCannotMoveToAnotherEndpointEngineOrConnection" classname="com.example.datasail.ConnectionFormTest" time="0.001"/>
+  <testcase name="discoveryExplainsLocalLimitsWithoutLeakingRemoteExceptionText" classname="com.example.datasail.ConnectionFormTest" time="0.01"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

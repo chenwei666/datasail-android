@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.SafetyTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-13T08:04:22.610Z" hostname="10651f2473f2" time="0.005">
+  <properties/>
+  <testcase name="credentials are copied closed and redacted" classname="com.example.datasail.core.SafetyTest" time="0.001"/>
+  <testcase name="driver raw log output is disabled before connection" classname="com.example.datasail.core.SafetyTest" time="0.0"/>
+  <testcase name="nested certificate errors take precedence and exception text is never logged" classname="com.example.datasail.core.SafetyTest" time="0.001"/>
+  <testcase name="connection strings cannot inject options through host or database" classname="com.example.datasail.core.SafetyTest" time="0.001"/>
+  <testcase name="both drivers require verified TLS and disallow risky options" classname="com.example.datasail.core.SafetyTest" time="0.0"/>
+  <testcase name="values preserve null empty string leading zero decimal and binary ownership" classname="com.example.datasail.core.SafetyTest" time="0.0"/>
+  <testcase name="error classes remain distinct" classname="com.example.datasail.core.SafetyTest" time="0.0"/>
+  <testcase name="MariaDB hostname mismatch without nested cause is safely classified" classname="com.example.datasail.core.SafetyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

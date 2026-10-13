@@ -35,8 +35,12 @@ class ConnectionProfile(
     val environment: ConnectionEnvironment = ConnectionEnvironment.TEST,
     val trustStore: TrustStoreSpec? = null,
     val authDatabase: String = "admin",
+    val certificatePin: String? = null,
+    val certificateReviewToken: String? = null,
 ) {
     init {
+        require(certificatePin == null || certificatePin.matches(Regex("[a-f0-9]{64}")))
+        require(certificateReviewToken == null || certificateReviewToken.matches(Regex("[a-f0-9-]{36}")))
         if (kind != DatabaseKind.SQLITE) {
             require(host.length in 1..253 && host.matches(Regex("[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?"))) { "主机仅支持 DNS 名称或 IPv4，不可填连接串" }
             require(port in 1..65535) { "端口范围为 1–65535" }

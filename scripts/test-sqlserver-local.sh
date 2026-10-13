@@ -35,9 +35,10 @@ p=Path(sys.argv[1]); password='Ds!'+secrets.token_hex(24)
 (p/'database.properties').write_text('kind=SQL_SERVER\nhost=localhost\ndatabase=master\nusername=sa\npassword='+password+'\n')
 for f in ['container.env','database.properties']: (p/f).chmod(0o600)
 PY
+tls_mounts=(--mount "type=bind,src=$fixture/tls,dst=/tls,readonly" --mount "type=bind,src=$fixture/mssql.conf,dst=/var/opt/mssql/mssql.conf,readonly")
+if [[ "${DATASAIL_SQLSERVER_AUTOCERT:-0}" == 1 ]]; then tls_mounts=(); fi
 docker run -d --name "$container" --env-file "$fixture/container.env" --memory=3g \
- -p 127.0.0.1::1433 --mount "type=bind,src=$fixture/tls,dst=/tls,readonly" \
- --mount "type=bind,src=$fixture/mssql.conf,dst=/var/opt/mssql/mssql.conf,readonly" \
+ -p 127.0.0.1::1433 "${tls_mounts[@]}" \
  mcr.microsoft.com/mssql/server@sha256:45a1a9d13ca5574cf8e0fe4ae73ab77248b66d9c3132ac9658fb6c16dd72a8af >/dev/null
 port="$(docker port "$container" 1433/tcp | sed 's/.*://')"
 printf 'port=%s\n' "$port" >> "$fixture/database.properties"
@@ -50,9 +51,15 @@ done
 keytool -importcert -noprompt -alias datasail-test-ca -file "$fixture/tls/ca.pem" -keystore "$fixture/trust.p12" -storepass changeit >/dev/null 2>&1
 export DATASAIL_SQLSERVER_CONFIG="$fixture/database.properties"
 export DATASAIL_SQLSERVER_TRUSTSTORE="$fixture/trust.p12"
-./gradlew :core:sqlServerTest --console=plain
-mkdir -p docs/evidence/v070/SQL_SERVER
-cp core/build/test-results/sqlServerTest/TEST-*.xml docs/evidence/v070/SQL_SERVER/
+task=sqlServerTest
+suite=SQL_SERVER
+android_class=com.example.datasail.SqlServerDeviceTest
+if [[ "${DATASAIL_SQLSERVER_AUTOCERT:-0}" == 1 ]]; then
+ task=sqlServerAutoCertificateTest; suite=SQL_SERVER_AUTOCERT; android_class=com.example.datasail.CertificateTrustUiTest
+fi
+./gradlew ":core:$task" --console=plain
+mkdir -p "docs/evidence/v071/$suite"
+cp core/build/test-results/"$task"/TEST-*.xml "docs/evidence/v071/$suite/"
 
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
@@ -63,8 +70,8 @@ if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb shell run-as com.example.datasail sh -c "'cat > files/fixture.properties'" < "$fixture/database.properties"
  adb shell run-as com.example.datasail sh -c "'cat > files/fixture-ca.pem'" < "$fixture/tls/ca.pem"
  adb reverse "tcp:$port" "tcp:$port"
- adb shell am instrument -w -e class com.example.datasail.SqlServerDeviceTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
+ adb shell am instrument -w -e class "$android_class" com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  adb shell run-as com.example.datasail rm -f files/fixture.properties files/fixture-ca.pem
  rg -q 'OK \(2 tests\)' "$fixture/android-result.txt"
- cp "$fixture/android-result.txt" "docs/evidence/v070/SQL_SERVER/android-${ANDROID_SERIAL}.txt"
+ cp "$fixture/android-result.txt" "docs/evidence/v071/$suite/android-${ANDROID_SERIAL}.txt"
 fi

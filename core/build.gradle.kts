@@ -48,7 +48,7 @@ tasks.register<Test>("untrustedTlsTest") {
     outputs.upToDateWhen { false }
 }
 
-tasks.named<Test>("integrationTest") { exclude("**/SqlServerIntegrationTest*") }
+tasks.named<Test>("integrationTest") { exclude("**/SqlServerIntegrationTest*", "**/SqlServerAutoCertificateIntegrationTest*") }
 tasks.register<Test>("sqlServerTest") {
     testClassesDirs = integrationTest.output.classesDirs
     classpath = integrationTest.runtimeClasspath
@@ -135,6 +135,17 @@ tasks.register<Test>("searchTest") {
         systemProperty("datasail.test.config", providers.environmentVariable("DATASAIL_TEST_CONFIG").get())
         systemProperty("datasail.test.trust", providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE").get())
     }
+    testLogging { events("passed", "skipped", "failed") }
+    outputs.upToDateWhen { false }
+}
+
+// SQL Server without a configured certificate: reproduces the IP + self-signed user setup.
+tasks.register<Test>("sqlServerAutoCertificateTest") {
+    testClassesDirs = integrationTest.output.classesDirs
+    classpath = integrationTest.runtimeClasspath
+    useJUnit()
+    include("**/SqlServerAutoCertificateIntegrationTest*")
+    doFirst { systemProperty("datasail.sqlserver.config", providers.environmentVariable("DATASAIL_SQLSERVER_CONFIG").get()) }
     testLogging { events("passed", "skipped", "failed") }
     outputs.upToDateWhen { false }
 }

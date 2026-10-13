@@ -12,8 +12,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 internal fun discoveryFailureMessage(error: Throwable): String =
-    (if (error is WorkspaceRejected) error.explanation else Failures.classify(error).description) +
+    if (Failures.classify(error).kind == ErrorKind.TLS)
+        "TLS 校验失败，未取得列表。请展开证书设置：导入 CA，或获取并核对服务器证书。已信任的证书也可能已变更或过期。未降级为明文。"
+    else (if (error is WorkspaceRejected) error.explanation else Failures.classify(error).description) +
         "。未取得列表；可检查扫描参数或权限，或手动填写已知目标。"
+
+data class PendingCertificate(val connection: SavedConnection, val preview: CertificatePreview)
 
 data class DiscoveryUiState(val busy: Boolean = false, val result: DiscoveredDatabases? = null, val message: String = "")
 
@@ -56,6 +60,9 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     private val discovering = MutableStateFlow(DiscoveryUiState())
     val discovery = discovering.asStateFlow()
     private var discoveryEpoch = 0L
+    private var certificateReview: CertificateReview? = null
+    private val reviewing = MutableStateFlow<PendingCertificate?>(null)
+    val pendingCertificate = reviewing.asStateFlow()
     private val mutable = MutableStateFlow(WorkspaceUiState())
     val state = mutable.asStateFlow()
     private val connections = MutableStateFlow<List<SavedConnection>>(emptyList())
@@ -126,9 +133,41 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         catch (_: Exception) { message("导入失败：需要有效的 X.509 CA 证书，文件不超过 64 KiB") }
     } }
     fun cancelDiscovery() {
+        certificateReview?.close(); certificateReview = null; reviewing.value = null
         discoveryEpoch++
         discoveryRunner.cancel()
         discovering.value = DiscoveryUiState()
+    }
+    fun inspectCertificate(connection: SavedConnection, hint: String) {
+        if (mutable.value.busy || discovering.value.busy || !storageValid) return
+        cancelDiscovery()
+        val review = CertificateReview()
+        val profile = try { connection.copy(database = DiscoveryDefaults.database(connection.kind, hint)).profile(getApplication(), review.token) }
+        catch (_: Exception) { review.close(); discovering.value = DiscoveryUiState(message = "请检查服务器和账号信息"); return }
+        certificateReview = review
+        val ticket = discoveryEpoch
+        discovering.value = DiscoveryUiState(busy = true, message = "正在获取服务器证书；不会登录数据库…")
+        val accepted = discoveryRunner.scan(profile, Credentials(charArrayOf())) { result -> viewModelScope.launch {
+            val preview = review.preview(); review.close()
+            if (ticket != discoveryEpoch) return@launch
+            certificateReview = null
+            if (preview != null) {
+                reviewing.value = PendingCertificate(connection, preview)
+                discovering.value = DiscoveryUiState(message = "已取得证书，尚未信任或登录。请核对后确认。")
+            } else discovering.value = DiscoveryUiState(message = "未取得证书。" +
+                (result.exceptionOrNull()?.let { Failures.classify(it).description } ?: "服务器未提供可检查的 TLS 证书"))
+        } }
+        if (!accepted) { review.close(); certificateReview = null; discovering.value = DiscoveryUiState(message = "上一操作仍在清理，请稍后重试") }
+    }
+    fun confirmCertificate(connection: SavedConnection): SavedConnection? {
+        val pending = reviewing.value ?: return null
+        if (pending.connection != connection || !pending.preview.isCurrent() || !storageValid || saving) return null
+        val trusted = connection.copy(ca = null, certificateTrust = SavedCertificateTrust(connection.id, connection.kind,
+            connection.host.trim(), connection.port.toInt(), pending.preview.sha256, System.currentTimeMillis()))
+        cancelDiscovery()
+        persist(connections.value.filterNot { it.id == trusted.id } + trusted)
+        discovering.value = DiscoveryUiState(message = "已选择此服务器证书；请手动扫描或连接。")
+        return trusted
     }
     fun discover(connection: SavedConnection, hint: String, password: CharArray) {
         if (mutable.value.busy || discovering.value.busy) { password.fill('\u0000'); return }
@@ -279,7 +318,8 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         val lost = safe.kind in setOf(ErrorKind.TIMEOUT, ErrorKind.NETWORK, ErrorKind.CANCELLED, ErrorKind.UNSUPPORTED)
         mutable.value = mutable.value.copy(busy = false, preview = null, result = null, documents = null, searchPage = null, mapping = null, keys = null, keyContent = null,
             connected = mutable.value.connected && !lost, writable = mutable.value.writable && !lost,
-            message = if (error is WorkspaceRejected) error.explanation else safe.description)
+            message = if (error is WorkspaceRejected) error.explanation else if (safe.kind == ErrorKind.TLS) "TLS 校验失败。请到连接的证书设置导入 CA，或获取并核对服务器证书；已信任证书可能已变更或过期。" else safe.description)
     }
-    override fun onCleared() { discoveryRunner.close(); runner.close(); keyValueRunner.close(); documentRunner.close(); searchRunner.close(); super.onCleared() }
+    override fun onCleared() {
+        certificateReview?.close(); discoveryRunner.close(); runner.close(); keyValueRunner.close(); documentRunner.close(); searchRunner.close(); super.onCleared() }
 }

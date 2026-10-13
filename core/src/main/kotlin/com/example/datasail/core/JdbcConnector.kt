@@ -30,7 +30,9 @@ class JdbcConnector : SqlConnector {
         val targetUrl = if (discovery && profile.kind in setOf(DatabaseKind.MYSQL, DatabaseKind.MARIADB))
             "jdbc:mariadb://${profile.host}:${profile.port}/" else url(profile)
         return credentials.usePassword { password ->
-            properties.setProperty("password", password)
+            // SQLPassword validates nonempty credentials before starting TLS. Inspection always
+            // aborts in our trust manager; this placeholder is never database authentication.
+            properties.setProperty("password", if (profile.certificateReviewToken == null) password else "DataSail-certificate-inspection")
             try { driver.connect(targetUrl, properties) ?: throw SQLException("Unsupported JDBC scheme", "08001") }
             finally { properties.remove("password") }
         }
@@ -48,6 +50,7 @@ class JdbcConnector : SqlConnector {
         }
         internal fun safeProperties(profile: ConnectionProfile) = Properties().apply {
             setProperty("user", profile.username)
+            setProperty("datasailTlsConfiguration", CertificateTrust.configuration(profile))
             profile.trustStore?.let {
                 setProperty("trustStore", it.path)
                 setProperty("trustStoreType", it.type)
@@ -60,7 +63,7 @@ class JdbcConnector : SqlConnector {
             DatabaseKind.REDIS, DatabaseKind.VALKEY -> throw WorkspaceRejected("键值引擎使用独立工作台")
             DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 不使用 JDBC")
                 DatabaseKind.POSTGRESQL -> {
-                    setProperty("sslmode", "verify-full")
+                    setProperty("sslmode", if (profile.certificatePin == null) "verify-full" else "verify-ca")
                     setProperty("sslfactory", PostgreSqlTlsFactory::class.java.name)
                     setProperty("datasailTlsHost", profile.host)
                     setProperty("connectTimeout", "15")
@@ -79,7 +82,7 @@ class JdbcConnector : SqlConnector {
                     setProperty("trustManagerClass", SqlServerTrustManager::class.java.name)
                     val trust = profile.trustStore
                     require(trust == null || ('\n' !in trust.path && '\n' !in trust.type))
-                    setProperty("trustManagerConstructorArg", profile.host + "\n" + (trust?.type ?: "PKCS12") + "\n" + (trust?.path ?: ""))
+                    setProperty("trustManagerConstructorArg", CertificateTrust.configuration(profile))
                     setProperty("loginTimeout", "5")
                     setProperty("socketTimeout", "15000")
                     setProperty("connectRetryCount", "0")

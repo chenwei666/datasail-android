@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.SearchIntegrationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-13T07:58:52.371Z" hostname="10651f2473f2" time="13.055">
+  <properties/>
+  <testcase name="strictTlsAndAuthentication" classname="com.example.datasail.core.SearchIntegrationTest" time="1.411"/>
+  <testcase name="readsMappingPaginationAndTypes" classname="com.example.datasail.core.SearchIntegrationTest" time="0.486"/>
+  <testcase name="adversarialTransport" classname="com.example.datasail.core.SearchIntegrationTest" time="11.156"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

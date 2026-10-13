@@ -47,9 +47,8 @@ class RespKeyValueSession(private val profile: ConnectionProfile) : KeyValueSess
         try { bounded(30) {
             raw.connect(InetSocketAddress(profile.host, profile.port), 15000)
             raw.soTimeout = 15000
-            val trust = profile.trustStore
             val context = SSLContext.getInstance("TLS").apply { init(null,
-                arrayOf(SqlServerTrustManager("${profile.host}\n${trust?.type ?: "PKCS12"}\n${trust?.path ?: ""}")), null) }
+                arrayOf(SqlServerTrustManager(CertificateTrust.configuration(profile))), null) }
             val tls = context.socketFactory.createSocket(raw, profile.host, profile.port, true) as SSLSocket
             socket = tls
             if (closed.get()) { tls.close(); throw SocketException("Closed") }

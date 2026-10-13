@@ -34,7 +34,7 @@ class HttpsSearchSession(private val profile: ConnectionProfile) : SearchSession
     private var knownIndices = emptySet<String>()
     init {
         require(profile.kind.isSearch)
-        val trust = SqlServerTrustManager("${profile.host}\n${profile.trustStore?.type ?: "PKCS12"}\n${profile.trustStore?.path.orEmpty()}")
+        val trust = SqlServerTrustManager(CertificateTrust.configuration(profile))
         context = ClosingTlsContext(SSLContext.getInstance("TLS").apply { init(null, arrayOf(trust), null) })
     }
     fun login(credentials: Credentials) {
@@ -100,6 +100,11 @@ class HttpsSearchSession(private val profile: ConnectionProfile) : SearchSession
         try {
             connection = URL("https", profile.host, profile.port, path).openConnection(Proxy.NO_PROXY) as HttpsURLConnection
             connection.sslSocketFactory = context.socketFactory
+            profile.certificatePin?.let { pin ->
+                connection.hostnameVerifier = javax.net.ssl.HostnameVerifier { host, session ->
+                    CertificateTrust.matchesSession(host, profile.host, pin, session)
+                }
+            }
             connection.instanceFollowRedirects = false
             connection.useCaches = false
             connection.connectTimeout = 10_000; connection.readTimeout = 10_000

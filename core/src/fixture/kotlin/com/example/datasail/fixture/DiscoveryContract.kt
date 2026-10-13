@@ -6,6 +6,7 @@ import org.junit.Assert.*
 /** Same real protocol discovery assertion in JVM and the installed APK. */
 object DiscoveryContract {
     fun verify(profile: ConnectionProfile, password: String, expected: String = profile.database) {
+        CertificateTrustContract.verify(profile, password)
         val bootstrap = ConnectionProfile(profile.kind, profile.host, profile.port,
             DiscoveryDefaults.database(profile.kind), profile.username, trustStore = profile.trustStore, authDatabase = profile.authDatabase)
         val target = if (profile.kind == DatabaseKind.OPENSEARCH) {

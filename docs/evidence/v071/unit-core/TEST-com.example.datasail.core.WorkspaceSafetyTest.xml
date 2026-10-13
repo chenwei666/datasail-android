@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.WorkspaceSafetyTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-13T08:04:22.650Z" hostname="10651f2473f2" time="0.006">
+  <properties/>
+  <testcase name="query gate handles strings comments and escaped identifiers" classname="com.example.datasail.core.WorkspaceSafetyTest" time="0.0"/>
+  <testcase name="invalid ranges precision scale and nullability reject before SQL" classname="com.example.datasail.core.WorkspaceSafetyTest" time="0.003"/>
+  <testcase name="identifier quoting cannot introduce a statement" classname="com.example.datasail.core.WorkspaceSafetyTest" time="0.0"/>
+  <testcase name="views triggers unsupported keys and tables without keys stay read only" classname="com.example.datasail.core.WorkspaceSafetyTest" time="0.001"/>
+  <testcase name="query gate rejects write forms batches and ambiguous syntax" classname="com.example.datasail.core.WorkspaceSafetyTest" time="0.001"/>
+  <testcase name="SAN identity does not fall back to CN or match wrong hosts" classname="com.example.datasail.core.WorkspaceSafetyTest" time="0.001"/>
+  <testcase name="typed inputs distinguish null empty text leading zeros and exact decimal" classname="com.example.datasail.core.WorkspaceSafetyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

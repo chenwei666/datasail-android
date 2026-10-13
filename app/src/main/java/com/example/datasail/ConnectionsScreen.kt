@@ -3,6 +3,7 @@ package com.example.datasail
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -46,6 +47,9 @@ internal fun SavedConnection.discoveryErrors(hint: String): Map<String, String> 
 internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
     val saved by model.saved.collectAsStateWithLifecycle()
     val discovery by model.discovery.collectAsStateWithLifecycle()
+    val pendingCertificate by model.pendingCertificate.collectAsStateWithLifecycle()
+    var fingerprintChecked by remember { mutableStateOf(false) }
+    LaunchedEffect(pendingCertificate) { fingerprintChecked = false }
     var discoveryHint by remember { mutableStateOf("") }
     var databaseSearch by remember { mutableStateOf("") }
     var stage by remember { mutableStateOf("list") }
@@ -64,7 +68,7 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
     var importTarget by remember { mutableStateOf<Pair<String, DatabaseKind>?>(null) }
     val caPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         val target = importTarget
-        uri?.let { model.importCa(it) { hash -> if (target == (draft.id to draft.kind)) { draft = draft.copy(ca = hash); authorized = false; model.cancelDiscovery() } } }
+        uri?.let { model.importCa(it) { hash -> if (target == (draft.id to draft.kind)) { draft = draft.copy(ca = hash, certificateTrust = null); authorized = false; model.cancelDiscovery() } } }
     }
     val sqlitePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         val target = importTarget
@@ -93,7 +97,7 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                     Text(if (connection.kind == DatabaseKind.SQLITE) "本机只读文件副本" else "${connection.host}:${connection.port} / ${connection.database}", style = MaterialTheme.typography.bodySmall)
                     Row {
                         TextButton(enabled = !state.busy, onClick = { edit(connection) }) { Text("打开连接") }
-                        TextButton(enabled = !state.busy, onClick = { edit(connection.copy(id = UUID.randomUUID().toString(), name = (connection.name.take(77) + " 副本"))) }) { Text("复制") }
+                        TextButton(enabled = !state.busy, onClick = { edit(connection.copy(id = UUID.randomUUID().toString(), certificateTrust = null, name = (connection.name.take(77) + " 副本"))) }) { Text("复制") }
                         TextButton(enabled = !state.busy, onClick = { deleting = connection }) { Text("删除") }
                     }
                 }
@@ -114,7 +118,7 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
         } }
     } else {
         val errors = draft.fieldErrors()
-        fun change(value: SavedConnection) { model.cancelDiscovery(); draft = value; authorized = false }
+        fun change(value: SavedConnection) { model.cancelDiscovery(); draft = value.withoutMovedTrust(); authorized = false }
         TextButton(enabled = !state.busy, onClick = { stage = "list"; password = ""; authorized = false; search = ""; model.cancelDiscovery() }) { Text("返回我的连接") }
         Text("配置 ${draft.kind.label}", style = MaterialTheme.typography.titleLarge)
         Text(DatabaseCatalog.targets.first { it.connectionKind == draft.kind }.capability, style = MaterialTheme.typography.bodySmall)
@@ -136,13 +140,17 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
             ConnectionField(if (draft.kind.isKeyValue) "ACL 用户名" else "用户名", draft.username, errors["username"]) { change(draft.copy(username = it)); password = "" }
             OutlinedTextField(password, { model.cancelDiscovery(); password = it }, Modifier.fillMaxWidth(), label = { Text("密码（不保存）") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
             Row { Checkbox(draft.production, { change(draft.copy(production = it)) }); Text("生产环境（只读）") }
-            Text("连接使用 TLS，验证证书及服务器身份。", style = MaterialTheme.typography.bodySmall)
-            TextButton(onClick = { advanced = !advanced }) { Text(if (advanced) "收起证书设置" else "证书设置 · ${if (draft.ca == null) "系统 CA" else "自选 CA"}") }
+            Text(if (draft.certificateTrust == null) "连接使用 TLS，验证证书及服务器身份。" else "连接使用 TLS，仅信任已确认的服务器证书指纹。", style = MaterialTheme.typography.bodySmall)
+            TextButton(onClick = { advanced = !advanced }) { Text(if (advanced) "收起证书设置" else "证书设置 · ${if (draft.certificateTrust != null) "已确认服务器证书" else if (draft.ca == null) "系统 CA" else "自选 CA"}") }
             if (advanced) {
-                Text(if (draft.ca == null) "使用系统信任的 CA。自签名服务器可导入专用 CA。" else "CA SHA-256：${draft.ca}")
+                Text(if (draft.certificateTrust != null) "服务器证书 SHA-256：${draft.certificateTrust!!.sha256}" else
+                    if (draft.ca == null) "使用系统信任的 CA。内部 CA 可导入；默认自签名证书可在下方获取并确认。" else "CA SHA-256：${draft.ca}")
                 Text("请核对证书来源与指纹。")
                 Row { TextButton(onClick = { importTarget = draft.id to draft.kind; caPicker.launch("*/*") }) { Text("选择 CA 证书") }
-                    TextButton(onClick = { change(draft.copy(ca = null)) }) { Text("恢复系统 CA") } }
+                    TextButton(onClick = { change(draft.copy(ca = null, certificateTrust = null)) }) { Text("恢复系统 CA") } }
+                OutlinedButton(enabled = draft.discoveryErrors(discoveryHint).isEmpty() && authorized && !state.busy && !discovery.busy,
+                    onClick = { model.inspectCertificate(draft, discoveryHint) }) { Text("获取并核对服务器证书") }
+                Text("无需密码。确认指纹后仅对当前连接生效；修改服务器或端口、复制连接需要重新确认。恢复系统 CA 后请保存配置。", style = MaterialTheme.typography.bodySmall)
             }
         }
         Row { Checkbox(authorized, { authorized = it; if (!it) model.cancelDiscovery() }); Text("我已获准访问上述数据库") }
@@ -187,6 +195,24 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                 val secret = password.toCharArray(); password = ""; model.connect(draft, secret)
             }) { Text(if (state.busy) "连接中…" else "连接数据库") }
         }
+    }
+    pendingCertificate?.takeIf { it.connection == draft }?.let { pending ->
+        val cert = pending.preview
+        AlertDialog(onDismissRequest = model::cancelDiscovery, title = { Text("确认服务器证书") },
+            text = { Column(Modifier.heightIn(max = 420.dp).verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("${draft.kind.label} · ${draft.host}:${draft.port}")
+                if (draft.certificateTrust != null && draft.certificateTrust!!.sha256 != cert.sha256) Text("证书已变化，请先向管理员确认更换原因。")
+                Text("SHA-256：${cert.sha256}")
+                Text("主体：${cert.subject}\n签发者：${cert.issuer}")
+                Text("有效期：${java.util.Date(cert.notBefore)} — ${java.util.Date(cert.notAfter)}")
+                Text("确认后以此证书指纹替代 CA 和地址匹配校验，保持 TLS 加密。首次获取的证书可能来自冒充服务器，须通过管理员等独立渠道核对指纹。")
+                if (!cert.isCurrent()) Text("证书已过期或尚未生效，不能信任。请检查设备时间或更新服务器证书。")
+                Row { Checkbox(fingerprintChecked, { fingerprintChecked = it }); Text("我已独立核对证书指纹") }
+            } },
+            confirmButton = { TextButton(enabled = fingerprintChecked && cert.isCurrent(), onClick = {
+                model.confirmCertificate(draft)?.let { draft = it }
+            }) { Text("信任并保存到此连接") } },
+            dismissButton = { TextButton(onClick = model::cancelDiscovery) { Text("取消") } })
     }
     deleting?.let { connection -> AlertDialog(onDismissRequest = { deleting = null }, title = { Text("删除连接配置？") },
         text = { Text("将从本机移除“${connection.name}”的连接配置，数据库中的数据不受影响。") },
