@@ -187,6 +187,7 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
             }
             Text("保存配置或连接时生效，密码由 Android Keystore 加密。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row { Checkbox(draft.production, { change(draft.copy(production = it)) }); Text("生产环境（只读）") }
+            Row { Checkbox(draft.allowExternalAi, { change(draft.copy(allowExternalAi = it)) }); Text("允许此连接使用外部 AI（发送前逐次预览）") }
         }
         Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(authorized, { authorized = it; if (!it) model.cancelDiscovery() }, modifier = Modifier.testTag("connection-authorization")); Text("我已获准访问上述数据库") }
         if (draft.kind != DatabaseKind.SQLITE) {

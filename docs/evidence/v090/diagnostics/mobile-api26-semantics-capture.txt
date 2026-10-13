@@ -1,0 +1,91 @@
+
+com.example.datasail.ConnectionUiTest:..
+com.example.datasail.MobileWorkflowTest:.
+com.example.datasail.QueryStoreTest:...
+com.example.datasail.SqliteDeviceTest:..
+com.example.datasail.PasswordVaultTest:...
+com.example.datasail.PasswordWorkflowTest:.
+com.example.datasail.SettingsUiTest:
+Error in changeThemeAndCompletionPersistAndResetRequiresConfirmation(com.example.datasail.SettingsUiTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but found '3' nodes that satisfy: ((ToggleableState is defined) && (hasAnySiblingThat(Text + InputText + EditableText contains '单元格换行' (ignoreCase: false))))
+Nodes found:
+1) Node #1994 at (l=859.0, t=917.0, r=996.0, b=1001.0)px
+Focused = 'false'
+Role = 'Switch'
+ToggleableState = 'On'
+Actions = [OnClick, RequestFocus]
+MergeDescendants = 'true'
+Has 17 siblings
+2) Node #1998 at (l=859.0, t=1064.0, r=996.0, b=1148.0)px
+Focused = 'false'
+Role = 'Switch'
+ToggleableState = 'On'
+Actions = [OnClick, RequestFocus]
+MergeDescendants = 'true'
+Has 17 siblings
+3) Node #2002 at (l=859.0, t=1211.0, r=996.0, b=1295.0)px
+Focused = 'false'
+Role = 'Switch'
+ToggleableState = 'Off'
+Actions = [OnClick, RequestFocus]
+MergeDescendants = 'true'
+Has 17 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.SettingsUiTest.changeThemeAndCompletionPersistAndResetRequiresConfirmation(SettingsUiTest.kt:35)
+
+com.example.datasail.TableFavoriteStoreTest:.
+com.example.datasail.AiStoreTest:..
+com.example.datasail.TablePresentationTest:
+Error in all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest):
+java.lang.IllegalArgumentException: Cannot currently capture dialogs on API lower than 28!
+	at androidx.compose.ui.test.AndroidImageHelpers_androidKt.captureToImage(AndroidImageHelpers.android.kt:72)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:63)
+
+
+Time: 153.4
+There were 2 failures:
+1) changeThemeAndCompletionPersistAndResetRequiresConfirmation(com.example.datasail.SettingsUiTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but found '3' nodes that satisfy: ((ToggleableState is defined) && (hasAnySiblingThat(Text + InputText + EditableText contains '单元格换行' (ignoreCase: false))))
+Nodes found:
+1) Node #1994 at (l=859.0, t=917.0, r=996.0, b=1001.0)px
+Focused = 'false'
+Role = 'Switch'
+ToggleableState = 'On'
+Actions = [OnClick, RequestFocus]
+MergeDescendants = 'true'
+Has 17 siblings
+2) Node #1998 at (l=859.0, t=1064.0, r=996.0, b=1148.0)px
+Focused = 'false'
+Role = 'Switch'
+ToggleableState = 'On'
+Actions = [OnClick, RequestFocus]
+MergeDescendants = 'true'
+Has 17 siblings
+3) Node #2002 at (l=859.0, t=1211.0, r=996.0, b=1295.0)px
+Focused = 'false'
+Role = 'Switch'
+ToggleableState = 'Off'
+Actions = [OnClick, RequestFocus]
+MergeDescendants = 'true'
+Has 17 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.SettingsUiTest.changeThemeAndCompletionPersistAndResetRequiresConfirmation(SettingsUiTest.kt:35)
+2) all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest)
+java.lang.IllegalArgumentException: Cannot currently capture dialogs on API lower than 28!
+	at androidx.compose.ui.test.AndroidImageHelpers_androidKt.captureToImage(AndroidImageHelpers.android.kt:72)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:63)
+
+FAILURES!!!
+Tests run: 17,  Failures: 2
+
+

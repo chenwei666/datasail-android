@@ -1,0 +1,2 @@
+ACTIVITY MANAGER ACTIVITIES (dumpsys activity lastanr)
+  <no ANR has occurred since boot>

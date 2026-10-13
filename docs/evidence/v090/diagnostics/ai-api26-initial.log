@@ -1,0 +1,25 @@
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+
+com.example.datasail.AiServiceUiTest:.
+Error in modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows(com.example.datasail.AiServiceUiTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 15000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.AiServiceUiTest.modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows(AiServiceUiTest.kt:64)
+
+
+Time: 58.93
+There was 1 failure:
+1) modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows(com.example.datasail.AiServiceUiTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 15000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.AiServiceUiTest.modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows(AiServiceUiTest.kt:64)
+
+FAILURES!!!
+Tests run: 2,  Failures: 1
+
+

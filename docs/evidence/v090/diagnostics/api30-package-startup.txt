@@ -1,0 +1,3 @@
+Performing Streamed Install
+adb: failed to install versions/V0.8.1/apk/DataSail-V0.8.1-debug.apk: cmd: Failure calling service package: Broken pipe (32)
+

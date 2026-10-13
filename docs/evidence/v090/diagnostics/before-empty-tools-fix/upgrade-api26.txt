@@ -1,0 +1,29 @@
+Performing Streamed Install
+Success
+    versionCode=13 minSdk=26 targetSdk=36
+    versionName=0.8.1
+Exact com.example.datasail.test APK already installed.
+
+com.example.datasail.UpgradeStateSeedTest:.
+
+Time: 0.738
+
+OK (1 test)
+
+
+Performing Streamed Install
+Success
+    versionCode=14 minSdk=26 targetSdk=36
+    versionName=0.9.0
+synthetic upgrade marker
+Exact com.example.datasail.test APK already installed.
+
+com.example.datasail.SmokeTest:...
+com.example.datasail.UpgradeTest:.
+com.example.datasail.UpgradeStateVerifyTest:.
+
+Time: 46.709
+
+OK (5 tests)
+
+

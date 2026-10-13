@@ -1,0 +1,22 @@
+10-13 16:31:16.311   518  1961 I DropBoxManagerService: add tag=system_server_watchdog isTagEnabled=true flags=0x2
+10-13 16:31:16.474   518   541 W Watchdog: *** WATCHDOG KILLING SYSTEM PROCESS: Blocked in monitor com.android.server.StorageManagerService on foreground thread (android.fg)
+10-13 16:31:16.599   518   541 W Watchdog: android.fg annotated stack trace:
+10-13 16:31:16.599   518   541 W Watchdog:     at com.android.server.pm.PackageManagerService.getInstantAppPackageName(PackageManagerService.java:7125)
+10-13 16:31:16.600   518   541 W Watchdog:     - waiting to lock <0x04963de5> (a java.lang.Object)
+10-13 16:31:16.601   518   541 W Watchdog:     at com.android.server.pm.PackageManagerService.queryIntentReceiversInternal(PackageManagerService.java:8144)
+10-13 16:31:16.601   518   541 W Watchdog:     at com.android.server.pm.PackageManagerService.queryIntentReceivers(PackageManagerService.java:8133)
+10-13 16:31:16.601   518   541 W Watchdog:     at com.android.server.am.ActivityManagerService.collectReceiverComponents(ActivityManagerService.java:15768)
+10-13 16:31:16.604   518   541 W Watchdog:     at com.android.server.am.ActivityManagerService.broadcastIntentLocked(ActivityManagerService.java:16444)
+10-13 16:31:16.605   518   541 W Watchdog:     at com.android.server.am.ActivityManagerService.broadcastIntentLocked(ActivityManagerService.java:15929)
+10-13 16:31:16.605   518   541 W Watchdog:     at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:16743)
+10-13 16:31:16.611   518   541 W Watchdog:     - locked <0x0135b8df> (a com.android.server.am.ActivityManagerService)
+10-13 16:31:16.618   518   541 W Watchdog:     at android.app.ContextImpl.sendBroadcastAsUser(ContextImpl.java:1330)
+10-13 16:31:16.619   518   541 W Watchdog:     at android.app.ContextImpl.sendBroadcastAsUser(ContextImpl.java:1302)
+10-13 16:31:16.621   518   541 W Watchdog:     at com.android.server.DropBoxManagerService$DropBoxManagerBroadcastHandler.prepareAndSendBroadcast(DropBoxManagerService.java:263)
+10-13 16:31:16.652   518   541 W Watchdog:     at com.android.server.DropBoxManagerService$DropBoxManagerBroadcastHandler.handleMessage(DropBoxManagerService.java:245)
+10-13 16:31:16.652   518   541 W Watchdog:     at android.os.Handler.dispatchMessage(Handler.java:106)
+10-13 16:31:16.652   518   541 W Watchdog:     at android.os.Looper.loop(Looper.java:223)
+10-13 16:31:16.654   518   541 W Watchdog:     at android.os.HandlerThread.run(HandlerThread.java:67)
+10-13 16:31:16.658   518   541 W Watchdog:     at com.android.server.ServiceThread.run(ServiceThread.java:44)
+10-13 16:31:16.659   518   541 W Watchdog: *** GOODBYE!
+10-13 16:31:17.649   295   295 D android.hardware.wifi@1.0-service: Dead callback removed from list

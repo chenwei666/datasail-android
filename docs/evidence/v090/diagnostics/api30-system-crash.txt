@@ -1,0 +1,13 @@
+--------- beginning of crash
+10-13 16:31:16.900   871   871 E AndroidRuntime: FATAL EXCEPTION: main
+10-13 16:31:16.900   871   871 E AndroidRuntime: Process: com.android.networkstack.process, PID: 871
+10-13 16:31:16.900   871   871 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-13 16:31:17.853   695   695 E AndroidRuntime: FATAL EXCEPTION: main
+10-13 16:31:17.853   695   695 E AndroidRuntime: Process: com.android.systemui, PID: 695
+10-13 16:31:17.853   695   695 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-13 16:31:18.005  1842  1842 E AndroidRuntime: FATAL EXCEPTION: main
+10-13 16:31:18.005  1842  1842 E AndroidRuntime: Process: com.android.phone, PID: 1842
+10-13 16:31:18.005  1842  1842 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-13 16:31:18.081  1027  1066 E AndroidRuntime: FATAL EXCEPTION: launcher-loader
+10-13 16:31:18.081  1027  1066 E AndroidRuntime: Process: com.android.launcher3, PID: 1027
+10-13 16:31:18.081  1027  1066 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause

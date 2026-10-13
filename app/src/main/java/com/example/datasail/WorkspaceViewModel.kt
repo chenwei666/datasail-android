@@ -27,7 +27,7 @@ data class IndexMapping(val index: String, val json: String)
 
 // All JDBC work is dispatched to one bounded worker; UI only holds immutable snapshots.
 data class WorkspaceUiState(val busy: Boolean = false, val connected: Boolean = false,
-    val connectionKey: String = "", val connectionName: String = "", val target: String = "未连接", val catalog: String = "—", val schema: String = "—", val writable: Boolean = false,
+    val aiGeneration: Long = 0, val allowExternalAi: Boolean = false, val connectionKey: String = "", val connectionName: String = "", val target: String = "未连接", val catalog: String = "—", val schema: String = "—", val writable: Boolean = false,
     val kind: DatabaseKind = DatabaseKind.SQL_SERVER, val production: Boolean = false, val catalogs: List<String> = emptyList(), val schemas: List<String> = emptyList(),
     val indices: List<String> = emptyList(), val searchPage: SearchPage? = null, val mapping: IndexMapping? = null,
     val collections: List<String> = emptyList(), val documents: DocumentPage? = null,
@@ -314,7 +314,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             password.fill('\u0000'); message("连接信息无效，请检查主机、端口、库名和用户名"); return
         }
         val credentials = Credentials(password); password.fill('\u0000')
-        mutable.value = WorkspaceUiState(busy = true, connectionKey = tableConnectionKey(connection), connectionName = connection.name, target = if (profile.kind == DatabaseKind.SQLITE) "SQLite · ${connection.name}" else "${profile.kind.label} · ${profile.host}:${profile.port}", catalog = if (profile.kind == DatabaseKind.SQLITE) "main" else profile.database,
+        mutable.value = WorkspaceUiState(busy = true, aiGeneration = epoch + 1, allowExternalAi = connection.allowExternalAi, connectionKey = tableConnectionKey(connection), connectionName = connection.name, target = if (profile.kind == DatabaseKind.SQLITE) "SQLite · ${connection.name}" else "${profile.kind.label} · ${profile.host}:${profile.port}", catalog = if (profile.kind == DatabaseKind.SQLITE) "main" else profile.database,
             kind = profile.kind, production = connection.production, message = if (profile.kind == DatabaseKind.SQLITE) "正在打开只读副本…" else "正在校验 TLS 并登录…")
         queryText.value = "SELECT 1 AS 示例"
         val ticket = ++epoch
@@ -386,7 +386,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         mutable.value = mutable.value.copy(schema = schema, tables = emptyList(), result = null, navigationIssues = emptyList())
         execute({ SqlNavigator.load(it, schema) }) { navigation(it) }
     }
-    fun page(table: TableRef, offset: Int = 0) = execute({ it.page(table, offset) }) { copy(result = it) }
+    fun page(table: TableRef, offset: Int = 0, columnOffset: Int = 0) = execute({ it.page(table, offset, columnOffset) }) { copy(result = it) }
     fun query(sql: String) = execute({ it.select(sql) }) { copy(result = it) }
     fun writable(enabled: Boolean) = execute({ it.setWritable(enabled) }) { copy(writable = enabled) }
     fun preview(kind: MutationKind, row: Int?, inputs: Map<String, CellInput>) = execute({ it.preview(kind, row, inputs) }) { copy(preview = it) }

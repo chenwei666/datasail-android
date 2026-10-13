@@ -23,7 +23,7 @@ data class SavedCertificateTrust(val connectionId: String, val kind: DatabaseKin
 data class SavedConnection(val id: String = UUID.randomUUID().toString(), val name: String = "",
     val host: String = "", val port: String = "1433", val database: String = "", val username: String = "",
     val production: Boolean = false, val ca: String? = null, val kind: DatabaseKind = DatabaseKind.SQL_SERVER,
-    val authDatabase: String = "admin", val certificateTrust: SavedCertificateTrust? = null) {
+    val authDatabase: String = "admin", val certificateTrust: SavedCertificateTrust? = null, val allowExternalAi: Boolean = false) {
     fun withoutMovedTrust(): SavedConnection = if (certificateTrust?.matches(this) == false) copy(certificateTrust = null) else this
     fun profile(context: Context, reviewToken: String? = null) = ConnectionProfile(kind, host.trim(), port.toIntOrNull() ?: 0,
         database.trim(), username, environment = if (production) ConnectionEnvironment.PRODUCTION else ConnectionEnvironment.TEST,
@@ -37,7 +37,7 @@ class ConnectionStore(private val context: Context) {
     private fun loadLocked(): List<SavedConnection> {
         if (!file.baseFile.exists() && !File(file.baseFile.path + ".bak").exists()) return emptyList()
         val root = file.openRead().use { input -> require(input.channel.size() <= 4000000); JSONObject(input.bufferedReader().readText()) }
-        require(root.getInt("schema") in 1..4)
+        require(root.getInt("schema") in 1..5)
         val rows = root.getJSONArray("connections"); require(rows.length() <= 100)
         return (0 until rows.length()).map { index -> rows.getJSONObject(index).let { row ->
             SavedConnection(row.getString("id"), row.getString("name"), row.getString("host"), row.getString("port"),
@@ -46,7 +46,7 @@ class ConnectionStore(private val context: Context) {
                 if (root.getInt("schema") == 1) DatabaseKind.SQL_SERVER else DatabaseKind.valueOf(row.getString("kind")), row.optString("authDatabase", "admin"),
                 row.optJSONObject("certificateTrust")?.let { pin -> SavedCertificateTrust(pin.getString("connectionId"),
                     DatabaseKind.valueOf(pin.getString("kind")), pin.getString("host"), pin.getInt("port"),
-                    pin.getString("sha256"), pin.getLong("confirmedAt")) })
+                    pin.getString("sha256"), pin.getLong("confirmedAt")) }, row.optBoolean("allowExternalAi", false))
         } }
     }
     fun save(connections: List<SavedConnection>) = synchronized(metadataLock) { saveLocked(connections) }
@@ -54,7 +54,7 @@ class ConnectionStore(private val context: Context) {
         require(connections.size <= 100)
         val rows = JSONArray()
         connections.forEach { c -> rows.put(JSONObject().apply {
-            put("authDatabase", c.authDatabase); put("kind", c.kind.name); put("id", c.id); put("name", c.name); put("host", c.host); put("port", c.port)
+            put("allowExternalAi", c.allowExternalAi); put("authDatabase", c.authDatabase); put("kind", c.kind.name); put("id", c.id); put("name", c.name); put("host", c.host); put("port", c.port)
             c.certificateTrust?.let { pin ->
                 require(pin.matches(c) && pin.sha256.matches(Regex("[a-f0-9]{64}")))
                 put("certificateTrust", JSONObject().put("connectionId", pin.connectionId).put("kind", pin.kind.name)
@@ -62,7 +62,7 @@ class ConnectionStore(private val context: Context) {
             }
             put("database", c.database); put("username", c.username); put("production", c.production); put("ca", c.ca ?: "")
         }) }
-        val encoded = JSONObject().put("schema", 4).put("connections", rows).toString().toByteArray()
+        val encoded = JSONObject().put("schema", 5).put("connections", rows).toString().toByteArray()
         require(encoded.size <= 4000000)
         val out = file.startWrite()
         try { out.write(encoded); file.finishWrite(out) }

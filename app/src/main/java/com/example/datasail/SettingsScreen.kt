@@ -5,11 +5,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-internal fun SettingsScreen(model: WorkspaceViewModel, diagnostics: @Composable () -> Unit) {
+internal fun SettingsScreen(model: WorkspaceViewModel, openAi: () -> Unit, diagnostics: @Composable () -> Unit) {
     val settings by model.settings.collectAsStateWithLifecycle()
     val count by model.passwordCount.collectAsStateWithLifecycle()
     var clearPasswords by remember { mutableStateOf(false) }
@@ -26,6 +28,11 @@ internal fun SettingsScreen(model: WorkspaceViewModel, diagnostics: @Composable 
     SettingsGroup("数据表格") {
         SettingsSwitch("紧凑行高", settings.compactGrid) { model.updateSettings(settings.copy(compactGrid = it)) }
         SettingsSwitch("显示列类型", settings.showColumnTypes) { model.updateSettings(settings.copy(showColumnTypes = it)) }
+        SettingsSwitch("单元格换行", settings.wrapCells) { model.updateSettings(settings.copy(wrapCells = it)) }
+        Text("默认列宽")
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { listOf(140,200,280,360).forEach { width ->
+            FilterChip(selected = settings.columnWidth == width, onClick = { model.updateSettings(settings.copy(columnWidth = width)) }, label = { Text(width.toString()) })
+        } }
         FontSetting("表格字号", settings.gridFont) { model.updateSettings(settings.copy(gridFont = it)) }
     }
     SettingsGroup("SQL 编辑器") {
@@ -40,6 +47,11 @@ internal fun SettingsScreen(model: WorkspaceViewModel, diagnostics: @Composable 
         Text("密码仅存于此设备的加密存储，不进入连接配置、备份或导出；系统密钥丢失时需重新输入。", style = MaterialTheme.typography.bodySmall)
         OutlinedButton(onClick = { clearPasswords = true }) { Text("清除全部保存的密码") }
         Text("后台断开连接 · 禁止截屏 · 默认校验服务器证书", style = MaterialTheme.typography.bodySmall)
+    }
+    SettingsGroup("AI 助手") {
+        Text("国内外模型服务 · 自定义地址 · 上游模型列表")
+        OutlinedButton(onClick = openAi) { Text("配置 AI 服务与模型") }
+        Text("密钥按服务地址加密保存；每个数据库连接可禁止外部 AI。", style = MaterialTheme.typography.bodySmall)
     }
     SettingsGroup("关于数舟") {
         Text("DataSail ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
@@ -67,7 +79,7 @@ private fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> 
 @Composable
 private fun SettingsSwitch(label: String, value: Boolean, change: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, Modifier.weight(1f)); Switch(value, change)
+        Text(label, Modifier.weight(1f)); Switch(value, change, modifier = Modifier.semantics { contentDescription = label })
     }
 }
 @Composable

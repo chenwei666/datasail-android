@@ -1,0 +1,102 @@
+Unable to find image 'postgres@sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db' locally
+docker.io/library/postgres@sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db: Pulling from library/postgres
+57fb71246055: Pulling fs layer
+6e38a999e99d: Pulling fs layer
+0337286b2934: Pulling fs layer
+c52cb585fd05: Pulling fs layer
+631436d0d0b7: Pulling fs layer
+2c71b11837a2: Pulling fs layer
+31e4e3208450: Pulling fs layer
+d9019a56de83: Pulling fs layer
+550df04ae070: Pulling fs layer
+ef9aa5783c64: Pulling fs layer
+81a21d8601fa: Pulling fs layer
+7572aa056bba: Pulling fs layer
+479918537f59: Pulling fs layer
+d9019a56de83: Waiting
+550df04ae070: Waiting
+ef9aa5783c64: Waiting
+c52cb585fd05: Waiting
+81a21d8601fa: Waiting
+631436d0d0b7: Waiting
+2c71b11837a2: Waiting
+31e4e3208450: Waiting
+7572aa056bba: Waiting
+479918537f59: Waiting
+6e38a999e99d: Download complete
+0337286b2934: Verifying Checksum
+0337286b2934: Download complete
+c52cb585fd05: Verifying Checksum
+c52cb585fd05: Download complete
+2c71b11837a2: Verifying Checksum
+2c71b11837a2: Download complete
+31e4e3208450: Verifying Checksum
+31e4e3208450: Download complete
+631436d0d0b7: Verifying Checksum
+631436d0d0b7: Download complete
+d9019a56de83: Verifying Checksum
+d9019a56de83: Download complete
+ef9aa5783c64: Verifying Checksum
+ef9aa5783c64: Download complete
+81a21d8601fa: Verifying Checksum
+81a21d8601fa: Download complete
+57fb71246055: Verifying Checksum
+57fb71246055: Download complete
+7572aa056bba: Verifying Checksum
+7572aa056bba: Download complete
+479918537f59: Verifying Checksum
+479918537f59: Download complete
+57fb71246055: Pull complete
+6e38a999e99d: Pull complete
+0337286b2934: Pull complete
+c52cb585fd05: Pull complete
+631436d0d0b7: Pull complete
+2c71b11837a2: Pull complete
+31e4e3208450: Pull complete
+d9019a56de83: Pull complete
+550df04ae070: Verifying Checksum
+550df04ae070: Download complete
+550df04ae070: Pull complete
+ef9aa5783c64: Pull complete
+81a21d8601fa: Pull complete
+7572aa056bba: Pull complete
+479918537f59: Pull complete
+Digest: sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db
+Status: Downloaded newer image for postgres@sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:processIntegrationTestResources NO-SOURCE
+> Task :core:compileIntegrationTestKotlin
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:jdbcWorkspaceTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+JdbcWorkspaceIntegrationTest > wideTableWindowsReachLastColumnWithExactType PASSED
+
+JdbcWorkspaceIntegrationTest > serverEnforcesReadonlyBeyondSyntaxAndCannotPoisonNextTransaction PASSED
+
+JdbcWorkspaceIntegrationTest > unusualIdentifiersAreQuotedAndExactMetadataDoesNotMatchWildcards PASSED
+
+JdbcWorkspaceIntegrationTest > rejectsWriteSyntaxAndExecutableComments PASSED
+
+JdbcWorkspaceIntegrationTest > browsingPreservesTypesAndPaginationAndClosesTransactions PASSED
+
+JdbcWorkspaceIntegrationTest > rejectsWrongHostnameUntrustedCaAndWrongPassword PASSED
+
+BUILD SUCCESSFUL in 3s
+8 actionable tasks: 3 executed, 5 up-to-date

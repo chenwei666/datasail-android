@@ -33,7 +33,7 @@ data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val ha
 }
 data class ResultColumn(val name: String, val typeName: String, val jdbcType: Int)
 data class ResultPage(val columns: List<ResultColumn>, val rows: List<List<DbValue>>, val hasMore: Boolean,
-    val offset: Int = 0, val tableSchema: TableSchema? = null, val stableOrder: Boolean = false)
+    val offset: Int = 0, val tableSchema: TableSchema? = null, val stableOrder: Boolean = false, val columnOffset: Int = 0, val totalColumns: Int = columns.size)
 enum class MutationKind(val label: String) { INSERT("新增"), UPDATE("修改"), DELETE("删除") }
 data class CellInput(val text: String = "", val isNull: Boolean = false)
 data class ChangePreview(val column: String, val before: String?, val after: String?)
@@ -98,5 +98,13 @@ object Values {
             }
         } catch (_: NumberFormatException) { throw WorkspaceRejected("${column.name} 数值格式不正确") }
         catch (_: ArithmeticException) { throw WorkspaceRejected("${column.name} 小数不能无损写入") }
+    }
+}
+
+/** Column windows preserve metadata order and keep each fetch within the existing 64-column budget. */
+object TableColumns {
+    fun window(schema: TableSchema, offset: Int): List<ColumnDef> {
+        require(offset >= 0 && offset % 64 == 0 && offset < schema.columns.size)
+        return schema.columns.drop(offset).take(64)
     }
 }

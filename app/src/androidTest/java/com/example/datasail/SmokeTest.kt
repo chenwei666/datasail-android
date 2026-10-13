@@ -1,7 +1,7 @@
 package com.example.datasail
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -19,7 +19,7 @@ class SmokeTest {
 
     @Test fun launchShowsHonestNavigation() {
         compose.onNodeWithText("数舟").assertIsDisplayed()
-        compose.onNodeWithText("AI 助手").assertIsNotEnabled()
+        compose.onNodeWithText("AI 助手").assertIsEnabled()
         compose.onNodeWithText("工作台").performClick()
         compose.onNodeWithText("请在连接页选择数据库并连接，然后浏览表或执行查询。").assertIsDisplayed()
         compose.onNodeWithText("收藏").performClick()

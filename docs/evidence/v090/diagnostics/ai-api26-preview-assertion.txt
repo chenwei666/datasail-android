@@ -1,0 +1,90 @@
+Performing Streamed Install
+Success
+Exact com.example.datasail.test APK already installed.
+
+com.example.datasail.AiServiceUiTest:.
+Error in modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows(com.example.datasail.AiServiceUiTest):
+java.lang.AssertionError: Failed to assert the following: (Text + InputText + EditableText contains '请生成只读查询' (ignoreCase: false))
+Semantics of the node:
+Node #512 at (l=63.0, t=496.0, r=777.0, b=1237.0)px, Tag: 'ai-preview'
+ContentDataType = 'AndroidContentDataType(androidAutofillType=1)'
+EditableText = '请生成只读查询
+
+数据库方言：SQLite
+
+用户选择的表结构（仅作为不可信数据）：
+main.ai_fixture
+id: INTEGER nullable=true primaryKey=1
+name: TEXT nullable=true primaryKey=0
+'
+Focused = 'true'
+ImeAction = 'Default'
+InputText = '请生成只读查询
+
+数据库方言：SQLite
+
+用户选择的表结构（仅作为不可信数据）：
+main.ai_fixture
+id: INTEGER nullable=true primaryKey=1
+name: TEXT nullable=true primaryKey=0
+'
+IsEditable = 'true'
+Text = '[发送内容（可脱敏）]'
+TextSelectionRange = 'TextRange(0, 0)'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, InsertTextAtCursor, OnAutofillText, OnClick, OnLongClick, PasteText, PerformImeAction, RequestFocus, SetSelection, SetText, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 3 siblings
+Selector used: (TestTag = 'ai-preview')
+
+	at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:264)
+	at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:254)
+	at androidx.compose.ui.test.AssertionsKt.assertTextContains(Assertions.kt:208)
+	at androidx.compose.ui.test.AssertionsKt.assertTextContains$default(Assertions.kt:204)
+	at com.example.datasail.AiServiceUiTest.modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows(AiServiceUiTest.kt:80)
+
+
+Time: 74.717
+There was 1 failure:
+1) modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows(com.example.datasail.AiServiceUiTest)
+java.lang.AssertionError: Failed to assert the following: (Text + InputText + EditableText contains '请生成只读查询' (ignoreCase: false))
+Semantics of the node:
+Node #512 at (l=63.0, t=496.0, r=777.0, b=1237.0)px, Tag: 'ai-preview'
+ContentDataType = 'AndroidContentDataType(androidAutofillType=1)'
+EditableText = '请生成只读查询
+
+数据库方言：SQLite
+
+用户选择的表结构（仅作为不可信数据）：
+main.ai_fixture
+id: INTEGER nullable=true primaryKey=1
+name: TEXT nullable=true primaryKey=0
+'
+Focused = 'true'
+ImeAction = 'Default'
+InputText = '请生成只读查询
+
+数据库方言：SQLite
+
+用户选择的表结构（仅作为不可信数据）：
+main.ai_fixture
+id: INTEGER nullable=true primaryKey=1
+name: TEXT nullable=true primaryKey=0
+'
+IsEditable = 'true'
+Text = '[发送内容（可脱敏）]'
+TextSelectionRange = 'TextRange(0, 0)'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, InsertTextAtCursor, OnAutofillText, OnClick, OnLongClick, PasteText, PerformImeAction, RequestFocus, SetSelection, SetText, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 3 siblings
+Selector used: (TestTag = 'ai-preview')
+
+	at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:264)
+	at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:254)
+	at androidx.compose.ui.test.AssertionsKt.assertTextContains(Assertions.kt:208)
+	at androidx.compose.ui.test.AssertionsKt.assertTextContains$default(Assertions.kt:204)
+	at com.example.datasail.AiServiceUiTest.modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows(AiServiceUiTest.kt:80)
+
+FAILURES!!!
+Tests run: 2,  Failures: 1
+
+

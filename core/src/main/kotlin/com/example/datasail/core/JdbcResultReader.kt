@@ -60,6 +60,6 @@ internal object JdbcResultReader {
                 value
             }
         }
-        return ResultPage(columns, values, more, offset, schema, schema?.keys?.isNotEmpty() == true)
+        return ResultPage(columns, values, more, offset, schema, schema?.keys?.isNotEmpty() == true, totalColumns = meta.columnCount)
     }
 }

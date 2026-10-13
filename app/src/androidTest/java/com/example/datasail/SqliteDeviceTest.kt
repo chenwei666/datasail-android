@@ -16,6 +16,8 @@ class SqliteDeviceTest {
         try {
             SQLiteDatabase.openOrCreateDatabase(source, null).use { db ->
                 db.execSQL("CREATE TABLE records (id INTEGER PRIMARY KEY, code TEXT, optional TEXT, payload BLOB)")
+                db.execSQL("CREATE TABLE wide (id INTEGER PRIMARY KEY," + (1..129).joinToString(",") { "c$it TEXT" } + ")")
+                db.execSQL("INSERT INTO wide(id,c129) VALUES (1,'last-column-0007')")
                 db.beginTransaction()
                 try { for (i in 1..105) db.execSQL("INSERT INTO records VALUES (?, ?, NULL, ?)", arrayOf(i, "0007 中文 🚢", byteArrayOf(0, 1, -1)))
                     db.setTransactionSuccessful()
@@ -31,6 +33,11 @@ class SqliteDeviceTest {
                 SqliteBrowseSession(imported, profile).use { session ->
                     val table = session.tables("main").single { it.name == "records" }
                     val page = session.page(table)
+                    val wide = session.tables("main").single { it.name == "wide" }
+                    val last = session.page(wide, 0, 128)
+                    assertEquals(130, last.totalColumns); assertEquals(128, last.columnOffset)
+                    assertEquals(listOf("c128", "c129"), last.columns.map { it.name })
+                    assertEquals(DbValue.Text("last-column-0007"), last.rows.single()[1])
                     assertEquals(100, page.rows.size); assertTrue(page.hasMore)
                     assertEquals(DbValue.Integer(1), page.rows[0][0]); assertEquals(DbValue.Text("0007 中文 🚢"), page.rows[0][1])
                     assertEquals(DbValue.Null, page.rows[0][2]); assertArrayEquals(byteArrayOf(0, 1, -1), (page.rows[0][3] as DbValue.Binary).copyBytes())

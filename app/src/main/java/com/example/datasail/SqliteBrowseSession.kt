@@ -55,13 +55,13 @@ class SqliteBrowseSession(file: File, override val profile: ConnectionProfile) :
             TableSchema(table, columns, false, "SQLite 导入副本只读；本版不写回源文件")
         }
     }
-    override fun page(table: TableRef, offset: Int): ResultPage {
+    override fun page(table: TableRef, offset: Int, columnOffset: Int): ResultPage {
         require(offset in 0..1_000_000)
         val schema = describe(table)
         if (schema.keys.isEmpty() && offset != 0) throw WorkspaceRejected("没有主键，仅显示首页")
         val order = if (schema.keys.isEmpty()) "" else " ORDER BY " + schema.keys.joinToString(",") { quote(it.name) }
-        val sql = "SELECT ${schema.columns.take(64).joinToString(",") { quote(it.name) }} FROM main.${quote(table.name)}$order LIMIT 101 OFFSET $offset"
-        return query(sql) { read(it, offset, schema) }
+        val sql = "SELECT ${TableColumns.window(schema, columnOffset).joinToString(",") { quote(it.name) }} FROM main.${quote(table.name)}$order LIMIT 101 OFFSET $offset"
+        return query(sql) { read(it, offset, schema) }.copy(columnOffset = columnOffset, totalColumns = schema.columns.size)
     }
     override fun select(sql: String): ResultPage = query(ReadQueryPolicy.validate(sql, DatabaseKind.SQLITE)) { read(it, 0, null) }
     private fun read(cursor: Cursor, offset: Int, schema: TableSchema?): ResultPage {
@@ -86,7 +86,7 @@ class SqliteBrowseSession(file: File, override val profile: ConnectionProfile) :
                 }
             }
         }
-        return ResultPage(columns, rows, more, offset, schema, schema?.keys?.isNotEmpty() == true)
+        return ResultPage(columns, rows, more, offset, schema, schema?.keys?.isNotEmpty() == true, totalColumns = cursor.columnCount)
     }
     override fun cancel() { signal.get()?.cancel() }
     override fun isClosed() = !db.isOpen

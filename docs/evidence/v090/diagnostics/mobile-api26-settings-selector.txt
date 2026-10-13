@@ -1,0 +1,30 @@
+
+com.example.datasail.ConnectionUiTest:..
+com.example.datasail.MobileWorkflowTest:.
+com.example.datasail.QueryStoreTest:...
+com.example.datasail.SqliteDeviceTest:..
+com.example.datasail.PasswordVaultTest:...
+com.example.datasail.PasswordWorkflowTest:.
+com.example.datasail.SettingsUiTest:
+Error in changeThemeAndCompletionPersistAndResetRequiresConfirmation(com.example.datasail.SettingsUiTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.SettingsUiTest.changeThemeAndCompletionPersistAndResetRequiresConfirmation(SettingsUiTest.kt:37)
+
+com.example.datasail.TableFavoriteStoreTest:.
+com.example.datasail.AiStoreTest:..
+com.example.datasail.TablePresentationTest:.
+
+Time: 177.144
+There was 1 failure:
+1) changeThemeAndCompletionPersistAndResetRequiresConfirmation(com.example.datasail.SettingsUiTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.SettingsUiTest.changeThemeAndCompletionPersistAndResetRequiresConfirmation(SettingsUiTest.kt:37)
+
+FAILURES!!!
+Tests run: 17,  Failures: 1
+
+

@@ -34,6 +34,21 @@ class JdbcWorkspaceIntegrationTest {
             }
         }
     }
+    @Test fun wideTableWindowsReachLastColumnWithExactType() {
+        connect().use { raw ->
+            raw.createStatement().use { statement ->
+                statement.execute("CREATE TABLE wide_columns_fixture(id BIGINT PRIMARY KEY," + (1..129).joinToString(",") { if (it == 129) "c$it VARCHAR(30)" else "c$it INTEGER" } + ")")
+                statement.execute("INSERT INTO wide_columns_fixture(id,c129) VALUES(1,'last-column-0007')")
+            }
+            JdbcBrowseSession(raw, profile()).use { session ->
+                val table = session.tables(if (pg) "public" else "synthetic").single { it.name == "wide_columns_fixture" }
+                val last = session.page(table, 0, 128)
+                assertEquals(130, last.totalColumns); assertEquals(128, last.columnOffset)
+                assertEquals(listOf("c128", "c129"), last.columns.map { it.name })
+                assertEquals(DbValue.Text("last-column-0007"), last.rows.single()[1])
+            }
+        }
+    }
     @Test fun browsingPreservesTypesAndPaginationAndClosesTransactions() = fixture { session, table ->
         com.example.datasail.fixture.DiscoveryContract.verify(profile(), config.getProperty("password"))
         assertTrue(session.catalogs().contains("synthetic"))

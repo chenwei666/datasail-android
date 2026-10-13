@@ -1,0 +1,120 @@
+{
+  "purpose": "Anonymous URL reachability only, through cloud proxy; no API key, no generation request, not a vendor compatibility test. HTTP failures may originate at the proxy.",
+  "results": [
+    {
+      "preset": "OpenAI",
+      "base": "https://api.openai.com/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "Claude",
+      "base": "https://api.anthropic.com/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "Gemini",
+      "base": "https://generativelanguage.googleapis.com/v1beta",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "DeepSeek",
+      "base": "https://api.deepseek.com/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "通义千问 · 阿里云",
+      "base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "豆包 · 火山方舟",
+      "base": "https://ark.cn-beijing.volces.com/api/v3",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "智谱 GLM",
+      "base": "https://open.bigmodel.cn/api/paas/v4",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "Kimi · Moonshot",
+      "base": "https://api.moonshot.cn/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "MiniMax",
+      "base": "https://api.minimax.io/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "硅基流动",
+      "base": "https://api.siliconflow.cn/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "百度千帆",
+      "base": "https://qianfan.baidubce.com/v2",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "腾讯混元",
+      "base": "https://api.hunyuan.cloud.tencent.com/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "Grok · xAI",
+      "base": "https://api.x.ai/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "OpenRouter",
+      "base": "https://openrouter.ai/api/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "Groq",
+      "base": "https://api.groq.com/openai/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "Mistral",
+      "base": "https://api.mistral.ai/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "Together",
+      "base": "https://api.together.xyz/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "NVIDIA NIM",
+      "base": "https://integrate.api.nvidia.com/v1",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    },
+    {
+      "preset": "Perplexity",
+      "base": "https://api.perplexity.ai",
+      "anonymousModelsHttpStatus": "000",
+      "curlExit": 56
+    }
+  ],
+  "diagnostic": "OpenAI anonymous request: curl 56, CONNECT tunnel failed with proxy HTTP 403. No successful upstream responses; this is not evidence of provider failure or compatibility."
+}

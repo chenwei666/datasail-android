@@ -1,0 +1,8 @@
+
+com.example.datasail.AiServiceUiTest:..
+
+Time: 79.342
+
+OK (2 tests)
+
+

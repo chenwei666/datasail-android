@@ -37,6 +37,8 @@ class CertificateTrustUiTest {
         compose.onNodeWithText("连接服务器并扫描").performScrollTo().performClick()
         compose.waitUntil(45000) { !model.discovery.value.busy }
         assertTrue(model.discovery.value.tlsFailure)
+        // State emission precedes the LaunchedEffect scroll; require automatic visibility, without scrolling the test.
+        compose.waitUntil(10000) { runCatching { compose.onNodeWithText("需要确认服务器证书").assertIsDisplayed() }.isSuccess }
         compose.onNodeWithText("需要确认服务器证书").assertIsDisplayed()
         compose.onNodeWithText("选择 CA 证书").assertDoesNotExist()
         compose.onNodeWithText("获取并核对服务器证书").performScrollTo().assertIsEnabled().performClick()

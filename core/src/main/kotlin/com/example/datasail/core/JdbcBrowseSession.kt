@@ -153,13 +153,13 @@ class JdbcBrowseSession(private val connection: Connection, override val profile
         val q = if (mysql) "`" else "\""
         return q + name.replace(q, q + q) + q
     }
-    override fun page(table: TableRef, offset: Int): ResultPage {
+    override fun page(table: TableRef, offset: Int, columnOffset: Int): ResultPage {
         require(offset in 0..1_000_000)
         val schema = describe(table)
         if (offset != 0 && schema.keys.isEmpty()) throw WorkspaceRejected("没有主键，仅显示首页")
-        val columns = schema.columns.take(64).joinToString(",") { quote(it.name) }
+        val columns = TableColumns.window(schema, columnOffset).joinToString(",") { quote(it.name) }
         val order = if (schema.keys.isEmpty()) "" else " ORDER BY " + schema.keys.joinToString(",") { quote(it.name) }
-        return query("SELECT $columns FROM ${quote(table.schema)}.${quote(table.name)}$order LIMIT 101 OFFSET $offset", offset, schema)
+        return query("SELECT $columns FROM ${quote(table.schema)}.${quote(table.name)}$order LIMIT 101 OFFSET $offset", offset, schema).copy(columnOffset = columnOffset, totalColumns = schema.columns.size)
     }
     override fun select(sql: String): ResultPage = query(ReadQueryPolicy.validate(sql, profile.kind), 0, null)
     private fun query(sql: String, offset: Int, schema: TableSchema?): ResultPage = transaction {

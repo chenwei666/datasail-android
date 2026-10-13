@@ -39,6 +39,23 @@ class SqlServerIntegrationTest {
             }
         }
     }
+    @Test fun wideTableLastWindowIsVisibleAndCannotBeEdited() {
+        connect().use { connection ->
+            connection.createStatement().use { statement ->
+                statement.execute("DROP TABLE IF EXISTS dbo.wide_ai_fixture")
+                statement.execute("CREATE TABLE dbo.wide_ai_fixture(id int PRIMARY KEY," + (1..129).joinToString(",") { "c$it nvarchar(40)" } + ")")
+                statement.execute("INSERT dbo.wide_ai_fixture(id,c129) VALUES(1,N'last-column-0007')")
+            }
+            try { SqlServerSession(connection, profile()).use { session ->
+                val table = session.tables("dbo").single { it.name == "wide_ai_fixture" }
+                val page = session.page(table, 0, 128)
+                assertEquals(130, page.totalColumns); assertEquals(listOf("c128", "c129"), page.columns.map { it.name })
+                assertEquals(DbValue.Text("last-column-0007"), page.rows.single()[1])
+                session.setWritable(true)
+                assertThrows(WorkspaceRejected::class.java) { session.preview(MutationKind.UPDATE, 0, mapOf("c129" to CellInput("changed"))) }
+            } } finally { connect().use { it.createStatement().use { statement -> statement.execute("DROP TABLE IF EXISTS dbo.wide_ai_fixture") } } }
+        }
+    }
     @Test fun browseTypesAndSafeWrites() = fixture { s, table ->
         com.example.datasail.fixture.DiscoveryContract.verify(profile(), config.getProperty("password"), "datasail_v020")
         assertTrue("datasail_v020" in s.catalogs()); assertTrue("dbo" in s.schemas())

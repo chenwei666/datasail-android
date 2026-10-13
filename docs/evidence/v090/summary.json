@@ -1,0 +1,51 @@
+{
+  "version": "0.9.0",
+  "versionCode": 14,
+  "finalApkSha256": "de7ebcb649dd4ca784070e60d12f4626a7787467933e559ba0e6637e6072795f",
+  "androidTestApkSha256": "ec50ca9dd755692913aa0e05edf45e6edceb84f36b5f0d69f896c8c09fa983f4",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest",
+    "sqlServerAutoCertificateTest",
+    "jdbcWorkspaceTest"
+  ],
+  "jvmTests": {
+    "core-unit": 72,
+    "app-unit": 13,
+    "driver-profile": 11,
+    "sqlserver": 16,
+    "sqlserver-autocert": 1,
+    "MYSQL": 6,
+    "MARIADB": 6,
+    "POSTGRESQL": 6
+  },
+  "androidTests": {
+    "upgrade-api26.txt": 5,
+    "mobile-api26.txt": 17,
+    "ai-emulator-5556.txt": 2,
+    "upgrade-api30.txt": 5,
+    "mobile-api30.txt": 17,
+    "ai-emulator-5554.txt": 2,
+    "SQL_SERVER/android-emulator-5556.txt": 3,
+    "SQL_SERVER_AUTOCERT/android-emulator-5556.txt": 2
+  },
+  "previousVersionUpgradeSeedTests": {
+    "api26": 1,
+    "api30": 1
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "Three AI text protocols against synthetic HTTPS peers on JVM and ART; real UI model discovery, selected context preview/redaction, draft handoff without auto-execution, revoked connection policy; scoped Keystore credentials. Wide columns on real SQL Server/MySQL/MariaDB/PostgreSQL JVM and SQLite ART. Fullscreen/grid/settings/favorites/passwords, SQL Server actual safe writes and certificates, API26/API30 V0.8.1 install-r upgrade.",
+  "unverified": [
+    "physical/arm64",
+    "live AI vendor accounts and billing",
+    "proprietary IAM/Azure/Responses/multimodal protocols",
+    "user database server",
+    "current-version complete nine-network-engine ART matrix",
+    "full DBeaver functionality or production editing",
+    "fresh cloud restore of V0.9.0"
+  ]
+}

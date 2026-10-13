@@ -1,0 +1,89 @@
+Unable to find image 'mariadb@sha256:6422478cb8e159f080fb1d8ccf65101e26fe51385787fde7d16c3b165a331f15' locally
+docker.io/library/mariadb@sha256:6422478cb8e159f080fb1d8ccf65101e26fe51385787fde7d16c3b165a331f15: Pulling from library/mariadb
+a60ef8ec184e: Pulling fs layer
+e4be8d518a1f: Pulling fs layer
+2b6221bbf1a3: Pulling fs layer
+82eb4b5c2d0b: Pulling fs layer
+25b59450851f: Pulling fs layer
+4ca0e246bdda: Pulling fs layer
+b321cc3fe056: Pulling fs layer
+88a022341f1e: Pulling fs layer
+25b59450851f: Waiting
+4ca0e246bdda: Waiting
+b321cc3fe056: Waiting
+88a022341f1e: Waiting
+82eb4b5c2d0b: Waiting
+e4be8d518a1f: Verifying Checksum
+e4be8d518a1f: Download complete
+82eb4b5c2d0b: Verifying Checksum
+82eb4b5c2d0b: Download complete
+2b6221bbf1a3: Verifying Checksum
+2b6221bbf1a3: Download complete
+25b59450851f: Download complete
+b321cc3fe056: Verifying Checksum
+b321cc3fe056: Download complete
+88a022341f1e: Download complete
+a60ef8ec184e: Verifying Checksum
+a60ef8ec184e: Download complete
+a60ef8ec184e: Pull complete
+e4be8d518a1f: Pull complete
+2b6221bbf1a3: Pull complete
+82eb4b5c2d0b: Pull complete
+4ca0e246bdda: Verifying Checksum
+4ca0e246bdda: Download complete
+25b59450851f: Pull complete
+4ca0e246bdda: Pull complete
+b321cc3fe056: Pull complete
+88a022341f1e: Pull complete
+Digest: sha256:6422478cb8e159f080fb1d8ccf65101e26fe51385787fde7d16c3b165a331f15
+Status: Downloaded newer image for mariadb@sha256:6422478cb8e159f080fb1d8ccf65101e26fe51385787fde7d16c3b165a331f15
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+Starting a Gradle Daemon, 1 busy Daemon could not be reused, use --status for details
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:processIntegrationTestResources NO-SOURCE
+> Task :core:compileIntegrationTestKotlin
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:jdbcWorkspaceTest FAILED
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+JdbcWorkspaceIntegrationTest > wideTableWindowsReachLastColumnWithExactType FAILED
+    java.sql.SQLSyntaxErrorException at JdbcWorkspaceIntegrationTest.kt:40
+
+JdbcWorkspaceIntegrationTest > serverEnforcesReadonlyBeyondSyntaxAndCannotPoisonNextTransaction PASSED
+
+JdbcWorkspaceIntegrationTest > unusualIdentifiersAreQuotedAndExactMetadataDoesNotMatchWildcards PASSED
+
+JdbcWorkspaceIntegrationTest > rejectsWriteSyntaxAndExecutableComments PASSED
+
+JdbcWorkspaceIntegrationTest > browsingPreservesTypesAndPaginationAndClosesTransactions PASSED
+
+JdbcWorkspaceIntegrationTest > rejectsWrongHostnameUntrustedCaAndWrongPassword PASSED
+
+6 tests completed, 1 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:jdbcWorkspaceTest'.
+> There were failing tests. See the report at: file:///workspace/datasail-android/core/build/reports/tests/jdbcWorkspaceTest/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 12s
+8 actionable tasks: 3 executed, 5 up-to-date

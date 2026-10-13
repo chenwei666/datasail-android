@@ -1,0 +1,30 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+> Task :sqlserver-android:compileTestJava UP-TO-DATE
+> Task :sqlserver-android:processTestResources UP-TO-DATE
+> Task :sqlserver-android:testClasses UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :sqlserver-android:test UP-TO-DATE
+> Task :sqlserver-android:check
+
+> Task :sasl-android:verifyUpstream
+Apache Harmony SASL API sources and notices match pinned upstream bytes.
+
+> Task :sasl-android:compileJava UP-TO-DATE
+> Task :sasl-android:processResources UP-TO-DATE
+> Task :sasl-android:classes UP-TO-DATE
+> Task :sasl-android:compileTestJava NO-SOURCE
+> Task :sasl-android:processTestResources NO-SOURCE
+> Task :sasl-android:testClasses UP-TO-DATE
+> Task :sasl-android:test NO-SOURCE
+> Task :sasl-android:check
+
+BUILD SUCCESSFUL in 1s
+10 actionable tasks: 2 executed, 8 up-to-date

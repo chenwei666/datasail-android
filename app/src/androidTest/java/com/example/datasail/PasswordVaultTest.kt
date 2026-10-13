@@ -37,7 +37,7 @@ class PasswordVaultTest {
     @Test fun settingsSurviveStoreRecreation() {
         val store = AppSettingsStore(context); val original = store.load()
         try {
-            val changed = AppSettings(ThemeMode.DARK, false, 18, 16, false, false, true)
+            val changed = AppSettings(ThemeMode.DARK, false, 18, 16, false, false, true, true, 360)
             store.save(changed); assertEquals(changed, AppSettingsStore(context).load())
             store.save(AppSettings()); assertEquals(AppSettings(), store.load())
         } finally { store.save(original) }

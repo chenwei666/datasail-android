@@ -1,0 +1,113 @@
+package com.example.datasail
+
+import android.database.sqlite.SQLiteDatabase
+import androidx.compose.ui.graphics.asAndroidBitmap
+import android.net.Uri
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.lifecycle.ViewModelProvider
+import androidx.test.platform.app.InstrumentationRegistry
+import com.example.datasail.core.*
+import org.junit.Assert.*
+import org.junit.*
+import org.junit.rules.*
+import java.io.File
+import java.security.KeyStore
+import java.security.cert.CertificateFactory
+import javax.net.ssl.*
+
+/** Real platform HTTPS against a local synthetic upstream; trust injection is test-only. */
+class AiServiceUiTest {
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
+    private lateinit var previous: AiPreferences
+    private var connections = emptyList<SavedConnection>()
+    private lateinit var profile: AiProfile
+    private lateinit var connection: SavedConnection
+    private lateinit var ssl: SSLContext
+    private var sqlite: File? = null
+    private fun transport(service: AiService, key: CharArray): AiClient = AiClient::class.java
+        .getDeclaredConstructor(AiService::class.java, CharArray::class.java, SSLContext::class.java).newInstance(service, key, ssl)
+    private val fixture = object : ExternalResource() {
+        override fun before() {
+            val ca = File(context.filesDir, "ai-fixture-ca.crt"); check(ca.exists()) { "Run scripts/test-ai-android.sh" }
+            val cert = ca.inputStream().use { CertificateFactory.getInstance("X.509").generateCertificate(it) }
+            val trust = KeyStore.getInstance(KeyStore.getDefaultType()).apply { load(null); setCertificateEntry("synthetic", cert) }
+            val tm = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply { init(trust) }
+            ssl = SSLContext.getInstance("TLS").apply { init(null, tm.trustManagers, null) }
+            previous = AiStore(context).load(); connections = ConnectionStore(context).load()
+            profile = AiProfile(name = "合成上游", endpoint = "https://localhost:18743/openai")
+            AiStore(context).save(AiPreferences(true, profile.id, listOf(profile)))
+            PasswordVault(context, "ai-keys-v1").saveBound(profile.id, profile.binding, "synthetic-ai-only".toCharArray())
+            val source = File(context.cacheDir, "ai-ui.db"); source.delete()
+            try {
+                SQLiteDatabase.openOrCreateDatabase(source, null).use { db -> db.execSQL("CREATE TABLE ai_fixture(id INTEGER PRIMARY KEY, name TEXT)"); db.execSQL("INSERT INTO ai_fixture VALUES(1,'ROW_MUST_NOT_LEAK')") }
+                val store = ConnectionStore(context); val id = store.importSqlite(Uri.fromFile(source)); sqlite = store.sqliteFile(id)
+                connection = SavedConnection(name = "AI 合成数据库", kind = DatabaseKind.SQLITE, database = id, port = "0", allowExternalAi = true)
+                store.save(listOf(connection))
+            } finally { source.delete() }
+        }
+        override fun after() { AiStore(context).save(previous); PasswordVault(context, "ai-keys-v1").delete(profile.id); ConnectionStore(context).save(connections); sqlite?.delete() }
+    }
+    private val compose = createAndroidComposeRule<MainActivity>()
+    @get:Rule val rules: RuleChain = RuleChain.outerRule(fixture).around(compose)
+    @Test fun modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows() {
+        lateinit var ai: AiViewModel; lateinit var workspace: WorkspaceViewModel
+        compose.runOnIdle { ai = ViewModelProvider(compose.activity)[AiViewModel::class.java]; workspace = ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java]; ai.createClient = ::transport }
+        compose.waitUntil(10000) { ai.state.value.ready }
+        compose.onNodeWithText("连接并进入工作台").performScrollTo().performClick()
+        compose.waitUntil(15000) { !workspace.state.value.busy && workspace.state.value.tables.isNotEmpty() }
+        compose.onNodeWithTag("object-list").performScrollTo(); compose.onNodeWithTag("object-ai_fixture").performClick()
+        compose.waitUntil(10000) { workspace.state.value.result != null }
+        val originalSql = workspace.draftSql.value
+        compose.onNodeWithText("AI 助手").performClick()
+        compose.onNodeWithText("管理服务与模型").performScrollTo().performClick()
+        assertTrue("AI must be enabled", ai.state.value.preferences.enabled)
+        assertEquals(profile, ai.state.value.preferences.active)
+        compose.onNodeWithText("获取上游模型").performScrollTo().assertIsDisplayed().assertIsEnabled()
+        compose.runOnIdle { compose.activity.window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE) }
+        compose.onRoot().captureToImage().asAndroidBitmap().let { image -> File(context.filesDir, "ai-before-models.png").outputStream().use { image.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) } }
+        compose.onNodeWithText("获取上游模型").performClick()
+        compose.waitUntil(15000) { !ai.state.value.busy }
+        assertEquals(ai.state.value.message, 2, ai.state.value.models.size)
+        compose.onNodeWithText("选择模型（2）").performScrollTo().performClick()
+        compose.onNodeWithText("fixture-model").performClick()
+        compose.onNodeWithText("保存服务").performScrollTo().performClick()
+        compose.waitUntil(10000) { !ai.state.value.busy && ai.state.value.preferences.active?.model == "fixture-model" }
+        compose.onNodeWithText("收起服务配置").performScrollTo().performClick()
+        compose.onNodeWithTag("ai-prompt").performScrollTo().performTextInput("请生成只读查询")
+        compose.onNodeWithTag("ai-include-structure").performScrollTo().performClick()
+        compose.onNodeWithText("预览发送内容").performScrollTo().performClick()
+        compose.onNodeWithTag("ai-preview").assertTextContains("请生成只读查询", substring = true).assertTextContains("ai_fixture", substring = true)
+        assertFalse(compose.onNodeWithTag("ai-preview").fetchSemanticsNode().config[androidx.compose.ui.semantics.SemanticsProperties.EditableText].text.contains("ROW_MUST_NOT_LEAK"))
+        compose.onNodeWithTag("ai-preview").performTextReplacement("已脱敏问题：生成只读查询")
+        assertEquals(originalSql, workspace.draftSql.value)
+        compose.onNodeWithText("确认发送").performClick()
+        compose.waitUntil(20000) { !ai.state.value.busy && ai.state.value.answer.isNotBlank() }
+        assertEquals(originalSql, workspace.draftSql.value)
+        assertEquals(DbValue.Text("ROW_MUST_NOT_LEAK"), workspace.state.value.result!!.rows.single()[1])
+        compose.onNodeWithText("载入 SQL 草稿").performScrollTo().performClick()
+        compose.onNodeWithText("确认载入草稿").performClick()
+        compose.onNodeWithText("单条 SELECT 查询").performScrollTo().assertTextContains("SELECT id, name FROM ai_fixture")
+        assertEquals(DbValue.Text("ROW_MUST_NOT_LEAK"), workspace.state.value.result!!.rows.single()[1])
+        compose.runOnIdle {
+            val old = AiApproval(ai.state.value.preferences.active!!, aiScope(workspace), "old approval")
+            workspace.editSql("SELECT 2"); ai.askApproved(workspace, old)
+            assertFalse(ai.state.value.busy)
+            workspace.save(connection.copy(allowExternalAi = false))
+        }
+        compose.waitUntil(10000) { workspace.saved.value.single().allowExternalAi == false }
+        compose.onNodeWithText("AI 助手").performClick()
+        compose.onNodeWithText("此连接禁止外部 AI。可在连接配置中显式允许，重新连接后生效。").assertExists()
+        compose.onNodeWithText("预览发送内容").performScrollTo().assertIsNotEnabled()
+    }
+    @Test fun androidTlsAndAllThreeProtocolContracts() {
+        AiProtocol.entries.zip(listOf("openai", "anthropic", "gemini")).forEach { (protocol, path) ->
+            transport(AiService(protocol, "https://localhost:18743/$path"), "synthetic-ai-only".toCharArray()).use { client ->
+                assertTrue(client.models().names.isNotEmpty()); assertTrue(client.ask("fixture-model", "synthetic question").contains("SELECT id"))
+            }
+        }
+        transport(AiService(AiProtocol.OPENAI, "https://127.0.0.1:18743/openai"), "synthetic-ai-only".toCharArray()).use { client -> assertThrows(AiFailure::class.java) { client.models() } }
+        AiClient(AiService(AiProtocol.OPENAI, "https://localhost:18743/openai"), "synthetic-ai-only".toCharArray()).use { client -> assertThrows(AiFailure::class.java) { client.models() } }
+        transport(AiService(AiProtocol.OPENAI, "https://localhost:18743/redirect"), "synthetic-ai-only".toCharArray()).use { client -> assertTrue(assertThrows(AiFailure::class.java) { client.models() }.safeMessage.contains("重定向")) }
+    }
+}

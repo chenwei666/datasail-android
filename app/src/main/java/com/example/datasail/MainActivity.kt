@@ -23,6 +23,7 @@ import com.example.datasail.core.*
 
 class MainActivity : ComponentActivity() {
     private val model: ProbeViewModel by viewModels()
+    private val ai: AiViewModel by viewModels()
     private val workspace: WorkspaceViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,12 +33,13 @@ class MainActivity : ComponentActivity() {
             val preferences by workspace.settings.collectAsStateWithLifecycle()
             val dark = when (preferences.theme) { ThemeMode.SYSTEM -> isSystemInDarkTheme(); ThemeMode.LIGHT -> false; ThemeMode.DARK -> true }
             MaterialTheme(colorScheme = if (dark) darkColorScheme(primary = Color(0xFFADC9FF), onPrimary = Color(0xFF10315F), secondaryContainer = Color(0xFF293C56), onSecondaryContainer = Color(0xFFD2E4FF), surface = Color(0xFF10151C), background = Color(0xFF10151C)) else lightColorScheme(primary = Color(0xFF285DA3), onPrimary = Color.White, primaryContainer = Color(0xFFD6E5FC), secondaryContainer = Color(0xFFE3ECF8), onSecondaryContainer = Color(0xFF183755), surface = Color(0xFFFFFFFF), background = Color(0xFFF3F5F8), surfaceContainer = Color(0xFFEDF1F7), outlineVariant = Color(0xFFD7DEE8))) {
-                WorkspaceApp(workspace, model)
+                WorkspaceApp(workspace, model, ai)
             }
         }
     }
     override fun onStop() {
         // No background session: rotation/background transitions request cancellation.
+        ai.cancel()
         model.cancel()
         workspace.disconnect()
         super.onStop()

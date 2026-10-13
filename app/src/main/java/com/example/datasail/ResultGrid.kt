@@ -31,20 +31,26 @@ internal fun spreadsheetColumn(index: Int): String {
     return label
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: AppSettings, selectRow: (Int) -> Unit,
-    preview: (Int, Map<String, CellInput>) -> Unit) {
+    preview: (Int, Map<String, CellInput>) -> Unit, expanded: Boolean = false) {
     var selected by remember(page) { mutableStateOf<Pair<Int, Int>?>(null) }
     var editing by remember(page) { mutableStateOf(false) }
     var input by remember(page) { mutableStateOf(CellInput()) }
+    var fullscreen by remember { mutableStateOf(false) }
+    var chooseColumns by remember { mutableStateOf(false) }
+    var rowDetails by remember(page) { mutableStateOf(false) }
+    var visible by remember(page.columns) { mutableStateOf(page.columns.indices.toSet()) }
+    var width by remember(settings.columnWidth) { mutableIntStateOf(settings.columnWidth) }
+    var wrap by remember(settings.wrapCells) { mutableStateOf(settings.wrapCells) }
     val horizontal = rememberScrollState()
     val gridFocus = remember { FocusRequester() }
     val editFocus = remember { FocusRequester() }
     val context = LocalContext.current
-    val rowHeight = if (settings.compactGrid) 44.dp else 60.dp
+    val rowHeight = if (wrap) 88.dp else if (settings.compactGrid) 44.dp else 60.dp
     fun editable(row: Int, column: Int): Boolean = state.writable && !state.production && state.kind == DatabaseKind.SQL_SERVER && !state.busy &&
-        page.tableSchema?.readOnlyReason == null && page.tableSchema?.columns?.getOrNull(column)?.let { it.editable && it.primaryKeyOrder == 0 } == true &&
+        page.tableSchema?.readOnlyReason == null && page.tableSchema?.columns?.getOrNull(page.columnOffset + column)?.let { it.editable && it.primaryKeyOrder == 0 } == true &&
         page.rows[row].none { it is DbValue.Unavailable }
     fun choose(row: Int, column: Int, edit: Boolean = false) {
         if (editing) return
@@ -55,7 +61,13 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
         if (!editing) gridFocus.requestFocus()
     }
     LaunchedEffect(editing, selected, input.isNull) { if (editing && !input.isNull) editFocus.requestFocus() }
-    Text("点击选择单元格 · 双击可编辑字段 · 修改须预览后提交", style = MaterialTheme.typography.bodySmall)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (!expanded) AssistChip(onClick = { fullscreen = true }, label = { Text("全屏表格") })
+        AssistChip(onClick = { chooseColumns = true }, label = { Text("显示列 ${visible.size}/${page.columns.size}") })
+        FilterChip(selected = wrap, onClick = { wrap = !wrap }, label = { Text("换行") })
+        AssistChip(onClick = { width = when (width) { 140 -> 200; 200 -> 280; 280 -> 360; else -> 140 } }, label = { Text("列宽 $width") })
+    }
+    Text("点击查看完整已加载值 · 双击可编辑字段", style = MaterialTheme.typography.bodySmall)
     Surface(modifier = Modifier.testTag("result-grid"), shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
         Column(Modifier.fillMaxWidth().focusRequester(gridFocus).onPreviewKeyEvent { event ->
             val location = selected
@@ -73,20 +85,20 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
         }.focusable().horizontalScroll(horizontal)) {
             Row(Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
                 Box(Modifier.width(48.dp).height(64.dp), contentAlignment = Alignment.Center) { Text("#", style = MaterialTheme.typography.labelMedium) }
-                page.columns.forEachIndexed { index, column -> Column(Modifier.width(176.dp).height(64.dp).border(0.5.dp, MaterialTheme.colorScheme.outlineVariant).padding(8.dp)) {
-                    Text("${spreadsheetColumn(index)}  ${column.name}", style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                page.columns.forEachIndexed { index, column -> if (index in visible) Column(Modifier.width(width.dp).height(64.dp).border(0.5.dp, MaterialTheme.colorScheme.outlineVariant).padding(8.dp)) {
+                    Text("${spreadsheetColumn(page.columnOffset + index)}  ${column.name}", style = MaterialTheme.typography.labelLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     if (settings.showColumnTypes) Text(column.typeName, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } }
             }
-            LazyColumn(Modifier.width((48 + 176 * page.columns.size).dp).heightIn(min = 100.dp, max = 360.dp)) {
+            LazyColumn(Modifier.width((48 + width * visible.size).dp).heightIn(min = 100.dp, max = if (expanded) 520.dp else 360.dp)) {
                 itemsIndexed(page.rows) { rowIndex, row -> Row {
                     Box(Modifier.width(48.dp).height(rowHeight).background(MaterialTheme.colorScheme.surfaceContainerHighest), contentAlignment = Alignment.Center) {
                         Text((page.offset + rowIndex + 1).toString(), style = MaterialTheme.typography.labelSmall)
                     }
-                    row.forEachIndexed { columnIndex, value ->
+                    row.forEachIndexed { columnIndex, value -> if (columnIndex in visible) {
                         val active = selected == (rowIndex to columnIndex)
                         val background = when { active -> MaterialTheme.colorScheme.primaryContainer; rowIndex % 2 == 0 -> MaterialTheme.colorScheme.surface; else -> MaterialTheme.colorScheme.surfaceContainerLow }
-                        Box(Modifier.width(176.dp).height(rowHeight).background(background)
+                        Box(Modifier.width(width.dp).height(rowHeight).background(background)
                             .border(if (active) 2.dp else 0.5.dp, if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
                             .testTag("cell-$rowIndex-$columnIndex")
                             .combinedClickable(onClick = { choose(rowIndex, columnIndex) }, onDoubleClick = { choose(rowIndex, columnIndex, true) })
@@ -94,19 +106,20 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
                             if (active && editing && !input.isNull) BasicTextField(input.text, { if (it.length <= 4000) input = input.copy(text = it) },
                                 modifier = Modifier.fillMaxWidth().focusRequester(editFocus).testTag("cell-editor"), singleLine = true,
                                 textStyle = LocalTextStyle.current.copy(fontSize = settings.gridFont.sp, color = MaterialTheme.colorScheme.onSurface, fontFamily = FontFamily.Monospace))
-                            else Text((if (active && editing && input.isNull) "NULL" else spreadsheetText(value)).ifEmpty { "（空字符串）" }, fontSize = settings.gridFont.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            else Text((if (active && editing && input.isNull) "NULL" else spreadsheetText(value)).ifEmpty { "（空字符串）" }, fontSize = settings.gridFont.sp, maxLines = if (wrap) 3 else 1, overflow = TextOverflow.Ellipsis,
                                 color = if (value == DbValue.Null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
                         }
-                    }
+                    } }
                 } }
             }
         }
     }
     selected?.let { (row, column) ->
-        val definition = page.tableSchema?.columns?.getOrNull(column)
-        Text("${spreadsheetColumn(column)}${page.offset + row + 1} · ${page.columns[column].name}", style = MaterialTheme.typography.titleSmall)
+        val definition = page.tableSchema?.columns?.getOrNull(page.columnOffset + column)
+        Text("${spreadsheetColumn(page.columnOffset + column)}${page.offset + row + 1} · ${page.columns[column].name}", style = MaterialTheme.typography.titleSmall)
         SelectionContainer { Text(spreadsheetText(page.rows[row][column]).ifEmpty { "（空字符串）" }, fontFamily = FontFamily.Monospace, fontSize = settings.gridFont.sp) }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick = { rowDetails = true }) { Text("整行详情") }
             TextButton(enabled = page.rows[row][column] !is DbValue.Unavailable, onClick = {
                 val clip = ClipData.newPlainText("DataSail 单元格", spreadsheetText(page.rows[row][column]))
                 if (android.os.Build.VERSION.SDK_INT >= 33) clip.description.extras = android.os.PersistableBundle().apply { putBoolean(android.content.ClipDescription.EXTRA_IS_SENSITIVE, true) }
@@ -126,4 +139,35 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
             Text("先预览或取消当前修改，再选择其它单元格。", style = MaterialTheme.typography.bodySmall)
         } else if (!editable(row, column)) Text(page.tableSchema?.readOnlyReason ?: if (page.tableSchema == null) "查询结果只读；请从表浏览入口编辑" else if (state.writable) "此列只读（主键、自增或不支持的类型）" else "只读；SQL Server 测试会话可显式开启写入", style = MaterialTheme.typography.bodySmall)
     }
+    if (chooseColumns) AlertDialog(onDismissRequest = { chooseColumns = false }, title = { Text("显示字段") }, text = {
+        LazyColumn(Modifier.heightIn(max = 400.dp)) { itemsIndexed(page.columns) { index, column ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(index in visible, { checked -> if (checked) visible = visible + index else if (visible.size > 1) visible = visible - index })
+                Text("${column.name} · ${column.typeName}")
+            }
+        } }
+    }, confirmButton = { TextButton(onClick = { chooseColumns = false }) { Text("完成") } }, dismissButton = { TextButton(onClick = { visible = page.columns.indices.toSet() }) { Text("全部显示") } })
+    if (rowDetails && selected != null) AlertDialog(onDismissRequest = { rowDetails = false }, title = { Text("第 ${page.offset + selected!!.first + 1} 行 · 已加载字段") }, text = {
+        LazyColumn(Modifier.heightIn(max = 480.dp)) { itemsIndexed(page.columns) { index, column -> Column(Modifier.padding(vertical = 8.dp)) {
+            Text("${column.name} · ${column.typeName}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+            SelectionContainer { Text(spreadsheetText(page.rows[selected!!.first][index]).ifEmpty { "（空字符串）" }, fontFamily = FontFamily.Monospace) }
+            HorizontalDivider()
+        } } }
+    }, confirmButton = { TextButton(onClick = { rowDetails = false }) { Text("关闭") } })
+    if (fullscreen) androidx.compose.ui.window.Dialog(onDismissRequest = { fullscreen = false }, properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Column(Modifier.safeDrawingPadding().imePadding().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(page.tableSchema?.table?.label ?: "查询结果", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { fullscreen = false }) { Text("退出全屏") }
+                }
+                Text("${state.connectionName} / ${state.catalog} / ${state.schema} · ${if (state.production) "生产" else "测试"} · ${if (state.writable) "可写" else "只读"}", style = MaterialTheme.typography.bodySmall)
+                HorizontalDivider()
+                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ResultGrid(page, state, settings, selectRow, { row, inputs -> fullscreen = false; preview(row, inputs) }, expanded = true)
+                }
+            }
+        }
+    }
+
 }

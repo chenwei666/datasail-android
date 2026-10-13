@@ -24,7 +24,7 @@ import com.example.datasail.core.*
 import java.util.UUID
 
 @Composable
-internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
+internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel, ai: AiViewModel) {
     val state by model.state.collectAsStateWithLifecycle()
     var page by remember { mutableStateOf("连接") }
     val contentScroll = rememberScrollState()
@@ -40,7 +40,7 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
     }
     Scaffold(bottomBar = { NavigationBar {
         listOf("连接", "工作台", "AI 助手", "收藏", "设置").forEach { title ->
-            val available = title != "AI 助手"
+            val available = true
             NavigationBarItem(selected = page == title, onClick = { page = title }, enabled = available,
                 icon = { NavigationGlyph(title) }, label = { Text(title) })
         }
@@ -62,10 +62,11 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
             when (page) {
                 "连接" -> Connections(model, state)
                 "工作台" -> Workbench(model, state) { exportPreview = state.target + " / " + state.catalog to it }
+                "AI 助手" -> AiScreen(ai, model) { page = "工作台" }
                 "收藏" -> QueryLibrary(model, state) { page = "工作台" }
-                else -> SettingsScreen(model) {
+                else -> SettingsScreen(model, { page = "AI 助手" }) {
                     Text("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。")
-                    Text("当前十种引擎；除 SQL Server 测试会话外只读。AI 尚未实现。")
+                    Text("当前十种引擎；除 SQL Server 测试会话外只读。AI 支持配置外部文本模型服务。")
                     DatabaseSupport()
                     val probeState by probe.state.collectAsStateWithLifecycle()
                     ProbeForm(probe, probeState)
@@ -95,6 +96,7 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
     if (state.kind.isDocument) { DocumentWorkbench(model, state); return }
     if (state.kind.isKeyValue) { KeyValueWorkbench(model, state); return }
     var search by remember { mutableStateOf("") }
+    var showObjects by remember(state.catalog, state.schema) { mutableStateOf(state.result == null) }
     var showEditor by remember { mutableStateOf(state.message.startsWith("已载入草稿")) }
     val favorites by model.favoriteTables.collectAsStateWithLifecycle()
     val sql by model.draftSql.collectAsStateWithLifecycle()
@@ -111,6 +113,8 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
     TextButton(enabled = !state.busy, onClick = model::refreshNavigation) { Text("刷新数据库和对象") }
     state.navigationIssues.forEach { Text(it, color = MaterialTheme.colorScheme.error) }
     if (!state.busy && state.schemas.isEmpty()) Text("没有取得可见 Schema。请刷新，或检查账号的元数据权限；仍可使用 SQL 编辑器查询已知对象。")
+    OutlinedButton(onClick = { showObjects = !showObjects }) { Text(if (showObjects) "收起对象列表" else "浏览表 / 视图（${state.tables.size}）") }
+    if (showObjects) {
     OutlinedTextField(search, { search = it }, label = { Text("筛选表 / 视图") }, singleLine = true, modifier = Modifier.fillMaxWidth())
     val matching = state.tables.filter { it.name.contains(search, ignoreCase = true) }
     Text("表 / 视图 · ${matching.size}", style = MaterialTheme.typography.titleSmall)
@@ -118,7 +122,7 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
     else if (matching.isEmpty()) Text(if (search.isNotBlank()) "没有匹配对象，请修改筛选条件。" else "当前 Schema 没有可见表或视图。可切换上方数据库 / Schema，或检查对象权限。")
     else LazyColumn(Modifier.fillMaxWidth().heightIn(max = 240.dp).testTag("object-list")) {
         itemsIndexed(matching, key = { _, table -> table.name }) { _, table ->
-            TextButton(enabled = !state.busy, onClick = { model.page(table) }, modifier = Modifier.fillMaxWidth().testTag("object-${table.name}"),
+            TextButton(enabled = !state.busy, onClick = { model.page(table); showObjects = false }, modifier = Modifier.fillMaxWidth().testTag("object-${table.name}"),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)) {
                 Column(Modifier.weight(1f)) {
                     Text(table.name, modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyLarge)
@@ -127,6 +131,7 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
                 Text("查看 ›")
             }
         }
+    }
     }
     Row { Switch(state.writable, { model.writable(it) }, modifier = Modifier.testTag("allow-session-write"), enabled = !state.busy && !state.production && state.kind == DatabaseKind.SQL_SERVER); Text("允许本次测试会话写入（单行确认）") }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -156,14 +161,21 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
             TextButton(onClick = { showStructure = !showStructure }) { Text(if (showStructure) "收起表结构" else "查看表结构") }
             if (showStructure) Text(schema.columns.joinToString("\n") { "${it.name} · ${it.typeName}(${it.size},${it.scale})${if (it.primaryKeyOrder > 0) " · PK" else ""}${if (it.nullable) " · NULL" else " · NOT NULL"}${if (it.identity) " · 自增" else ""}" })
         }
-        ResultGrid(result, state, settings, { selected = it }) { row, inputs ->
-            model.preview(MutationKind.UPDATE, row, inputs)
+        if (result.totalColumns > result.columns.size) {
+            Text("字段 ${result.columnOffset + 1}–${result.columnOffset + result.columns.size} / ${result.totalColumns}" + if (result.tableSchema != null) "；可切换字段组。" else "；查询列数超过显示上限。", style = MaterialTheme.typography.bodySmall)
+            result.tableSchema?.let { schema -> Row {
+                TextButton(enabled = !state.busy && result.columnOffset > 0, onClick = { model.page(schema.table, result.offset, result.columnOffset - 64) }) { Text("上一组字段") }
+                TextButton(enabled = !state.busy && result.columnOffset + 64 < result.totalColumns, onClick = { model.page(schema.table, result.offset, result.columnOffset + 64) }) { Text("下一组字段") }
+            } } ?: Text("查询仅展示前 64 列；请在 SELECT 中明确选择需要的字段。")
         }
+        ResultGrid(result, state, settings, { selected = it }, { row, inputs ->
+            model.preview(MutationKind.UPDATE, row, inputs)
+        })
         result.tableSchema?.let { schema ->
             Row {
-                TextButton(enabled = !state.busy && result.offset > 0, onClick = { model.page(schema.table, (result.offset - 100).coerceAtLeast(0)) }) { Text("上一页") }
-                TextButton(enabled = !state.busy, onClick = { model.page(schema.table, result.offset) }) { Text("刷新") }
-                TextButton(enabled = !state.busy && result.hasMore && result.stableOrder && result.offset + result.rows.size <= 1_000_000, onClick = { model.page(schema.table, result.offset + result.rows.size) }) { Text("下一页") }
+                TextButton(enabled = !state.busy && result.offset > 0, onClick = { model.page(schema.table, (result.offset - 100).coerceAtLeast(0), result.columnOffset) }) { Text("上一页") }
+                TextButton(enabled = !state.busy, onClick = { model.page(schema.table, result.offset, result.columnOffset) }) { Text("刷新") }
+                TextButton(enabled = !state.busy && result.hasMore && result.stableOrder && result.offset + result.rows.size <= 1_000_000, onClick = { model.page(schema.table, result.offset + result.rows.size, result.columnOffset) }) { Text("下一页") }
             }
             if (result.stableOrder) Text("按主键排序；并发增删可能改变页边界，分页不是数据库快照。")
             val canEdit = state.writable && schema.readOnlyReason == null && !state.busy

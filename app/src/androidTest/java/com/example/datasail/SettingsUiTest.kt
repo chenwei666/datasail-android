@@ -32,8 +32,9 @@ class SettingsUiTest {
         }
         compose.onNodeWithText("深色").performScrollTo().performClick()
         compose.waitUntil(10000) { AppSettingsStore(context).load().theme == ThemeMode.DARK }
-        // Two grid switches precede SQL completion in this screen.
-        compose.onAllNodes(isToggleable())[2].performScrollTo().performClick()
+        compose.onNodeWithContentDescription("单元格换行").performScrollTo().performClick()
+        compose.waitUntil(10000) { AppSettingsStore(context).load().wrapCells }
+        compose.onNodeWithContentDescription("SQL 补全").performScrollTo().performClick()
         compose.waitUntil(10000) { !AppSettingsStore(context).load().completion }
         compose.onNodeWithText("恢复默认设置").performScrollTo().performClick()
         compose.onNodeWithText("取消").performClick()

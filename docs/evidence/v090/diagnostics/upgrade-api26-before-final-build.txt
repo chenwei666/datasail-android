@@ -1,0 +1,31 @@
+Performing Streamed Install
+Success
+    versionCode=13 minSdk=26 targetSdk=36
+    versionName=0.8.1
+Performing Streamed Install
+Success
+
+com.example.datasail.UpgradeStateSeedTest:.
+
+Time: 1.729
+
+OK (1 test)
+
+
+Performing Streamed Install
+Success
+    versionCode=14 minSdk=26 targetSdk=36
+    versionName=0.9.0
+synthetic upgrade marker
+Performing Streamed Install
+Success
+
+com.example.datasail.SmokeTest:...
+com.example.datasail.UpgradeTest:.
+com.example.datasail.UpgradeStateVerifyTest:.
+
+Time: 56.157
+
+OK (5 tests)
+
+
