@@ -1,0 +1,25 @@
+{
+  "savedFields": [
+    "start_skill"
+  ],
+  "draftId": "e06750c1-3f7b-42e9-93a8-719fc8a22d89~cecfgdraft_6accbad7269c81a195647d382ebfb4ee",
+  "status": "saved",
+  "requiresPublish": true,
+  "published": false,
+  "freshTaskRestorationVerified": false,
+  "startupSha256": "ee3cbc1bf612e41ad3f8180fb19e7613c1d6b7a8d2abfdadec7ea7a933019dea",
+  "preservedFields": [
+    "install_script",
+    "network",
+    "environment_variables",
+    "secrets"
+  ],
+  "setupObservations": [
+    "Vendor tarball URLs returned HTTP 403; official Docker Hub images verified by pinned manifest digest",
+    "vfs exhausted disk while caching Elasticsearch; removed only unused reproducible SQL Server/MySQL/MariaDB/PostgreSQL images; no database volumes or archived sources removed",
+    "Elasticsearch image removed after its completed JVM/API26/API30 tests to leave room for separate OpenSearch fixture",
+    "No host sysctl, Android system setting or TLS validation bypass applied",
+    "OpenSearch cache removed after both final-device suites; Elasticsearch re-pulled by the same digest for final APK verification",
+    "Both search image caches removed after final verification; all test containers cleaned; images remain reproducible from pinned digests"
+  ]
+}

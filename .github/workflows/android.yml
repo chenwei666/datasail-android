@@ -8,7 +8,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Install pinned Android toolchain
@@ -36,11 +36,16 @@ jobs:
           done
       - name: MongoDB TLS and document workspace (JVM)
         run: bash scripts/test-mongo-local.sh
+      - name: Independent Elasticsearch and OpenSearch workspaces (JVM)
+        shell: bash
+        run: |
+          bash scripts/test-search-local.sh ELASTICSEARCH
+          bash scripts/test-search-local.sh OPENSEARCH
       - name: Preserve real artifacts and reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: DataSail-V0.5.0-build-${{ github.run_number }}
+          name: DataSail-V0.6.0-build-${{ github.run_number }}
           if-no-files-found: error
           path: |
             app/build/outputs/apk/
@@ -49,6 +54,7 @@ jobs:
             core/build/reports/tests/
             core/build/test-results/
             docs/evidence/v050/*/TEST-*.xml
+            docs/evidence/v060/*/TEST-*.xml
             sqlserver-android/build/test-results/
   release-r8-gate:
     # Deliberately opt-in and failing until driver Android API gaps are resolved.

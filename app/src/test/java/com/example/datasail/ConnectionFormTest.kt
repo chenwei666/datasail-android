@@ -15,6 +15,10 @@ class ConnectionFormTest {
         assertTrue(redis.copy(host = "redis://localhost", port = "0").fieldErrors().keys.containsAll(listOf("host", "port")))
         assertTrue(redis.copy(kind = DatabaseKind.POSTGRESQL, database = "business").fieldErrors().isEmpty())
         assertTrue(redis.copy(kind = DatabaseKind.MONGODB, authDatabase = "").fieldErrors().containsKey("authDatabase"))
+        val search = redis.copy(kind = DatabaseKind.OPENSEARCH, database = "logs-*")
+        assertTrue(search.fieldErrors().isEmpty())
+        assertTrue(search.copy(database = "../secret").fieldErrors().containsKey("database"))
+        assertTrue(search.copy(username = "bad:user").fieldErrors().containsKey("username"))
         assertTrue(redis.copy(username = "", name = "").fieldErrors().keys.containsAll(listOf("username", "name")))
     }
 }

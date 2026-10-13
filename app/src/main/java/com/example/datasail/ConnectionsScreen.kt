@@ -26,7 +26,10 @@ internal fun SavedConnection.fieldErrors(): Map<String, String> = buildMap {
         if (port.toIntOrNull() !in 1..65535) put("port", "端口为 1–65535")
         if (username.isBlank() || username.length > 128) put("username", "请填写用户名")
         if (kind.isDocument && (authDatabase.trim().length !in 1..128 || !authDatabase.trim().all { it.isLetterOrDigit() || it == '_' || it == '-' })) put("authDatabase", "填写认证数据库，通常为 admin")
-        if (kind.isKeyValue) {
+        if (kind.isSearch) {
+            if (!SearchPolicy.validScope(database.trim())) put("database", "填写小写索引名或范围，如 logs-*")
+            if (username.contains(':') || username.any { it < ' ' }) put("username", "Basic 用户名不可含冒号或控制字符")
+        } else if (kind.isKeyValue) {
             if (!database.matches(Regex("0|[1-9][0-9]{0,4}")) || database.toIntOrNull() !in 0..65535) put("database", "填写数据库编号，通常为 0")
         } else if (database.trim().length !in 1..128 || !database.trim().all { it.isLetterOrDigit() || it == '_' || it == '-' }) put("database", "填写库名，仅支持字母、数字、下划线和连字符")
     }
@@ -115,7 +118,8 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                 ConnectionField("服务器 DNS / IPv4", draft.host, errors["host"], Modifier.weight(2f)) { change(draft.copy(host = it)); password = "" }
                 ConnectionField("端口", draft.port, errors["port"], Modifier.weight(1f), KeyboardType.Number) { change(draft.copy(port = it)); password = "" }
             }
-            ConnectionField(if (draft.kind.isKeyValue) "数据库编号" else "数据库", draft.database, errors["database"], keyboard = if (draft.kind.isKeyValue) KeyboardType.Number else KeyboardType.Text) { change(draft.copy(database = it)) }
+            ConnectionField(if (draft.kind.isSearch) "索引范围（如 logs-*）" else if (draft.kind.isKeyValue) "数据库编号" else "数据库", draft.database, errors["database"], keyboard = if (draft.kind.isKeyValue) KeyboardType.Number else KeyboardType.Text) { change(draft.copy(database = it)) }
+            if (draft.kind.isSearch) Text("HTTPS · Basic 认证 · 仅浏览指定范围的普通索引；账号需具备读取、索引监控和映射查看权限。", style = MaterialTheme.typography.bodySmall)
             if (draft.kind.isDocument) {
                 ConnectionField("认证数据库", draft.authDatabase, errors["authDatabase"]) { change(draft.copy(authDatabase = it)); password = "" }
                 Text("单个服务器直连 · SCRAM-SHA-256 · 只读集合与文档", style = MaterialTheme.typography.bodySmall)

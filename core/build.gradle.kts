@@ -20,7 +20,7 @@ tasks.register<Test>("integrationTest") {
     testClassesDirs = integrationTest.output.classesDirs
     classpath = integrationTest.runtimeClasspath
     useJUnit()
-    exclude("**/UntrustedCertificateTest*", "**/JdbcWorkspaceIntegrationTest*", "**/KeyValueIntegrationTest*", "**/MongoIntegrationTest*")
+    exclude("**/UntrustedCertificateTest*", "**/JdbcWorkspaceIntegrationTest*", "**/KeyValueIntegrationTest*", "**/MongoIntegrationTest*", "**/SearchIntegrationTest*")
     val fixture = providers.environmentVariable("DATASAIL_TEST_CONFIG")
     val trust = providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE")
     doFirst {
@@ -116,6 +116,22 @@ tasks.register<Test>("jdbcWorkspaceTest") {
     useJUnit()
     include("**/MongoIntegrationTest*")
     doFirst {
+        systemProperty("datasail.test.config", providers.environmentVariable("DATASAIL_TEST_CONFIG").get())
+        systemProperty("datasail.test.trust", providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE").get())
+    }
+    testLogging { events("passed", "skipped", "failed") }
+    outputs.upToDateWhen { false }
+}
+
+tasks.register<Test>("searchTest") {
+    testClassesDirs = integrationTest.output.classesDirs
+    classpath = integrationTest.runtimeClasspath
+    useJUnit()
+    include("**/SearchIntegrationTest*")
+    doFirst {
+        val repeats = providers.environmentVariable("DATASAIL_SEARCH_READ_REPEATS").orElse("1").get().toInt()
+        require(repeats in 1..10)
+        systemProperty("datasail.search.readRepeats", repeats)
         systemProperty("datasail.test.config", providers.environmentVariable("DATASAIL_TEST_CONFIG").get())
         systemProperty("datasail.test.trust", providers.environmentVariable("DATASAIL_TEST_TRUSTSTORE").get())
     }

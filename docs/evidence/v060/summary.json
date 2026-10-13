@@ -1,0 +1,54 @@
+{
+  "version": "0.6.0",
+  "versionCode": 8,
+  "requiredJvmReports": [
+    "test",
+    "searchTest"
+  ],
+  "jvm": {
+    "coreUnit": 43,
+    "appUnit": 4,
+    "ELASTICSEARCH": 3,
+    "OPENSEARCH": 3
+  },
+  "jvmTotal": 53,
+  "cachedDriverUnit": 11,
+  "driverTaskStatus": "UP-TO-DATE; profile integrity verification executed",
+  "android": {
+    "emulator-5556": {
+      "ELASTICSEARCH": 5,
+      "OPENSEARCH": 5,
+      "upgradeAndSmoke": 4
+    },
+    "emulator-5554": {
+      "ELASTICSEARCH": 5,
+      "OPENSEARCH": 5,
+      "upgradeAndSmoke": 4
+    }
+  },
+  "androidTotal": 28,
+  "debug": "passed",
+  "lintDebug": "passed",
+  "release": {
+    "status": "failed",
+    "missingClasses": 193,
+    "addedSinceV050": 0,
+    "blanketSuppressionsAdded": false
+  },
+  "finalApkSha256": "bf4c94cba29d9730f48475295bfa7c565ebc87543a7d4240b14df795c56d8a01",
+  "androidTestApkSha256": "7744725451716859e895c0fd9d6329fc9a0d39266574a4964168ac732c72c680",
+  "preMappingFixMobile": {
+    "apkSha256": "f51f1b59117d68893bbe69111857e4b6c3379745bee41a58de299afc0d358f7e",
+    "checks": 16,
+    "status": "passed before mapping title identity fix; unchanged mobile/SQLite code; not counted in final APK total"
+  },
+  "searchTransportFaultTests": "Separate local adversarial HTTPS peer, not real engine slow-query injection",
+  "openSearchReadStressRounds": 10,
+  "initialOpenSearchEof": "One failed first JVM run; diagnostic repeat and ten read rounds passed; cause unconfirmed, retained as a known limitation; no application retry added",
+  "limitations": [
+    "Physical devices/arm64 and release APK unverified",
+    "Previous eight engines remain implemented; old network engine suites not rerun this iteration (immutable V050 evidence retained); SQLite/mobile workflows passed before mapping title fix; see preMappingFixMobile, not final APK count",
+    "Search is HTTPS/Basic/read-only on the exact tested versions; no cloud auth, scripts, aggregation, PIT/scroll or writes",
+    "Original source archive not rebuilt independently; no remote CI, push, public release or environment publication claimed"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "kind": "ELASTICSEARCH",
+  "version": {
+    "number": "8.19.5",
+    "build_flavor": "default",
+    "build_type": "docker",
+    "build_hash": "d6dd0417f05cd69706f4f103c69bbb8b7688db9c",
+    "build_date": "2025-10-03T16:35:50.165700789Z",
+    "build_snapshot": false,
+    "lucene_version": "9.12.2",
+    "minimum_wire_compatibility_version": "7.17.0",
+    "minimum_index_compatibility_version": "7.0.0"
+  },
+  "readerWriteDenied": true
+}

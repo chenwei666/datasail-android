@@ -36,7 +36,7 @@ Android 数据库测试显式启用；不由默认 UI 测试顺带连接。脚�
 bash scripts/test-android-upgrade.sh --reset-synthetic-emulator
 ```
 
-先安装不可变 V0.4.0/code6 APK，写入 schema 2 合成连接、schema 1 收藏和私有文件标记，再 `adb install -r` 覆盖 V0.5.0/code7。测试核对旧连接、生产策略、收藏保留，旧连接默认 authDatabase=admin，并再次保存/读回 schema 3 的自定义认证数据库。保持 applicationId 和签名；不代表可降级。
+先安装不可变 V0.5.0/code7 APK，写入 schema 3 的 SQL Server/MongoDB 合成连接、schema 1 收藏和私有文件标记，再 `adb install -r` 覆盖 V0.6.0/code8。测试核对旧连接、生产策略、MongoDB 自定义 authDatabase 与收藏保留，并再次保存/读回搜索引擎的索引范围。保持 applicationId 和签名；不代表可降级。
 
 ## Release 与未验证项
 
@@ -96,3 +96,22 @@ MongoContract 三项分别覆盖 205 文档的 100/100/5 游标分页（第一�
 构建时排除 MongoDB 两份重复 GraalVM 元数据，正式 R8 单独失败记录，不等同 Android Debug 已通过即可发行。CI 添加此 JVM 夹具，本轮本地执行不代表 GitHub Actions 已运行。
 
 MongoDB 脚本在安装前比较本机构建与设备 APK 的 SHA-256，相同则复用已验证安装；不同才覆盖安装。`DATASAIL_MONGO_UI_ONLY=1` 仅供定位界面问题，完整验收必须去掉此标志并得到 4 项通过。相关诊断失败保存在 evidence 的 diagnostics 下，不计入通过总数。
+
+## V0.6.0 Elasticsearch / OpenSearch
+
+```bash
+bash scripts/test-search-local.sh ELASTICSEARCH
+bash scripts/test-search-local.sh OPENSEARCH
+DATASAIL_ANDROID_TESTS=1 DATASAIL_ANDROID_SERIALS='emulator-5556 emulator-5554' bash scripts/test-search-local.sh ELASTICSEARCH
+DATASAIL_ANDROID_TESTS=1 DATASAIL_ANDROID_SERIALS='emulator-5556 emulator-5554' bash scripts/test-search-local.sh OPENSEARCH
+```
+
+两种参数启动各自固定摘要镜像。单节点仅 loopback 动态 HTTP 端口，HTTP TLS、SAN=localhost、临时 CA 和随机 Basic 密码；reader 仅有 synthetic 的读/监控/映射权限，服务端验证 PUT 文档被拒绝。管理员只用于夹具初始化，不进入手机。OpenSearch 使用镜像自带安全配置 schema，替换默认用户和角色，Python 3.11 crypt/BLOWFISH 生成随机密码的 hash；未启用演示密码或绕过客户端证书检查。`node.store.allow_mmap=false` 是测试服务器设置，不更改 Android 或宿主系统。
+
+SearchContract 前两项为真实服务：205 条 100/100/5 分页、映射、term/range、Long/小数原文/前导零/NULL、超限文档，错误 SAN/CA/密码/无权限。第三项明确为本机对抗 HTTPS fixture：不跟随重定向、超限响应、重复 JSON 键、非法 UTF-8、阻塞超时、取消关闭实际 socket、拒绝部分搜索结果；不将模拟阻塞称为服务端真实慢查询测试。UI 流程通过真实服务测试连接表单、索引选择、翻页、条件改变禁用续页、筛选和映射。另增加纯界面回归：切换到新索引但保留旧映射时，旧映射标题仍绑定原索引，防止误标。每个引擎应有 JVM `3 tests` 与每设备 `OK (5 tests)`；JVM 与 Android 独立记录。
+
+`DATASAIL_SKIP_JVM=1` 仅允许已有 JVM 结果时避免重复；不会产生新的 JVM 通过证据。脚本串行遍历设备，安装前核对 APK SHA。默认 connected 测试排除 SearchDeviceTest/SearchUiTest，需由夹具显式调用。脚本退出清理自己的容器/数据卷、证书、密码、对抗 HTTP 进程、ADB 反向端口和 app-private 测试文件。
+
+本轮覆盖升级基线为 V0.5.0/code7，保留 schema3 SQL Server/MongoDB 自定义 authDatabase 及 SQL 收藏后安装 code8。归档只收集 summary.requiredJvmReports 中本轮明确要求的 JVM 报告及 app/driver 报告；旧引擎历史证据仍在原不可变档案中，不把遗留 build 目录测试报告算作本轮执行。
+
+`DATASAIL_SEARCH_READ_REPEATS=10 bash scripts/test-search-local.sh OPENSEARCH` 可诊断瞬态问题：同一 JVM 读取测试重复十轮完整流程，仍报告 3 个测试，不能把重复断言当作新增独立测试。首次 EOF 失败单独归档；复测不等于根因已修复。服务端日志仅落临时 `/tmp/datasail-search-server-ENGINE.log`，需检查敏感信息后才可摘录到证据。

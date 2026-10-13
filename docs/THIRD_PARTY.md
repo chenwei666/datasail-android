@@ -58,3 +58,7 @@ Redis / Valkey 使用自有 Apache-2.0 的 RESP2/TLS 实现，不打包服务器
 MongoDB Community 8.0.32 服务端仅用于隔离测试（SSPL）；镜像 `mongo@sha256:d0d926f94df099bff534b7ee5b5986458131a22489dfff8664509af0c1e2ca9c`，不打包进 APK。测试专用管理员/failpoint 命令仅在测试源码。
 
 Android SASL API 补充模块 `sasl-android`：只包含 Apache Harmony 的未修改 `SaslClient` 接口与 `SaslException`，固定提交 `02970cb7227a335edd2c8457ebdde0195a735733`（Apache-2.0）；原始源码、LICENSE、NOTICE 和 SHA-256 锁文件纳入仓库，每次编译校验，许可通知随模块资源打包。模块没有认证算法或 SASL provider；SCRAM 仍完全由 MongoDB 官方驱动实现，不提供空实现/假成功。仅 app runtime 引入，JVM 使用自身 SASL API，因此必须以 ART 真实正负认证验证模块。
+
+## V0.6.0 搜索实现
+
+APK 未新增第三方依赖：HTTP/TLS 使用 Java/Android 平台，JSON/DSL 与搜索能力代码为本项目 Apache-2.0。验证服务器来自 Docker Hub 官方 `library/elasticsearch:8.19.5`（Elastic License 2.0 的发行包）和 `opensearchproject/opensearch:2.19.4`（Apache-2.0 项目，镜像含各组件许可证），固定 amd64 manifest SHA256 见 DRIVER_MATRIX/evidence。服务器镜像仅为隔离测试环境，不打包或重新分发进 APK/源码 ZIP；未把 Elasticsearch 服务端发行版称作 Apache 许可客户端依赖。版本验证不代表最新版或所有服务版本支持。

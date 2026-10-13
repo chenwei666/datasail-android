@@ -20,6 +20,10 @@ object Failures {
             sql?.sqlState in setOf("08006", "08000") && sql?.message?.let {
                 it.contains("SSL hostname verification failed :") || it.contains("Trying to connect with ssl, but ssl not enabled in the server")
             } == true -> ErrorKind.TLS
+            chain.filterIsInstance<SearchHttpFailure>().firstOrNull()?.status == 401 -> ErrorKind.AUTHENTICATION
+            chain.filterIsInstance<SearchHttpFailure>().firstOrNull()?.status == 403 -> ErrorKind.PERMISSION
+            chain.filterIsInstance<SearchHttpFailure>().firstOrNull()?.status in setOf(408, 504) -> ErrorKind.TIMEOUT
+            chain.any { it is SearchHttpFailure } -> ErrorKind.SQL
             chain.any { it is UnknownHostException } -> ErrorKind.DNS
             chain.any { it is com.mongodb.MongoSecurityException } -> ErrorKind.AUTHENTICATION
             chain.any { it is com.mongodb.MongoCommandException && it.errorCode == 13 } -> ErrorKind.PERMISSION
@@ -33,7 +37,7 @@ object Failures {
             state == "42501" || sql?.errorCode in setOf(229, 1142, 1143) -> ErrorKind.PERMISSION
             state == "0A000" -> ErrorKind.UNSUPPORTED
             chain.any { it is SQLFeatureNotSupportedException || it is LinkageError } -> ErrorKind.UNSUPPORTED
-            chain.any { it is ConnectException } || state?.startsWith("08") == true -> ErrorKind.NETWORK
+            chain.any { it is ConnectException || it is java.net.SocketException } || state?.startsWith("08") == true -> ErrorKind.NETWORK
             sql != null || chain.any { it is com.mongodb.MongoException } -> ErrorKind.SQL
             else -> ErrorKind.INTERNAL
         }

@@ -21,8 +21,12 @@ class UpgradeTest {
         val favorite = QueryStore(context).load().single { it.id == "upgrade-query" }
         assertEquals("SELECT 1", favorite.sql)
         assertEquals(com.example.datasail.core.DatabaseKind.POSTGRESQL, favorite.kind)
-        ConnectionStore(context).save(listOf(saved, saved.copy(id = "upgrade-mongo", kind = com.example.datasail.core.DatabaseKind.MONGODB, authDatabase = "custom_auth")))
-        assertEquals("custom_auth", ConnectionStore(context).load().single { it.id == "upgrade-mongo" }.authDatabase)
+        val mongo = ConnectionStore(context).load().single { it.id == "upgrade-mongo" }
+        assertEquals("custom_auth", mongo.authDatabase)
+        assertEquals(com.example.datasail.core.DatabaseKind.MONGODB, mongo.kind)
+        val search = saved.copy(id = "upgrade-search", kind = com.example.datasail.core.DatabaseKind.OPENSEARCH, database = "logs-*")
+        ConnectionStore(context).save(listOf(saved, mongo, search))
+        assertEquals("logs-*", ConnectionStore(context).load().single { it.id == "upgrade-search" }.database)
         assertEquals(ConnectionEnvironment.PRODUCTION, saved.profile(context).environment)
     }
 }

@@ -5,9 +5,11 @@ import java.math.BigDecimal
 enum class DatabaseKind(val label: String, val defaultPort: Int) {
     SQL_SERVER("SQL Server", 1433), MYSQL("MySQL", 3306), MARIADB("MariaDB", 3306),
     POSTGRESQL("PostgreSQL", 5432), SQLITE("SQLite", 0),
-    REDIS("Redis", 6379), VALKEY("Valkey", 6379), MONGODB("MongoDB", 27017);
+    REDIS("Redis", 6379), VALKEY("Valkey", 6379), MONGODB("MongoDB", 27017),
+    ELASTICSEARCH("Elasticsearch", 9200), OPENSEARCH("OpenSearch", 9200);
+    val isSearch: Boolean get() = this == ELASTICSEARCH || this == OPENSEARCH
     val isDocument: Boolean get() = this == MONGODB
-    val isSql: Boolean get() = !isKeyValue && !isDocument
+    val isSql: Boolean get() = !isKeyValue && !isDocument && !isSearch
     val isKeyValue: Boolean get() = this == REDIS || this == VALKEY
 }
 enum class TlsPolicy { VERIFY_IDENTITY }
@@ -43,7 +45,8 @@ class ConnectionProfile(
         if (kind.isDocument) require(authDatabase.length in 1..128 && authDatabase.all { it.isLetterOrDigit() || it == '_' || it == '-' }) { "请填写认证数据库" }
         if (kind.isKeyValue) require(database.matches(Regex("0|[1-9][0-9]{0,4}")) && database.toInt() <= 65535) { "数据库编号范围为 0–65535；实际范围由服务器配置决定" }
         if (kind == DatabaseKind.SQLITE) require(database.matches(Regex("[a-f0-9]{64}"))) { "请先导入 SQLite 文件" }
-        require(database.length in 1..128 && database.all { it.isLetterOrDigit() || it == '_' || it == '-' }) { "技术验证版库名仅支持字母、数字、下划线和连字符" }
+        if (kind.isSearch) require(SearchPolicy.validScope(database)) { "请填写小写索引名或索引范围，如 logs-*" }
+        else require(database.length in 1..128 && database.all { it.isLetterOrDigit() || it == '_' || it == '-' }) { "技术验证版库名仅支持字母、数字、下划线和连字符" }
     }
     override fun toString() = "ConnectionProfile(${kind.name}, details=[REDACTED])"
 }
@@ -98,4 +101,3 @@ data class ProbeReport(val state: ExecutionState, val checks: List<ProbeCheck>, 
 interface AiDraftProvider { suspend fun draft(request: ApprovedAiContext): SqlDraft }
 data class ApprovedAiContext(val dialect: DatabaseKind, val userApprovedText: String)
 data class SqlDraft(val sql: String, val explanation: String)
-interface SearchConnector

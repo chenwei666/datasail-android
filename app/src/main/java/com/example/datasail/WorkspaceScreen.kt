@@ -46,7 +46,7 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
     } }) { padding -> Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("数舟", style = MaterialTheme.typography.headlineMedium)
-            Text("DataSail · V0.5.0 · 多数据库实验性工作台")
+            Text("DataSail · V0.6.0 · 多数据库实验性工作台")
             Text("${state.target} / ${state.catalog} / ${state.schema}\n${if (state.production) "生产" else "测试"} · ${if (state.writable) "可写" else "只读"} · ${if (state.connected) "已连接" else "未连接"}", style = MaterialTheme.typography.labelMedium)
             Text(state.message, style = MaterialTheme.typography.bodySmall)
             if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -88,6 +88,7 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel) {
 @Composable
 private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export: (ResultPage) -> Unit) {
     if (!state.connected) { Text("请在连接页选择数据库并连接，然后浏览表或执行查询。"); return }
+    if (state.kind.isSearch) { SearchWorkbench(model, state); return }
     if (state.kind.isDocument) { DocumentWorkbench(model, state); return }
     if (state.kind.isKeyValue) { KeyValueWorkbench(model, state); return }
     var search by remember { mutableStateOf("") }

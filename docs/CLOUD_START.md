@@ -32,6 +32,8 @@ bash scripts/test-jdbc-workspace-local.sh POSTGRESQL
 bash scripts/test-key-value-local.sh REDIS
 bash scripts/test-key-value-local.sh VALKEY
 bash scripts/test-mongo-local.sh
+bash scripts/test-search-local.sh ELASTICSEARCH
+bash scripts/test-search-local.sh OPENSEARCH
 ```
 
 Live emulators/processes do not survive environment publication reliably. Inspect `adb devices`; if absent, start the existing AVDs in the background with output redirected outside tracked source:
@@ -48,3 +50,7 @@ Wait for each device's `sys.boot_completed=1`, then check API/fingerprint. No KV
 `:app:assembleRelease` is a deliberately unresolved R8 gate. Preserve the actual failure report, do not add blanket dontwarn or claim a release APK. Debug emulator tests do not establish physical/arm64 or complete mainstream database support.
 
 For a version delivery follow AGENTS.md: update actual validation/evidence/version, preserve prior archives, create a clean local commit, then run `python3 scripts/archive-version.py`. No push or public release is implied. The archive binds evidence to the installed APK SHA-256 and committed source. Local-only commits and files have not been independently validated after a fresh-task restore. Saving this startup draft does not execute, publish or verify environment restoration.
+
+V0.6.0 adds search fixtures. They use official, digest-pinned Elasticsearch 8.19.5 / OpenSearch 2.19.4 images, not vendor tarballs (those URLs returned HTTP 403 here). Search images have many vfs layers: do not pull both while keeping all large SQL images. Check free space before and after pulling and leave enough for the writable container copy. Remove only identified unused reproducible image caches after their tests; keep all unknown volumes and source/archives. This iteration evicted unused SQL Server/MySQL/MariaDB/PostgreSQL image caches; original scripts can restore their pinned digests. Python 3.11's crypt/BLOWFISH is required for the synthetic OpenSearch password hash. No host sysctl change: fixtures disable mmap in the server configuration.
+
+Search readiness is an authenticated TLS request followed by synthetic index setup and proof the reader cannot PUT a document. `DATASAIL_ANDROID_TESTS=1 DATASAIL_ANDROID_SERIALS='emulator-5556 emulator-5554' bash scripts/test-search-local.sh ELASTICSEARCH` (and separately OPENSEARCH) runs JVM contracts then the two ART/UI suites serially. `DATASAIL_SKIP_JVM=1` skips only a prior completed JVM check. Each engine needs its own server-version.json, JVM XML and device OK(5) logs. The adversarial HTTP peer is explicitly separate from real engine acceptance. These are not physical-device, all-version, cloud-auth or Release tests.

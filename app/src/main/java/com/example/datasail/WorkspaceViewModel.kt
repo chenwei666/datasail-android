@@ -11,10 +11,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+data class IndexMapping(val index: String, val json: String)
+
 // All JDBC work is dispatched to one bounded worker; UI only holds immutable snapshots.
 data class WorkspaceUiState(val busy: Boolean = false, val connected: Boolean = false,
     val target: String = "未连接", val catalog: String = "—", val schema: String = "—", val writable: Boolean = false,
     val kind: DatabaseKind = DatabaseKind.SQL_SERVER, val production: Boolean = false, val catalogs: List<String> = emptyList(), val schemas: List<String> = emptyList(),
+    val indices: List<String> = emptyList(), val searchPage: SearchPage? = null, val mapping: IndexMapping? = null,
     val collections: List<String> = emptyList(), val documents: DocumentPage? = null,
     val keys: KeyScan? = null, val keyContent: KeyContent? = null,
     val tables: List<TableRef> = emptyList(), val result: ResultPage? = null, val preview: MutationPreview? = null,
@@ -42,6 +45,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     private val runner = WorkspaceRunner(localFactory = { profile -> SqliteBrowseSession(store.sqliteFile(profile.database), profile) })
     private val keyValueRunner = KeyValueRunner()
     private val documentRunner = DocumentRunner()
+    private val searchRunner = SearchRunner()
     private val mutable = MutableStateFlow(WorkspaceUiState())
     val state = mutable.asStateFlow()
     private val connections = MutableStateFlow<List<SavedConnection>>(emptyList())
@@ -121,7 +125,18 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             kind = profile.kind, production = connection.production, message = if (profile.kind == DatabaseKind.SQLITE) "正在打开只读副本…" else "正在校验 TLS 并登录…")
         queryText.value = "SELECT 1 AS 示例"
         val ticket = ++epoch
-        runner.disconnect(); keyValueRunner.disconnect(); documentRunner.disconnect()
+        runner.disconnect(); keyValueRunner.disconnect(); documentRunner.disconnect(); searchRunner.disconnect()
+        if (profile.kind.isSearch) {
+            val accepted = searchRunner.connect(profile, credentials) { result -> viewModelScope.launch {
+                if (ticket != epoch) return@launch
+                result.fold(onSuccess = {
+                    mutable.value = mutable.value.copy(busy = false, connected = true, message = "已连接，只读搜索工作台")
+                    indices()
+                }, onFailure = ::failure)
+            } }
+            if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后手动重试") }
+            return
+        }
         if (profile.kind.isDocument) {
             val accepted = documentRunner.connect(profile, credentials) { result -> viewModelScope.launch {
                 if (ticket != epoch) return@launch
@@ -156,7 +171,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     fun disconnect() {
         if (!mutable.value.connected && !mutable.value.busy) return
         epoch++
-        runner.disconnect(); keyValueRunner.disconnect(); documentRunner.disconnect()
+        runner.disconnect(); keyValueRunner.disconnect(); documentRunner.disconnect(); searchRunner.disconnect()
         mutable.value = WorkspaceUiState(message = "已请求取消并断开；未完成操作的执行结果未知，需核对。不会自动重试。")
     }
     fun switchCatalog(name: String) = execute({ s -> s.switchCatalog(name); s.schemas() }) {
@@ -210,12 +225,26 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         } }, operation)
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后重试") }
     }
+    fun indices() = executeSearch({ it.indices() }) { copy(indices = it, searchPage = null, mapping = null) }
+    fun search(index: String, query: String, offset: Int = 0) = executeSearch({ it.search(index, query, offset) }) { copy(searchPage = it, mapping = null) }
+    fun mapping(index: String) = executeSearch({ it.mapping(index) }) { copy(mapping = IndexMapping(index, it), searchPage = null) }
+    private fun <T> executeSearch(operation: (SearchSession) -> T, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
+        if (mutable.value.busy || !mutable.value.connected || !mutable.value.kind.isSearch) return
+        mutable.value = mutable.value.copy(busy = true)
+        val ticket = epoch
+        val accepted = searchRunner.execute({ result, connected -> viewModelScope.launch {
+            if (ticket != epoch) return@launch
+            mutable.value = mutable.value.copy(busy = false, connected = connected)
+            result.fold(onSuccess = { mutable.value = mutable.value.update(it).copy(message = "只读搜索操作完成") }, onFailure = ::failure)
+        } }, operation)
+        if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后重试") }
+    }
     private fun failure(error: Throwable) {
         val safe = Failures.classify(error)
         val lost = safe.kind in setOf(ErrorKind.TIMEOUT, ErrorKind.NETWORK, ErrorKind.CANCELLED, ErrorKind.UNSUPPORTED)
-        mutable.value = mutable.value.copy(busy = false, preview = null, result = null, documents = null, keys = null, keyContent = null,
+        mutable.value = mutable.value.copy(busy = false, preview = null, result = null, documents = null, searchPage = null, mapping = null, keys = null, keyContent = null,
             connected = mutable.value.connected && !lost, writable = mutable.value.writable && !lost,
             message = if (error is WorkspaceRejected) error.explanation else safe.description)
     }
-    override fun onCleared() { runner.close(); keyValueRunner.close(); documentRunner.close(); super.onCleared() }
+    override fun onCleared() { runner.close(); keyValueRunner.close(); documentRunner.close(); searchRunner.close(); super.onCleared() }
 }
