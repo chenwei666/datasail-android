@@ -1,6 +1,7 @@
 name: Android verification
 on:
   push:
+    branches-ignore: ["release-assets/**"]
   pull_request:
   workflow_dispatch:
 permissions:
