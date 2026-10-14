@@ -1,0 +1,127 @@
+{
+  "version": "V0.11.0",
+  "versionCode": 17,
+  "applicationId": "com.example.datasail",
+  "gitSha": "88cb0bbb4fd9030acf7a6035d586f4221db760c0",
+  "sourceStatus": "clean committed snapshot",
+  "published": false,
+  "signing": {
+    "type": "local debug only",
+    "certificateSha256": "1c0f10a1cc14cc44b1eefc18a78de23b34ce30761b70dae039bea7f302cc78db"
+  },
+  "toolchain": {
+    "jdk": "Temurin 21.0.8+9",
+    "agp": "8.13.0",
+    "gradle": "8.13",
+    "kotlin": "2.2.10",
+    "composeBom": "2025.08.01",
+    "compileSdk": 36,
+    "minSdk": 26,
+    "buildTools": "36.0.0"
+  },
+  "androidTlsProvider": "Conscrypt 2.7.0, engine sockets, platform trust manager",
+  "drivers": {
+    "mssql-jdbc": "13.6.0.jre8",
+    "mariadb-java-client": "3.5.10",
+    "postgresql": "42.7.14",
+    "mongodb-driver-sync": "5.6.5",
+    "android-sasl-api": "Apache Harmony 02970cb7227a335edd2c8457ebdde0195a735733 (two unmodified API types)",
+    "sqlite": "Android platform",
+    "redis-valkey": "DataSail bounded RESP2/TLS implementation",
+    "elasticsearch-opensearch": "DataSail bounded platform HTTPS/JSON implementation"
+  },
+  "sqlServerAndroidProfile": {
+    "version": "13.6.0.jre8-datasail.2",
+    "jarSha256": "90d3bb816001d4a58bb4cfe2a549cb046a64a494792850ccd3ec47c44128bc11",
+    "upstreamSourceSha256": "317ba534f470fbceefcf6c0db3465a4fda413b2fd023dfa60b1b16ec3e800728",
+    "patchSha256": "eb84e6e62e7408e668f2c70076b1c8dde30dd654bcf3b6fd525260a0ad07dd88"
+  },
+  "verification": {
+    "version": "0.11.0",
+    "versionCode": 17,
+    "finalApkSha256": "7472e7c1540f1747faafedd0716235fdc31512cb73e9a5921b0e4cfdecd72ca7",
+    "androidTestApkSha256": "6c7990cff0d153a7f12a5853aa2ac8aa39d54a20f1ebd6eddc4a179715364394",
+    "requiredJvmReports": [
+      "test",
+      "sqlServerTest",
+      "jdbcWorkspaceTest"
+    ],
+    "jvmTests": {
+      "core-unit": 85,
+      "app-unit": 14,
+      "driver-profile": 14,
+      "sqlserver": 21,
+      "MYSQL": 7,
+      "MARIADB": 7,
+      "POSTGRESQL": 7
+    },
+    "androidTests": {
+      "upgrade-api26.txt": 5,
+      "mobile-api26.txt": 4,
+      "ai-emulator-5556.txt": 4,
+      "SQL_SERVER/android-emulator-5556.txt": 3,
+      "upgrade-api30.txt": 5,
+      "mobile-api30.txt": 8,
+      "ai-emulator-5554.txt": 4,
+      "SQL_SERVER/android-emulator-5554.txt": 3
+    },
+    "previousVersionUpgradeSeedTests": {
+      "api26": 1,
+      "api30": 1
+    },
+    "release": {
+      "exitCode": 1,
+      "missingClasses": 193,
+      "apkDelivered": false
+    },
+    "scope": "Server-side bound filters and stable sort/paging on SQL Server, MySQL, MariaDB, PostgreSQL and SQLite; column menu and 65% zoom clipping regression; strict AI current-table JSON actions with approved outbound context, bounded reads and explicit SQL Server single-row write preview/confirmation, conflict rejection. API26/API30 synthetic HTTPS AI and isolated SQL Server, prior-version upgrade continuity. Final artifact hashes bound to installed bytes.",
+    "recoveries": [
+      "SQL Server time filter originally failed because JDBC sent time as datetime; fixed with exact metadata-typed CONVERT and reran the original real-server assertions. Failure retained in diagnostics.",
+      "API26 first full eight-test UI run and intermediate checks predated temporal validation fixes and are retained separately. Final APK reruns selected changed UI, AI, SQL Server and upgrade-state checks; API30 full eight-test UI suite."
+    ],
+    "environmentRecovery": "API30 system media/System UI startup ANR before application tests; retained logs/screenshot, selected system Wait, verified Launcher/services recovered before all application checks.",
+    "testFixtureRecovery": "An extra standalone upgrade verifier rerun failed because its prior successful run had intentionally restored defaults and cleared the AI seed. Retained failure, then reran complete V0.10.0 install/seed/in-place-upgrade checks on final APK successfully.",
+    "unverified": [
+      "physical/arm64",
+      "user business database and other server versions",
+      "live AI vendor accounts and billing",
+      "other engine writes, bulk or cross-table AI actions",
+      "Redis/Valkey/MongoDB/Elasticsearch/OpenSearch matrix not rerun",
+      "full DBeaver functionality",
+      "Release/R8 and protected production signing",
+      "independent archived-source rebuild",
+      "fresh cloud restore"
+    ]
+  },
+  "devices": {
+    "emulator-5556": {
+      "api": 26,
+      "abi": "x86_64",
+      "fingerprint": "Android/sdk_phone_x86_64/generic_x86_64:8.0.0/OSR1.180418.004/4931640:userdebug/test-keys",
+      "installedApkSha256": "7472e7c1540f1747faafedd0716235fdc31512cb73e9a5921b0e4cfdecd72ca7",
+      "device": "AOSP x86_64 software emulator; not physical device"
+    },
+    "emulator-5554": {
+      "api": 30,
+      "abi": "x86_64",
+      "fingerprint": "Android/sdk_phone_x86_64/generic_x86_64:11/RSR1.210722.013.A2/10067904:userdebug/test-keys",
+      "installedApkSha256": "7472e7c1540f1747faafedd0716235fdc31512cb73e9a5921b0e4cfdecd72ca7",
+      "device": "AOSP x86_64 software emulator; not physical device"
+    }
+  },
+  "limitations": [
+    "Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence",
+    "New engines are read-only; other catalog entries are planned and cannot connect",
+    "Release/R8 fails on missing APIs; no release APK"
+  ],
+  "artifacts": {
+    "DataSail-V0.11.0-androidTest.apk": {
+      "bytes": 1281920,
+      "sha256": "6c7990cff0d153a7f12a5853aa2ac8aa39d54a20f1ebd6eddc4a179715364394"
+    },
+    "DataSail-V0.11.0-debug.apk": {
+      "bytes": 24848526,
+      "sha256": "7472e7c1540f1747faafedd0716235fdc31512cb73e9a5921b0e4cfdecd72ca7"
+    }
+  }
+}
