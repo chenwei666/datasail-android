@@ -1,0 +1,69 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+> Task :sqlserver-android:prepareProfile
+patching file com/microsoft/sqlserver/jdbc/SQLServerCertificateUtils.java
+patching file com/microsoft/sqlserver/jdbc/MaxResultBufferParser.java
+patching file com/microsoft/sqlserver/jdbc/SQLServerSQLXML.java
+patching file com/microsoft/sqlserver/jdbc/DDC.java
+
+> Task :sqlserver-android:compileJava
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: /workspace/datasail-android/sqlserver-android/build/generated/profile/com/microsoft/sqlserver/jdbc/DDC.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 warnings
+
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes
+> Task :sqlserver-android:jar
+
+> Task :sqlserver-android:compileTestJava
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+
+> Task :sqlserver-android:processTestResources UP-TO-DATE
+> Task :sqlserver-android:testClasses
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 11 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :sqlserver-android:test
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+AndroidProfileTest > malformedAndNonPositiveLimitsReject PASSED
+
+AndroidProfileTest > explicitBudgetUsesDecimalBytesAndHeapCeiling PASSED
+
+AndroidProfileTest > staxRequestsFailRatherThanReturningEmptySuccess PASSED
+
+AndroidProfileTest > supportedXmlStreamStillPreservesContentAndSingleUse PASSED
+
+AndroidProfileTest > pkcs1KeysFailExplicitlyWithoutLoadingOptionalCrypto PASSED
+
+AndroidProfileTest > matchingCommonNameCannotOverrideWrongSan PASSED
+
+AndroidProfileTest > largeMultipliersCannotWrapToNegativeOrSmallLimits PASSED
+
+AndroidProfileTest > matchingSanWorksDespiteDifferentCommonName PASSED
+
+AndroidProfileTest > percentagesUseRuntimeHeapWithoutJmx PASSED
+
+AndroidProfileTest > commonNameAloneCannotAuthenticateServer PASSED
+
+AndroidProfileTest > absentLimitKeepsUpstreamSentinel PASSED
+
+AndroidTemporalTest > timestampsMatchJdkAcrossCalendarBoundariesAndZones PASSED
+
+AndroidTemporalTest > dateAndDatetimeTextKeepLeapDayAndFraction PASSED
+
+AndroidTemporalTest > timeTextPreservesScaleAndSqlTimeRoundsAtMidnight PASSED
+
+> Task :sqlserver-android:check
+
+[Incubating] Problems report is available at: file:///workspace/datasail-android/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 6s
+7 actionable tasks: 6 executed, 1 up-to-date

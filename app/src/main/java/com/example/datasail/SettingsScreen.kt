@@ -11,13 +11,20 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-internal fun SettingsScreen(model: WorkspaceViewModel, openAi: () -> Unit, diagnostics: @Composable () -> Unit) {
+internal fun SettingsScreen(model: WorkspaceViewModel, ai: AiViewModel, openAi: () -> Unit, diagnostics: @Composable () -> Unit) {
+    val aiState by ai.state.collectAsStateWithLifecycle()
     val settings by model.settings.collectAsStateWithLifecycle()
     val count by model.passwordCount.collectAsStateWithLifecycle()
     var clearPasswords by remember { mutableStateOf(false) }
     var resetSettings by remember { mutableStateOf(false) }
     var showDiagnostics by remember { mutableStateOf(false) }
     Text("设置", style = MaterialTheme.typography.headlineSmall)
+    SettingsGroup("AI 服务与模型") {
+        Text(aiState.preferences.active?.let { "${it.name} · ${it.model.ifBlank { "未选择模型" }}" } ?: "尚未配置 AI 服务")
+        Text(if (aiState.preferences.enabled) "AI 已开启" else "AI 已关闭", style = MaterialTheme.typography.bodySmall)
+        OutlinedButton(onClick = openAi) { Text("配置 AI 服务与模型") }
+        Text("服务地址、密钥、模型获取和切换统一在这里管理。", style = MaterialTheme.typography.bodySmall)
+    }
     SettingsGroup("外观") {
         Text("主题", style = MaterialTheme.typography.titleSmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -47,11 +54,6 @@ internal fun SettingsScreen(model: WorkspaceViewModel, openAi: () -> Unit, diagn
         Text("密码仅存于此设备的加密存储，不进入连接配置、备份或导出；系统密钥丢失时需重新输入。", style = MaterialTheme.typography.bodySmall)
         OutlinedButton(onClick = { clearPasswords = true }) { Text("清除全部保存的密码") }
         Text("后台断开连接 · 禁止截屏 · 默认校验服务器证书", style = MaterialTheme.typography.bodySmall)
-    }
-    SettingsGroup("AI 助手") {
-        Text("国内外模型服务 · 自定义地址 · 上游模型列表")
-        OutlinedButton(onClick = openAi) { Text("配置 AI 服务与模型") }
-        Text("密钥按服务地址加密保存；每个数据库连接可禁止外部 AI。", style = MaterialTheme.typography.bodySmall)
     }
     SettingsGroup("关于数舟") {
         Text("DataSail ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")

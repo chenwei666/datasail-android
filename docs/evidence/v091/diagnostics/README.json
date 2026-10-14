@@ -1,0 +1,12 @@
+{
+  "sqlserver-before-fix-api26.log": "Expected regression reproduction: real SQL Server date SELECT throws Android NoSuchMethodError; 3 tests ran, 1 failed. Never counted as a pass.",
+  "initial-test-import.log": "Instrumentation compile failure from absent Espresso import; replaced with the platform back-key API.",
+  "initial-mobile-api26.txt": "First navigation back-key attempt blocked by an overlaid SystemUI ANR window; original assertions retained after selecting system Wait.",
+  "api26-systemui.png": "Synthetic emulator system dialog only; user video is not in this repository.",
+  "before-final-time-format": "Passed preliminary API26 UI/upgrade/AI checks on the earlier DDC formatter build; superseded by final APK runs.",
+  "sqlserver-ui-reopen-list-api26.log": "Date table cells and retained connection assertions passed; the next table selection needed a visible reopen-object-list click. Test corrected without modifying the main APK or removing assertions.",
+  "api30-systemui.png": "SystemUI ANR on the synthetic API30 cold start. Selected the system Wait button; focus returned to QuickstepLauncher before UI checks.",
+  "api30-starting.png": "FallbackHome Phone is starting screen during the same cold boot, not the DataSail application.",
+  "api30-wide-isolated.txt": "Raw StateFlow wait reproduced a timeout without disconnect; diagnostic run, not a pass.",
+  "api30-wide-tree.txt": "Diagnostic UI tree shows the same ViewModel with 64 loaded columns and a rendered result grid after Compose synchronization. No user data: synthetic SQLite only."
+}

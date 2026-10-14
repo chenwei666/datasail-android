@@ -1,0 +1,9 @@
+{
+  "emulator-5556": {
+    "api": "26",
+    "fingerprint": "Android/sdk_phone_x86_64/generic_x86_64:8.0.0/OSR1.180418.004/4931640:userdebug/test-keys",
+    "abi": "x86_64",
+    "emulator": "1",
+    "installedApkSha256": "3e5271592db1115b315182a714f029d6ecda152d0789062d0e92d93a7d890039"
+  }
+}

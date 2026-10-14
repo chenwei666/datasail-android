@@ -1,0 +1,4 @@
+Inspected compiled DDC with javap -p -c.
+No calls to java.sql Timestamp/Date/Time java.time valueOf overloads or Timestamp.toLocalDateTime remain in DDC.
+Android-compatible conversion helpers present; JVM and ART execution are separate evidence.
+Profile JAR SHA-256: 90d3bb816001d4a58bb4cfe2a549cb046a64a494792850ccd3ec47c44128bc11

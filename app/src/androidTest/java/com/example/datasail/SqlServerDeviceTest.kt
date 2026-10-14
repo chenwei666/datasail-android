@@ -45,6 +45,7 @@ class SqlServerDeviceTest {
                     }
                 } finally { xml.free() }
                 SqlServerSession(raw, profile()).use { session ->
+                com.example.datasail.fixture.SqlServerTemporalContract.verify(session)
                 val table = session.tables("dbo").single { it.name == "records" }
                 val page = session.page(table)
                 assertTrue(page.rows.isNotEmpty())

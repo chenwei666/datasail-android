@@ -41,7 +41,7 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel, ai: 
     Scaffold(bottomBar = { NavigationBar {
         listOf("连接", "工作台", "AI 助手", "收藏", "设置").forEach { title ->
             val available = true
-            NavigationBarItem(selected = page == title, onClick = { page = title }, enabled = available,
+            NavigationBarItem(selected = page == title || (page == "AI 设置" && title == "设置"), onClick = { page = title }, enabled = available,
                 icon = { NavigationGlyph(title) }, label = { Text(title) })
         }
     } }) { padding -> Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()) {
@@ -62,9 +62,10 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel, ai: 
             when (page) {
                 "连接" -> Connections(model, state)
                 "工作台" -> Workbench(model, state) { exportPreview = state.target + " / " + state.catalog to it }
-                "AI 助手" -> AiScreen(ai, model) { page = "工作台" }
+                "AI 助手" -> AiScreen(ai, model, { page = "AI 设置" }) { page = "工作台" }
+                "AI 设置" -> AiSettingsScreen(ai, { page = "设置" }, { page = "AI 助手" })
                 "收藏" -> QueryLibrary(model, state) { page = "工作台" }
-                else -> SettingsScreen(model, { page = "AI 助手" }) {
+                else -> SettingsScreen(model, ai, { page = "AI 设置" }) {
                     Text("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。")
                     Text("当前十种引擎；除 SQL Server 测试会话外只读。AI 支持配置外部文本模型服务。")
                     DatabaseSupport()
@@ -159,7 +160,7 @@ private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export
             }
             Text(schema.readOnlyReason ?: "支持安全单行编辑；自增、计算列及主键修改禁用。")
             TextButton(onClick = { showStructure = !showStructure }) { Text(if (showStructure) "收起表结构" else "查看表结构") }
-            if (showStructure) Text(schema.columns.joinToString("\n") { "${it.name} · ${it.typeName}(${it.size},${it.scale})${if (it.primaryKeyOrder > 0) " · PK" else ""}${if (it.nullable) " · NULL" else " · NOT NULL"}${if (it.identity) " · 自增" else ""}" })
+            if (showStructure) TableStructurePanel(schema)
         }
         if (result.totalColumns > result.columns.size) {
             Text("字段 ${result.columnOffset + 1}–${result.columnOffset + result.columns.size} / ${result.totalColumns}" + if (result.tableSchema != null) "；可切换字段组。" else "；查询列数超过显示上限。", style = MaterialTheme.typography.bodySmall)

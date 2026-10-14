@@ -39,13 +39,14 @@ class SpreadsheetSqlServerUiTest {
                 s.execute("DROP TABLE IF EXISTS dbo.ui_grid_v081")
                 s.execute("CREATE TABLE dbo.ui_grid_v081(id int PRIMARY KEY, code nvarchar(64) NULL, amount decimal(24,8) NULL, version rowversion)")
                 s.execute("INSERT dbo.ui_grid_v081(id,code,amount) VALUES(1,N'0007',1234567890123456.12345678)")
+                com.example.datasail.fixture.SqlServerTemporalContract.createTable(c)
             } }
             store.save(listOf(connection))
         }
         override fun after() {
             TableFavoriteStore(context).save(originalFavorites)
             ConnectionStore(context).save(original); PasswordVault(context).delete(connection.id)
-            raw().use { c -> c.createStatement().use { it.execute("DROP TABLE IF EXISTS dbo.ui_grid_v081") } }; config.clear()
+            raw().use { c -> c.createStatement().use { it.execute("DROP TABLE IF EXISTS dbo.ui_grid_v081; DROP TABLE IF EXISTS dbo.ui_temporal_v091") } }; config.clear()
         }
     }
     private val compose = createAndroidComposeRule<MainActivity>()
@@ -95,6 +96,16 @@ class SpreadsheetSqlServerUiTest {
         compose.onNodeWithText("dbo", substring = false).performClick()
         compose.waitUntil(20000) { !model.state.value.busy && model.state.value.tables.any { it.name == "ui_grid_v081" } }
         val table = model.state.value.tables.single { it.name == "ui_grid_v081" }
+        // User regression: listing succeeds, then viewing a table with a date used to disconnect.
+        compose.onNodeWithText("筛选表 / 视图").performScrollTo().performTextReplacement("ui_temporal_v091")
+        compose.onNodeWithTag("object-list").performScrollTo()
+        compose.onNodeWithTag("object-ui_temporal_v091").performClick()
+        compose.waitUntil(20000) { !model.state.value.busy }
+        assertTrue(model.state.value.message, model.state.value.connected)
+        com.example.datasail.fixture.SqlServerTemporalContract.verifyPage(requireNotNull(model.state.value.result))
+        compose.onNodeWithTag("result-grid").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("cell-0-1").performScrollTo().assertTextContains("2024-02-29")
+        compose.onNodeWithText("浏览表 / 视图（", substring = true).performScrollTo().performClick()
         compose.onNodeWithText("筛选表 / 视图").performScrollTo().performTextReplacement("ui_grid_v081")
         compose.onNodeWithTag("object-list").performScrollTo()
         compose.onNodeWithTag("object-ui_grid_v081").performClick()

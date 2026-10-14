@@ -1,0 +1,32 @@
+
+com.example.datasail.SettingsUiTest:.
+com.example.datasail.TablePresentationTest:.
+com.example.datasail.AiNavigationTest:
+Error in unconfiguredAssistantRoutesToSettingsWithoutInlineCredentials(com.example.datasail.AiNavigationTest):
+java.lang.SecurityException: Injecting to another application requires INJECT_EVENTS permission
+	at android.os.Parcel.readException(Parcel.java:1943)
+	at android.os.Parcel.readException(Parcel.java:1889)
+	at android.hardware.input.IInputManager$Stub$Proxy.injectInputEvent(IInputManager.java:548)
+	at android.hardware.input.InputManager.injectInputEvent(InputManager.java:868)
+	at android.app.Instrumentation.sendKeySync(Instrumentation.java:1005)
+	at android.app.Instrumentation.sendKeyDownUpSync(Instrumentation.java:1015)
+	at com.example.datasail.AiNavigationTest.unconfiguredAssistantRoutesToSettingsWithoutInlineCredentials(AiNavigationTest.kt:30)
+
+com.example.datasail.MobileWorkflowTest:.
+
+Time: 116.247
+There was 1 failure:
+1) unconfiguredAssistantRoutesToSettingsWithoutInlineCredentials(com.example.datasail.AiNavigationTest)
+java.lang.SecurityException: Injecting to another application requires INJECT_EVENTS permission
+	at android.os.Parcel.readException(Parcel.java:1943)
+	at android.os.Parcel.readException(Parcel.java:1889)
+	at android.hardware.input.IInputManager$Stub$Proxy.injectInputEvent(IInputManager.java:548)
+	at android.hardware.input.InputManager.injectInputEvent(InputManager.java:868)
+	at android.app.Instrumentation.sendKeySync(Instrumentation.java:1005)
+	at android.app.Instrumentation.sendKeyDownUpSync(Instrumentation.java:1015)
+	at com.example.datasail.AiNavigationTest.unconfiguredAssistantRoutesToSettingsWithoutInlineCredentials(AiNavigationTest.kt:30)
+
+FAILURES!!!
+Tests run: 4,  Failures: 1
+
+

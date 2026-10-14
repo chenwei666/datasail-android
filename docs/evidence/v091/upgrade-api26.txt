@@ -1,0 +1,31 @@
+versions/V0.9.0/apk/DataSail-V0.9.0-debug.apk: 1 file pushed, 0 skipped. 9.3 MB/s (24607434 bytes in 2.536s)
+Performing Push Install
+Success
+    versionCode=14 minSdk=26 targetSdk=36
+    versionName=0.9.0
+Exact com.example.datasail.test APK already installed.
+
+com.example.datasail.UpgradeStateSeedTest:.
+
+Time: 0.808
+
+OK (1 test)
+
+
+app/build/outputs/apk/debug/app-debug.apk: 1 file pushed, 0 skipped. 44.3 MB/s (25574067 bytes in 0.551s)
+Performing Push Install
+Success
+    versionCode=15 minSdk=26 targetSdk=36
+    versionName=0.9.1
+synthetic upgrade marker
+Exact com.example.datasail.test APK already installed.
+
+com.example.datasail.SmokeTest:...
+com.example.datasail.UpgradeTest:.
+com.example.datasail.UpgradeStateVerifyTest:.
+
+Time: 44.084
+
+OK (5 tests)
+
+

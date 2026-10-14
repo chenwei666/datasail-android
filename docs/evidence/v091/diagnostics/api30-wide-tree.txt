@@ -1,0 +1,611 @@
+
+com.example.datasail.TablePresentationTest:
+Error in all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest):
+java.lang.AssertionError: Synthetic wide table: sameModel=true, connected=true, busy=false, message=操作完成, currentResult=64
+Printing with useUnmergedTree = 'false'
+Node #1 at (l=0.0, t=0.0, r=1080.0, b=1920.0)px
+ |-Node #2 at (l=0.0, t=0.0, r=1080.0, b=1920.0)px
+   IsContainer = 'true'
+    |-Node #59 at (l=42.0, t=84.0, r=156.0, b=166.0)px
+    | Text = '[数舟]'
+    | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |-Node #60 at (l=782.0, t=104.0, r=1038.0, b=146.0)px
+    | Text = '[DataSail · V0.9.1]'
+    | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |-Node #61 at (l=42.0, t=166.0, r=826.0, b=212.0)px
+    | Text = '[SQLite · 宽表展示 / main / main · 测试 · 只读 · 已连接]'
+    | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |-Node #111 at (l=42.0, t=212.0, r=172.0, b=258.0)px
+    | Text = '[操作完成]'
+    | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |-Node #113 at (l=42.0, t=269.0, r=358.0, b=374.0)px
+    | Focused = 'false'
+    | Role = 'Button'
+    | Text = '[取消 / 断开连接]'
+    | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    | MergeDescendants = 'true'
+    |-Node #63 at (l=0.0, t=408.0, r=1080.0, b=1584.0)px
+    | IsTraversalGroup = 'true'
+    | VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=2030.0, reverseScrolling=false)'
+    | Actions = [ScrollBy, ScrollByOffset]
+    |  |-Node #116 at (l=42.0, t=450.0, r=256.0, b=513.0)px
+    |  | Text = '[数据库导航]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #118 at (l=42.0, t=550.0, r=1038.0, b=655.0)px, Tag: 'catalog-picker'
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[数据库（1）：main]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #122 at (l=42.0, t=702.0, r=1038.0, b=807.0)px, Tag: 'schema-picker'
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[Schema：main]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #125 at (l=42.0, t=854.0, r=398.0, b=959.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[刷新数据库和对象]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #128 at (l=42.0, t=1006.0, r=476.0, b=1111.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[浏览表 / 视图（2）]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #144 at (l=42.0, t=1168.0, r=179.0, b=1252.0)px, Tag: 'allow-session-write'
+    |  | Role = 'Switch'
+    |  | ToggleableState = 'Off'
+    |  | [Disabled]
+    |  | Actions = [OnClick]
+    |  | MergeDescendants = 'true'
+    |  |-Node #146 at (l=179.0, t=1147.0, r=873.0, b=1210.0)px
+    |  | Text = '[允许本次测试会话写入（单行确认）]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #148 at (l=42.0, t=1320.0, r=273.0, b=1404.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Checkbox'
+    |  | Selected = 'true'
+    |  | Text = '[数据浏览]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #152 at (l=294.0, t=1320.0, r=565.0, b=1404.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Checkbox'
+    |  | Selected = 'false'
+    |  | Text = '[SQL 编辑器]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #171 at (l=42.0, t=1462.0, r=430.0, b=1567.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[导出当前页 CSV]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #174 at (l=42.0, t=1603.0, r=695.0, b=1666.0)px
+    |  | Text = '[main.wide_table · 第 1 行起 · 1 行]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #175 at (l=42.0, t=1692.0, r=1038.0, b=1818.0)px
+    |  | Text = '[单字段最多 2048 字符 / 二进制 256 字节；超限值标记未加载。]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #176 at (l=42.0, t=1855.0, r=253.0, b=1960.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[收藏此表]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #179 at (l=42.0, t=1996.0, r=835.0, b=2059.0)px
+    |  | Text = '[SQLite 导入副本只读；本版不写回源文件]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #180 at (l=42.0, t=2096.0, r=289.0, b=2201.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[查看表结构]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #183 at (l=42.0, t=2237.0, r=534.0, b=2283.0)px
+    |  | Text = '[字段 1–64 / 130；可切换字段组。]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #185 at (l=42.0, t=2320.0, r=289.0, b=2425.0)px
+    |  | Role = 'Button'
+    |  | Text = '[上一组字段]'
+    |  | [Disabled]
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #188 at (l=289.0, t=2320.0, r=536.0, b=2425.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[下一组字段]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #193 at (l=42.0, t=2482.0, r=273.0, b=2566.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[全屏表格]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #197 at (l=294.0, t=2482.0, r=593.0, b=2566.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[显示列 64/64]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #201 at (l=614.0, t=2482.0, r=772.0, b=2566.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Checkbox'
+    |  | Selected = 'false'
+    |  | Text = '[换行]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #205 at (l=793.0, t=2482.0, r=1021.0, b=2566.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[列宽 200]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #209 at (l=42.0, t=2613.0, r=615.0, b=2659.0)px
+    |  | Text = '[点击查看完整已加载值 · 双击可编辑字段]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #210 at (l=42.0, t=2685.0, r=1038.0, b=3116.0)px, Tag: 'result-grid'
+    |  | IsContainer = 'true'
+    |  |  |-Node #211 at (l=42.0, t=2685.0, r=1038.0, b=3116.0)px
+    |  |    Focused = 'false'
+    |  |    HorizontalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=32730.0, reverseScrolling=false)'
+    |  |    IsTraversalGroup = 'true'
+    |  |    Actions = [RequestFocus, ScrollBy, ScrollByOffset]
+    |  |     |-Node #212 at (l=42.0, t=2685.0, r=33768.0, b=2853.0)px
+    |  |     |  |-Node #214 at (l=94.0, t=2748.0, r=116.0, b=2790.0)px
+    |  |     |  | Text = '[#]'
+    |  |     |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |     |  |-Node #215 at (l=189.0, t=2706.0, r=672.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #218 at (l=714.0, t=2706.0, r=1197.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #221 at (l=1239.0, t=2706.0, r=1722.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #224 at (l=1764.0, t=2706.0, r=2247.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #227 at (l=2289.0, t=2706.0, r=2772.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #230 at (l=2814.0, t=2706.0, r=3297.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #233 at (l=3339.0, t=2706.0, r=3822.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #236 at (l=3864.0, t=2706.0, r=4347.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #239 at (l=4389.0, t=2706.0, r=4872.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #242 at (l=4914.0, t=2706.0, r=5397.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #245 at (l=5439.0, t=2706.0, r=5922.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #248 at (l=5964.0, t=2706.0, r=6447.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #251 at (l=6489.0, t=2706.0, r=6972.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #254 at (l=7014.0, t=2706.0, r=7497.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #257 at (l=7539.0, t=2706.0, r=8022.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #260 at (l=8064.0, t=2706.0, r=8547.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #263 at (l=8589.0, t=2706.0, r=9072.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #266 at (l=9114.0, t=2706.0, r=9597.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #269 at (l=9639.0, t=2706.0, r=10122.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #272 at (l=10164.0, t=2706.0, r=10647.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #275 at (l=10689.0, t=2706.0, r=11172.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #278 at (l=11214.0, t=2706.0, r=11697.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #281 at (l=11739.0, t=2706.0, r=12222.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #284 at (l=12264.0, t=2706.0, r=12747.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #287 at (l=12789.0, t=2706.0, r=13272.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #290 at (l=13314.0, t=2706.0, r=13797.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #293 at (l=13839.0, t=2706.0, r=14322.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #296 at (l=14364.0, t=2706.0, r=14847.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #299 at (l=14889.0, t=2706.0, r=15372.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #302 at (l=15414.0, t=2706.0, r=15897.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #305 at (l=15939.0, t=2706.0, r=16422.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #308 at (l=16464.0, t=2706.0, r=16947.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #311 at (l=16989.0, t=2706.0, r=17472.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #314 at (l=17514.0, t=2706.0, r=17997.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #317 at (l=18039.0, t=2706.0, r=18522.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #320 at (l=18564.0, t=2706.0, r=19047.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #323 at (l=19089.0, t=2706.0, r=19572.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #326 at (l=19614.0, t=2706.0, r=20097.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #329 at (l=20139.0, t=2706.0, r=20622.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #332 at (l=20664.0, t=2706.0, r=21147.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #335 at (l=21189.0, t=2706.0, r=21672.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #338 at (l=21714.0, t=2706.0, r=22197.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #341 at (l=22239.0, t=2706.0, r=22722.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #344 at (l=22764.0, t=2706.0, r=23247.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #347 at (l=23289.0, t=2706.0, r=23772.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #350 at (l=23814.0, t=2706.0, r=24297.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #353 at (l=24339.0, t=2706.0, r=24822.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #356 at (l=24864.0, t=2706.0, r=25347.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #359 at (l=25389.0, t=2706.0, r=25872.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #362 at (l=25914.0, t=2706.0, r=26397.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #365 at (l=26439.0, t=2706.0, r=26922.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #368 at (l=26964.0, t=2706.0, r=27447.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #371 at (l=27489.0, t=2706.0, r=27972.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #374 at (l=28014.0, t=2706.0, r=28497.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #377 at (l=28539.0, t=2706.0, r=29022.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #380 at (l=29064.0, t=2706.0, r=29547.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #383 at (l=29589.0, t=2706.0, r=30072.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #386 at (l=30114.0, t=2706.0, r=30597.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #389 at (l=30639.0, t=2706.0, r=31122.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #392 at (l=31164.0, t=2706.0, r=31647.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #395 at (l=31689.0, t=2706.0, r=32172.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #398 at (l=32214.0, t=2706.0, r=32697.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #401 at (l=32739.0, t=2706.0, r=33222.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #404 at (l=33264.0, t=2706.0, r=33747.0, b=2832.0)px
+    |  |     |    Has 2 children
+    |  |     |-Node #407 at (l=42.0, t=2853.0, r=33768.0, b=3116.0)px
+    |  |       CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@89eb1d9'
+    |  |       IsTraversalGroup = 'true'
+    |  |       VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=0.0, reverseScrolling=false)'
+    |  |       Actions = [GetScrollViewportLength, IndexForKey, ScrollBy, ScrollByOffset, ScrollToIndex]
+    |  |        |-Node #431 at (l=42.0, t=2853.0, 
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:52)
+	... 66 trimmed
+Caused by: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:47)
+	... 67 more
+
+
+Time: 51.771
+There was 1 failure:
+1) all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest)
+java.lang.AssertionError: Synthetic wide table: sameModel=true, connected=true, busy=false, message=操作完成, currentResult=64
+Printing with useUnmergedTree = 'false'
+Node #1 at (l=0.0, t=0.0, r=1080.0, b=1920.0)px
+ |-Node #2 at (l=0.0, t=0.0, r=1080.0, b=1920.0)px
+   IsContainer = 'true'
+    |-Node #59 at (l=42.0, t=84.0, r=156.0, b=166.0)px
+    | Text = '[数舟]'
+    | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |-Node #60 at (l=782.0, t=104.0, r=1038.0, b=146.0)px
+    | Text = '[DataSail · V0.9.1]'
+    | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |-Node #61 at (l=42.0, t=166.0, r=826.0, b=212.0)px
+    | Text = '[SQLite · 宽表展示 / main / main · 测试 · 只读 · 已连接]'
+    | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |-Node #111 at (l=42.0, t=212.0, r=172.0, b=258.0)px
+    | Text = '[操作完成]'
+    | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |-Node #113 at (l=42.0, t=269.0, r=358.0, b=374.0)px
+    | Focused = 'false'
+    | Role = 'Button'
+    | Text = '[取消 / 断开连接]'
+    | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    | MergeDescendants = 'true'
+    |-Node #63 at (l=0.0, t=408.0, r=1080.0, b=1584.0)px
+    | IsTraversalGroup = 'true'
+    | VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=2030.0, reverseScrolling=false)'
+    | Actions = [ScrollBy, ScrollByOffset]
+    |  |-Node #116 at (l=42.0, t=450.0, r=256.0, b=513.0)px
+    |  | Text = '[数据库导航]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #118 at (l=42.0, t=550.0, r=1038.0, b=655.0)px, Tag: 'catalog-picker'
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[数据库（1）：main]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #122 at (l=42.0, t=702.0, r=1038.0, b=807.0)px, Tag: 'schema-picker'
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[Schema：main]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #125 at (l=42.0, t=854.0, r=398.0, b=959.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[刷新数据库和对象]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #128 at (l=42.0, t=1006.0, r=476.0, b=1111.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[浏览表 / 视图（2）]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #144 at (l=42.0, t=1168.0, r=179.0, b=1252.0)px, Tag: 'allow-session-write'
+    |  | Role = 'Switch'
+    |  | ToggleableState = 'Off'
+    |  | [Disabled]
+    |  | Actions = [OnClick]
+    |  | MergeDescendants = 'true'
+    |  |-Node #146 at (l=179.0, t=1147.0, r=873.0, b=1210.0)px
+    |  | Text = '[允许本次测试会话写入（单行确认）]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #148 at (l=42.0, t=1320.0, r=273.0, b=1404.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Checkbox'
+    |  | Selected = 'true'
+    |  | Text = '[数据浏览]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #152 at (l=294.0, t=1320.0, r=565.0, b=1404.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Checkbox'
+    |  | Selected = 'false'
+    |  | Text = '[SQL 编辑器]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #171 at (l=42.0, t=1462.0, r=430.0, b=1567.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[导出当前页 CSV]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #174 at (l=42.0, t=1603.0, r=695.0, b=1666.0)px
+    |  | Text = '[main.wide_table · 第 1 行起 · 1 行]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #175 at (l=42.0, t=1692.0, r=1038.0, b=1818.0)px
+    |  | Text = '[单字段最多 2048 字符 / 二进制 256 字节；超限值标记未加载。]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #176 at (l=42.0, t=1855.0, r=253.0, b=1960.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[收藏此表]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #179 at (l=42.0, t=1996.0, r=835.0, b=2059.0)px
+    |  | Text = '[SQLite 导入副本只读；本版不写回源文件]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #180 at (l=42.0, t=2096.0, r=289.0, b=2201.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[查看表结构]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #183 at (l=42.0, t=2237.0, r=534.0, b=2283.0)px
+    |  | Text = '[字段 1–64 / 130；可切换字段组。]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #185 at (l=42.0, t=2320.0, r=289.0, b=2425.0)px
+    |  | Role = 'Button'
+    |  | Text = '[上一组字段]'
+    |  | [Disabled]
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #188 at (l=289.0, t=2320.0, r=536.0, b=2425.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[下一组字段]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #193 at (l=42.0, t=2482.0, r=273.0, b=2566.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[全屏表格]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #197 at (l=294.0, t=2482.0, r=593.0, b=2566.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[显示列 64/64]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #201 at (l=614.0, t=2482.0, r=772.0, b=2566.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Checkbox'
+    |  | Selected = 'false'
+    |  | Text = '[换行]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #205 at (l=793.0, t=2482.0, r=1021.0, b=2566.0)px
+    |  | Focused = 'false'
+    |  | Role = 'Button'
+    |  | Text = '[列宽 200]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+    |  | MergeDescendants = 'true'
+    |  |-Node #209 at (l=42.0, t=2613.0, r=615.0, b=2659.0)px
+    |  | Text = '[点击查看完整已加载值 · 双击可编辑字段]'
+    |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |-Node #210 at (l=42.0, t=2685.0, r=1038.0, b=3116.0)px, Tag: 'result-grid'
+    |  | IsContainer = 'true'
+    |  |  |-Node #211 at (l=42.0, t=2685.0, r=1038.0, b=3116.0)px
+    |  |    Focused = 'false'
+    |  |    HorizontalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=32730.0, reverseScrolling=false)'
+    |  |    IsTraversalGroup = 'true'
+    |  |    Actions = [RequestFocus, ScrollBy, ScrollByOffset]
+    |  |     |-Node #212 at (l=42.0, t=2685.0, r=33768.0, b=2853.0)px
+    |  |     |  |-Node #214 at (l=94.0, t=2748.0, r=116.0, b=2790.0)px
+    |  |     |  | Text = '[#]'
+    |  |     |  | Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+    |  |     |  |-Node #215 at (l=189.0, t=2706.0, r=672.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #218 at (l=714.0, t=2706.0, r=1197.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #221 at (l=1239.0, t=2706.0, r=1722.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #224 at (l=1764.0, t=2706.0, r=2247.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #227 at (l=2289.0, t=2706.0, r=2772.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #230 at (l=2814.0, t=2706.0, r=3297.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #233 at (l=3339.0, t=2706.0, r=3822.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #236 at (l=3864.0, t=2706.0, r=4347.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #239 at (l=4389.0, t=2706.0, r=4872.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #242 at (l=4914.0, t=2706.0, r=5397.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #245 at (l=5439.0, t=2706.0, r=5922.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #248 at (l=5964.0, t=2706.0, r=6447.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #251 at (l=6489.0, t=2706.0, r=6972.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #254 at (l=7014.0, t=2706.0, r=7497.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #257 at (l=7539.0, t=2706.0, r=8022.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #260 at (l=8064.0, t=2706.0, r=8547.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #263 at (l=8589.0, t=2706.0, r=9072.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #266 at (l=9114.0, t=2706.0, r=9597.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #269 at (l=9639.0, t=2706.0, r=10122.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #272 at (l=10164.0, t=2706.0, r=10647.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #275 at (l=10689.0, t=2706.0, r=11172.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #278 at (l=11214.0, t=2706.0, r=11697.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #281 at (l=11739.0, t=2706.0, r=12222.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #284 at (l=12264.0, t=2706.0, r=12747.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #287 at (l=12789.0, t=2706.0, r=13272.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #290 at (l=13314.0, t=2706.0, r=13797.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #293 at (l=13839.0, t=2706.0, r=14322.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #296 at (l=14364.0, t=2706.0, r=14847.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #299 at (l=14889.0, t=2706.0, r=15372.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #302 at (l=15414.0, t=2706.0, r=15897.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #305 at (l=15939.0, t=2706.0, r=16422.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #308 at (l=16464.0, t=2706.0, r=16947.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #311 at (l=16989.0, t=2706.0, r=17472.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #314 at (l=17514.0, t=2706.0, r=17997.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #317 at (l=18039.0, t=2706.0, r=18522.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #320 at (l=18564.0, t=2706.0, r=19047.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #323 at (l=19089.0, t=2706.0, r=19572.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #326 at (l=19614.0, t=2706.0, r=20097.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #329 at (l=20139.0, t=2706.0, r=20622.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #332 at (l=20664.0, t=2706.0, r=21147.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #335 at (l=21189.0, t=2706.0, r=21672.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #338 at (l=21714.0, t=2706.0, r=22197.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #341 at (l=22239.0, t=2706.0, r=22722.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #344 at (l=22764.0, t=2706.0, r=23247.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #347 at (l=23289.0, t=2706.0, r=23772.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #350 at (l=23814.0, t=2706.0, r=24297.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #353 at (l=24339.0, t=2706.0, r=24822.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #356 at (l=24864.0, t=2706.0, r=25347.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #359 at (l=25389.0, t=2706.0, r=25872.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #362 at (l=25914.0, t=2706.0, r=26397.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #365 at (l=26439.0, t=2706.0, r=26922.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #368 at (l=26964.0, t=2706.0, r=27447.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #371 at (l=27489.0, t=2706.0, r=27972.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #374 at (l=28014.0, t=2706.0, r=28497.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #377 at (l=28539.0, t=2706.0, r=29022.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #380 at (l=29064.0, t=2706.0, r=29547.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #383 at (l=29589.0, t=2706.0, r=30072.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #386 at (l=30114.0, t=2706.0, r=30597.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #389 at (l=30639.0, t=2706.0, r=31122.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #392 at (l=31164.0, t=2706.0, r=31647.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #395 at (l=31689.0, t=2706.0, r=32172.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #398 at (l=32214.0, t=2706.0, r=32697.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #401 at (l=32739.0, t=2706.0, r=33222.0, b=2832.0)px
+    |  |     |  | Has 2 children
+    |  |     |  |-Node #404 at (l=33264.0, t=2706.0, r=33747.0, b=2832.0)px
+    |  |     |    Has 2 children
+    |  |     |-Node #407 at (l=42.0, t=2853.0, r=33768.0, b=3116.0)px
+    |  |       CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@89eb1d9'
+    |  |       IsTraversalGroup = 'true'
+    |  |       VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=0.0, reverseScrolling=false)'
+    |  |       Actions = [GetScrollViewportLength, IndexForKey, ScrollBy, ScrollByOffset, ScrollToIndex]
+    |  |        |-Node #431 at (l=42.0, t=2853.0, 
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:52)
+	... 66 trimmed
+Caused by: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:47)
+	... 67 more
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+

@@ -7,6 +7,15 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class SqlServerIntegrationTest {
+    @Test fun temporalValuesPreservePrecisionWithoutDesktopOnlyApis() {
+        connect().use { connection ->
+            com.example.datasail.fixture.SqlServerTemporalContract.createTable(connection)
+            try { SqlServerSession(connection, profile()).use { session ->
+                com.example.datasail.fixture.SqlServerTemporalContract.verify(session)
+                com.example.datasail.fixture.SqlServerTemporalContract.verifyPage(session.page(session.tables("dbo").single { it.name == "ui_temporal_v091" }))
+            } } finally { connect().use { it.createStatement().use { s -> s.execute("DROP TABLE IF EXISTS dbo.ui_temporal_v091") } } }
+        }
+    }
     private val config = Properties().apply { File(System.getProperty("datasail.sqlserver.config")).inputStream().use(::load) }
     private fun profile(host: String = "localhost", trusted: Boolean = true) = ConnectionProfile(DatabaseKind.SQL_SERVER,
         host, config.getProperty("port").toInt(), "master", "sa", trustStore = if (trusted) TrustStoreSpec(System.getProperty("datasail.sqlserver.trust")) else null)

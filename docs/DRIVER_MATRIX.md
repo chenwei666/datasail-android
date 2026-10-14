@@ -1,10 +1,10 @@
-# V0.9.0 驱动与能力矩阵
+# V0.9.1 驱动与能力矩阵
 
 当前实际实现十种连接类型；下表区分功能实现与测试证据。完整验收命令和系统范围见 TEST_REPORT。
 
 | 引擎 | 驱动 | 工作台实现 | 图形写入 | 特有约束 |
 |---|---|---|---|---|
-| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.1 / MIT | 库、Schema、表/视图、字段、分页、SELECT | 测试环境单元格/单行预览确认 | 现有保护保持，生产只读 |
+| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.2 / MIT | 库、Schema、表/视图、字段、分页、SELECT | 测试环境单元格/单行预览确认 | 现有保护保持，生产只读 |
 | MySQL | MariaDB Connector/J 3.5.10 / LGPL-2.1-or-later | 库、表/视图、字段、主键分页、SELECT | 未开放 | 每操作服务器只读事务；无符号 BIGINT 用精确 Decimal |
 | MariaDB | 同上，独立服务器验收 | 同上 | 未开放 | 不以复用驱动推断兼容 |
 | PostgreSQL | pgjdbc 42.7.14 / BSD-2-Clause | Schema、表/视图、字段、主键分页、SELECT | 未开放 | 一连接一库；参数化系统目录绕开 Android 缺少的 closeOnCompletion |
@@ -44,3 +44,5 @@ V0.7.1 增加九种网络引擎的服务器发现入口；SQLite 继续使用文
 V0.8.1 没有变更驱动或协议；SQL 元数据导航与表收藏实际测试范围见本轮 TEST_REPORT。历史跨引擎结果不计为新界面的全部实连验收。
 
 V0.9.0 SQL page 接口增加列窗口，所有 SQL 引擎复用相同的 64 列范围校验；SQL Server / SQLite 本轮实测最后一组字段，其它引擎以本轮测试报告为准，不沿用历史结果冒充新功能实测。AI 协议独立于数据库驱动，见 AI_ASSISTANT。
+
+V0.9.1 SQL Server 源码适配更新到 datasail.2：修复 DDC 调用 Android 缺少的 java.sql / java.time 转换方法，避免含日期字段的表查看失败并断连。用真实 SQL Server 合成日期表验证；未变更 TLS 或写入策略。AI 设置导航和已加载字段属性展示同步完善。其它网络引擎未重跑；当前设备范围与实际结果见 TEST_REPORT。

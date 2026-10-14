@@ -1,17 +1,24 @@
 {
-  "profile": "13.6.0.jre8-datasail.1",
+  "profile": "13.6.0.jre8-datasail.2",
   "sourceSha256": "317ba534f470fbceefcf6c0db3465a4fda413b2fd023dfa60b1b16ec3e800728",
   "binarySha256": "79da517f86a982f0c371f804ba06305708c43923786386c2582c81cb3e4ae648",
   "sources": {
     "com/microsoft/sqlserver/jdbc/SQLServerCertificateUtils.java": "6b319482702da33bf5b5089ad02b4442b692399fc8d2306d8ae514f8eea49c11",
     "com/microsoft/sqlserver/jdbc/MaxResultBufferParser.java": "5710c48d1263cadbc4d7997cc824fee37a8b0b412b8ef637e51ce49395703ff6",
-    "com/microsoft/sqlserver/jdbc/SQLServerSQLXML.java": "258788041b86709bdf9b3a4d7c0b5a8fcccc705f2bf34c88cb073f8f7fc6618d"
+    "com/microsoft/sqlserver/jdbc/SQLServerSQLXML.java": "258788041b86709bdf9b3a4d7c0b5a8fcccc705f2bf34c88cb073f8f7fc6618d",
+    "com/microsoft/sqlserver/jdbc/DDC.java": "c2a6d9552a8b7e72ecc371904bc103fe0d3820b32f46a8a2b5d4966752398026"
   },
   "classes": [
     "MaxResultBufferParser",
     "SQLServerCertificateUtils",
     "SQLServerSQLXML",
     "ByteArrayOutputStreamToInputStream",
-    "SQLServerEntityResolver"
+    "SQLServerEntityResolver",
+    "DDC",
+    "DDC$1",
+    "AsciiFilteredInputStream",
+    "AsciiFilteredUnicodeInputStream",
+    "StreamSetterArgs",
+    "InputStreamGetterArgs"
   ]
 }

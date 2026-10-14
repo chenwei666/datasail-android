@@ -62,3 +62,5 @@ Android SASL API 补充模块 `sasl-android`：只包含 Apache Harmony 的未�
 ## V0.6.0 搜索实现
 
 APK 未新增第三方依赖：HTTP/TLS 使用 Java/Android 平台，JSON/DSL 与搜索能力代码为本项目 Apache-2.0。验证服务器来自 Docker Hub 官方 `library/elasticsearch:8.19.5`（Elastic License 2.0 的发行包）和 `opensearchproject/opensearch:2.19.4`（Apache-2.0 项目，镜像含各组件许可证），固定 amd64 manifest SHA256 见 DRIVER_MATRIX/evidence。服务器镜像仅为隔离测试环境，不打包或重新分发进 APK/源码 ZIP；未把 Elasticsearch 服务端发行版称作 Apache 许可客户端依赖。版本验证不代表最新版或所有服务版本支持。
+
+V0.9.1 派生版本更新为 `13.6.0.jre8-datasail.2`，同一锁定上游增加 DDC 日期转换源码适配；修改沿用上游 MIT 许可。精确源码和补丁哈希见 upstream.lock.json 与交付 manifest。

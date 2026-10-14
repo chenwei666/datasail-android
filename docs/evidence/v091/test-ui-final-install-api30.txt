@@ -1,0 +1,3 @@
+app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk: 1 file pushed, 0 skipped. 519.5 MB/s (1193920 bytes in 0.002s)
+Performing Push Install
+Success

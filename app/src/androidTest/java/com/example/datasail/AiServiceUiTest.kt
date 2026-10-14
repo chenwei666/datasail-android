@@ -60,7 +60,9 @@ class AiServiceUiTest {
         compose.waitUntil(10000) { workspace.state.value.result != null }
         val originalSql = workspace.draftSql.value
         compose.onNodeWithText("AI 助手").performClick()
-        compose.onNodeWithText("管理服务与模型").performScrollTo().performClick()
+        compose.onNodeWithTag("ai-endpoint").assertDoesNotExist()
+        compose.onNodeWithTag("ai-key").assertDoesNotExist()
+        compose.onNodeWithText("前往 AI 设置").performScrollTo().performClick()
         assertTrue("AI must be enabled", ai.state.value.preferences.enabled)
         assertEquals(profile, ai.state.value.preferences.active)
         compose.onNodeWithText("获取上游模型").performScrollTo().assertIsDisplayed().assertIsEnabled()
@@ -73,7 +75,9 @@ class AiServiceUiTest {
         compose.onNodeWithText("fixture-model").performClick()
         compose.onNodeWithText("保存服务").performScrollTo().performClick()
         compose.waitUntil(10000) { !ai.state.value.busy && ai.state.value.preferences.active?.model == "fixture-model" }
-        compose.onNodeWithText("收起服务配置").performScrollTo().performClick()
+        compose.onNodeWithText("打开 AI 助手").performScrollTo().performClick()
+        compose.onNodeWithTag("ai-endpoint").assertDoesNotExist()
+        compose.onNodeWithTag("ai-model").assertDoesNotExist()
         compose.onNodeWithTag("ai-prompt").performScrollTo().performTextInput("请生成只读查询")
         compose.onNodeWithTag("ai-include-structure").performScrollTo().performClick()
         compose.onNodeWithText("预览发送内容").performScrollTo().performClick()

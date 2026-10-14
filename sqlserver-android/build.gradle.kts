@@ -18,19 +18,19 @@ sourceSets.main { java.srcDir(generated) }
 tasks.compileJava { dependsOn(prepareProfile) }
 tasks.jar {
     archiveBaseName.set("mssql-jdbc-android")
-    archiveVersion.set("13.6.0.jre8-datasail.1")
+    archiveVersion.set("13.6.0.jre8-datasail.2")
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
     duplicatesStrategy = DuplicatesStrategy.FAIL
     from({ zipTree(upstream.singleFile) }) {
         exclude("META-INF/MANIFEST.MF", "META-INF/MSFTSIG.SF", "META-INF/MSFTSIG.RSA")
-        listOf("MaxResultBufferParser", "SQLServerCertificateUtils", "SQLServerSQLXML", "ByteArrayOutputStreamToInputStream", "SQLServerEntityResolver").forEach {
+        listOf("MaxResultBufferParser", "SQLServerCertificateUtils", "SQLServerSQLXML", "ByteArrayOutputStreamToInputStream", "SQLServerEntityResolver", "DDC", "DDC\$1", "AsciiFilteredInputStream", "AsciiFilteredUnicodeInputStream", "StreamSetterArgs", "InputStreamGetterArgs").forEach {
             exclude("com/microsoft/sqlserver/jdbc/$it.class")
         }
     }
     from("upstream.lock.json") { into("META-INF"); rename { "datasail-profile.json" } }
     from(rootProject.file("docs/licenses/mssql-jdbc-LICENSE.txt")) { into("META-INF"); rename { "LICENSE" } }
-    manifest { attributes("Implementation-Title" to "DataSail SQL Server Android profile", "Implementation-Version" to "13.6.0.jre8-datasail.1") }
+    manifest { attributes("Implementation-Title" to "DataSail SQL Server Android profile", "Implementation-Version" to "13.6.0.jre8-datasail.2") }
 }
 val profile by configurations.creating { isCanBeConsumed = true; isCanBeResolved = false }
 val verifyProfile by tasks.registering(Exec::class) {

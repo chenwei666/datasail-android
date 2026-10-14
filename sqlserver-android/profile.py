@@ -51,7 +51,7 @@ def verify(binary, profile):
             require(name in new, "Missing replacement: " + name)
             require(not any(ref in built.read(name) for ref in forbidden), "Unsupported reference remains: " + name)
         require(json.loads(built.read("META-INF/datasail-profile.json")) == LOCK, "Profile provenance mismatch")
-    print("Profile verified: 5 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.")
+    print(f"Profile verified: {len(replaced)} source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.")
 
 if __name__ == "__main__":
     mode, binary, destination = sys.argv[1:]

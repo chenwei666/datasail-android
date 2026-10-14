@@ -1,0 +1,45 @@
+{
+  "version": "0.9.1",
+  "versionCode": 15,
+  "finalApkSha256": "36280880c9e0f4d76079c856c3c9d3568b1b3cfd20fdf7d091f526255cd43d8b",
+  "androidTestApkSha256": "fc3c99a783cec341c03dc2340a18a242e01dca7c6eb185583d463082c7b6c8ff",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest"
+  ],
+  "jvmTests": {
+    "core-unit": 72,
+    "app-unit": 13,
+    "driver-profile": 14,
+    "sqlserver": 17
+  },
+  "androidTests": {
+    "upgrade-api26.txt": 5,
+    "mobile-api26.txt": 4,
+    "ai-emulator-5556.txt": 2,
+    "SQL_SERVER/android-emulator-5556.txt": 3,
+    "upgrade-api30.txt": 5,
+    "mobile-api30.txt": 4,
+    "ai-emulator-5554.txt": 2,
+    "SQL_SERVER/android-emulator-5554.txt": 3
+  },
+  "previousVersionUpgradeSeedTests": {
+    "api26": 1,
+    "api30": 1
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "SQL Server date read NoSuchMethodError reproduced on API26 before fix. Android-compatible DDC conversions; six temporal types, NULL, precision, real table navigation and existing editing on SQL Server. AI configuration moved to Settings, three synthetic HTTPS protocols and draft-only handoff. Searchable/filtered/copyable table metadata on 130-column SQLite. API26/API30 V0.9.0 install-r upgrade retaining database and AI credentials/settings/favorites.",
+  "unverified": [
+    "physical/arm64",
+    "user database server and unknown field types",
+    "live AI vendor accounts and billing",
+    "proprietary IAM/Azure/Responses/multimodal protocols",
+    "other database engines not rerun in this patch",
+    "full DBeaver functionality or production editing",
+    "fresh cloud restore of V0.9.1"
+  ]
+}

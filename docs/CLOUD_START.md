@@ -36,12 +36,13 @@ bash scripts/test-search-local.sh ELASTICSEARCH
 bash scripts/test-search-local.sh OPENSEARCH
 ```
 
-Live emulators/processes do not survive environment publication reliably. Inspect `adb devices`; if absent, start the existing AVDs in the background with output redirected outside tracked source:
+Live emulators/processes do not survive environment publication reliably. Inspect `adb devices`; if absent, start one existing AVD with output redirected outside tracked source. Use API26 first; do not run both TCG emulators concurrently:
 
 ```bash
-"$ANDROID_HOME/emulator/emulator" -avd datasail-api30 -port 5554 -no-window -no-audio -no-boot-anim -no-snapshot -accel off -gpu swiftshader_indirect -cores 2 -memory 2048 > /tmp/datasail-api30.log 2>&1 &
 "$ANDROID_HOME/emulator/emulator" -avd datasail-api26 -port 5556 -no-window -no-audio -no-boot-anim -no-snapshot -accel off -gpu swiftshader_indirect -cores 2 -memory 1536 > /tmp/datasail-api26.log 2>&1 &
 ```
+
+After API26 tests finish, stop that emulator with `adb -s emulator-5556 emu kill` and wait for its process to exit. Then start the same command with AVD `datasail-api30`, port `5554`, memory `2048` and a separate `/tmp/datasail-api30.log`. Never stop an emulator owned by another task.
 
 Wait for each device's `sys.boot_completed=1`, then check API/fingerprint. No KVM is available; TCG can take minutes. Use short readiness polls, report progress, and do not compile heavily during deadline-sensitive ART tests. Run instrumentation/upgrade/Gradle device operations serially. Enable real fixture Android tests with `DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5556` (or 5554). MongoDB `DATASAIL_SKIP_JVM=1` skips only the already-verified JVM repeat; it is never evidence of JVM success.
 
@@ -83,3 +84,8 @@ V0.9.0 validation observed an API30 AOSP system_server watchdog during an instal
 During final V0.9.0 verification, two concurrently cold-started TCG emulators both showed a SystemUI ANR dialog over the app; sys.boot_completed and passing individual nonvisibility assertions did not reveal the obstruction. Start only one AVD at a time on this host, inspect `adb shell dumpsys window` for an `Application Not Responding` focused window before UI verification, preserve system diagnostics, and restart only the disposable emulator when needed. Stop that AVD before starting the next. Do not dismiss this as an application TLS failure, disable ANR handling, or remove UI visibility assertions. A certificate test retains a bounded wait for automatic visibility because StateFlow completion precedes Compose scroll completion.
 
 A single cold start can still produce the SystemUI dialog after installation begins. Reboot alone did not prevent it in this run. Preserve a screenshot and window diagnostics; selecting the system-provided Wait action on the disposable emulator allowed the UI to recover. Confirm the app regains focus before continuing UI checks. Do not count a hidden visibility assertion as passed or disable system ANR handling.
+
+
+V0.9.1 moves AI endpoint/key/model configuration into Settings and adds searchable table-column metadata. The upgrade baseline is now immutable V0.9.0/code14; UpgradeStateSeedTest also seeds the previous AI profile and separately scoped synthetic key. Generic selected regression classes are SettingsUiTest, TablePresentationTest, AiNavigationTest and MobileWorkflowTest (4 checks), plus upgrade 5 and AI HTTPS 2 on each API. AI and SQL Server scripts write v091 evidence; preserve all older evidence.
+
+The SQL Server Android profile is now 13.6.0.jre8-datasail.2, built from the same checksum-locked upstream. DDC used desktop-only Timestamp.valueOf(LocalDateTime) and corresponding Date/Time methods; an actual API26 date read reproduced NoSuchMethodError before the fix. The source overlay uses Android-compatible constructors and Formatter input, with 14 profile JVM checks. SqlServerTemporalContract verifies six temporal types, NULL and nanosecond text precision; SpreadsheetSqlServerUiTest opens an actual date table through catalog/table controls and then continues the original edit workflow. Run scripts/test-sqlserver-local.sh with DATASAIL_ANDROID_TESTS=1 for each selected API after the final build. No business server or real model credential is needed. Current pass/fail scope belongs in TEST_REPORT, not inferred from these instructions.

@@ -256,3 +256,114 @@
      private SAXResult getSAXResult() throws SQLException {
          TransformerHandler handler = null;
          try {
+--- a/com/microsoft/sqlserver/jdbc/DDC.java
++++ b/com/microsoft/sqlserver/jdbc/DDC.java
+@@ -35,6 +35,24 @@
+  */
+ 
+ final class DDC {
++
++    // Android java.sql has no java.time overloads. These constructors implement the same
++    // local calendar fields as the JDK valueOf overloads, including nanosecond precision.
++    @SuppressWarnings("deprecation")
++    private static java.sql.Timestamp timestampFromLocal(LocalDateTime value) {
++        return new java.sql.Timestamp(value.getYear() - 1900, value.getMonthValue() - 1,
++                value.getDayOfMonth(), value.getHour(), value.getMinute(), value.getSecond(), value.getNano());
++    }
++
++    @SuppressWarnings("deprecation")
++    private static java.sql.Date dateFromLocal(LocalDate value) {
++        return new java.sql.Date(value.getYear() - 1900, value.getMonthValue() - 1, value.getDayOfMonth());
++    }
++
++    @SuppressWarnings("deprecation")
++    private static java.sql.Time timeFromLocal(LocalTime value) {
++        return new java.sql.Time(value.getHour(), value.getMinute(), value.getSecond());
++    }
+ 
+     private DDC() {
+         throw new UnsupportedOperationException(SQLServerException.getErrString("R_notSupported"));
+@@ -1169,7 +1187,8 @@
+                                 cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE),
+                                 cal.get(Calendar.SECOND), subSecondNanos);
+                     } else {
+-                        return ts2.toLocalDateTime();
++                        return LocalDateTime.of(ts2.getYear() + 1900, ts2.getMonth() + 1, ts2.getDate(),
++                                ts2.getHours(), ts2.getMinutes(), ts2.getSeconds(), ts2.getNanos());
+                     }
+                 }
+                 return ts2;
+@@ -1293,11 +1312,11 @@
+             case SQL_VARIANT:
+                 switch (ssType) {
+                     case DATE:
+-                        return java.sql.Date.valueOf(ldt.toLocalDate());
++                        return dateFromLocal(ldt.toLocalDate());
+ 
+                     case DATETIME:
+                     case DATETIME2:
+-                        java.sql.Timestamp ts = java.sql.Timestamp.valueOf(ldt);
++                        java.sql.Timestamp ts = timestampFromLocal(ldt);
+                         ts.setNanos(subSecondNanos);
+                         return ts;
+ 
+@@ -1305,7 +1324,7 @@
+                         if (subSecondNanos % Nanos.PER_MILLISECOND >= Nanos.PER_MILLISECOND / 2) {
+                             ldt = ldt.plusNanos(1000000);
+                         }
+-                        java.sql.Time t = java.sql.Time.valueOf(ldt.toLocalTime());
++                        java.sql.Time t = timeFromLocal(ldt.toLocalTime());
+                         t.setTime(t.getTime() + (ldt.getNano() / Nanos.PER_MILLISECOND));
+                         return t;
+ 
+@@ -1317,13 +1336,13 @@
+                 }
+ 
+             case DATE:
+-                return java.sql.Date.valueOf(ldt.toLocalDate());
++                return dateFromLocal(ldt.toLocalDate());
+ 
+             case TIME:
+                 if (subSecondNanos % Nanos.PER_MILLISECOND >= Nanos.PER_MILLISECOND / 2) {
+                     ldt = ldt.plusNanos(1000000);
+                 }
+-                java.sql.Time t = java.sql.Time.valueOf(ldt.toLocalTime());
++                java.sql.Time t = timeFromLocal(ldt.toLocalTime());
+                 t.setTime(t.getTime() + (ldt.getNano() / Nanos.PER_MILLISECOND));
+                 return t;
+ 
+@@ -1332,7 +1351,7 @@
+                     return ldt;
+                 }
+ 
+-                java.sql.Timestamp ts = java.sql.Timestamp.valueOf(ldt);
++                java.sql.Timestamp ts = timestampFromLocal(ldt);
+                 ts.setNanos(subSecondNanos);
+                 return ts;
+ 
+@@ -1340,19 +1359,20 @@
+                 switch (ssType) {
+                     case DATE:
+                         return String.format(Locale.US, "%1$tF", // yyyy-mm-dd
+-                                java.sql.Timestamp.valueOf(ldt));
++                                timestampFromLocal(ldt));
+ 
+                     case TIME:
+-                        return String.format(Locale.US, "%1$tT%2$s", // hh:mm:ss[.nnnnnnn]
+-                                ldt, fractionalSecondsString(subSecondNanos, fractionalSecondsScale));
++                        return String.format(Locale.US, "%1$02d:%2$02d:%3$02d%4$s", // wall-clock hh:mm:ss[.nnnnnnn]
++                                ldt.getHour(), ldt.getMinute(), ldt.getSecond(),
++                                fractionalSecondsString(subSecondNanos, fractionalSecondsScale));
+ 
+                     case DATETIME2:
+                         return String.format(Locale.US, "%1$tF %1$tT%2$s", // yyyy-mm-dd hh:mm:ss[.nnnnnnn]
+-                                java.sql.Timestamp.valueOf(ldt),
++                                timestampFromLocal(ldt),
+                                 fractionalSecondsString(subSecondNanos, fractionalSecondsScale));
+ 
+                     case DATETIME: // and SMALLDATETIME
+-                        return (java.sql.Timestamp.valueOf(ldt)).toString();
++                        return (timestampFromLocal(ldt)).toString();
+ 
+                     default:
+                         MessageFormat form = new MessageFormat(

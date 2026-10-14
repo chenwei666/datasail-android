@@ -1,0 +1,8 @@
+{
+  "mainApkSha256": "36280880c9e0f4d76079c856c3c9d3568b1b3cfd20fdf7d091f526255cd43d8b",
+  "initialPipeline": "final-device-api26.log",
+  "initialSqlUiFailure": "diagnostics/sqlserver-ui-reopen-list-api26.log",
+  "correction": "Test now clicks the visible reopen-object-list button before selecting the next table. Main APK unchanged.",
+  "successfulRerun": "SQL_SERVER/android-emulator-5556.txt",
+  "rerunExitCode": 0
+}

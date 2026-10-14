@@ -8,7 +8,10 @@ import org.junit.Test
 class UpgradeStateSeedTest {
     @Test fun seedPreviousVersionPasswordAndSettings() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("0.8.1", context.packageManager.getPackageInfo(context.packageName, 0).versionName)
+        assertEquals("0.9.0", context.packageManager.getPackageInfo(context.packageName, 0).versionName)
+        val ai = AiProfile(id = "upgrade-ai", name = "升级 AI", endpoint = "https://example.com/v1", model = "fixture-model")
+        AiStore(context).save(AiPreferences(true, ai.id, listOf(ai)))
+        PasswordVault(context, "ai-keys-v1").saveBound(ai.id, ai.binding, "synthetic-ai-upgrade-only".toCharArray())
         val connection = ConnectionStore(context).load().single { it.id == "upgrade-fixture" }
         val secret = "synthetic-upgrade-only".toCharArray()
         try { PasswordVault(context).save(connection, secret) } finally { secret.fill('\u0000') }
@@ -19,7 +22,7 @@ class UpgradeStateSeedTest {
 class UpgradeStateVerifyTest {
     @Test fun passwordAndSettingsSurviveInPlaceUpgrade() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("0.9.0", context.packageManager.getPackageInfo(context.packageName, 0).versionName)
+        assertEquals("0.9.1", context.packageManager.getPackageInfo(context.packageName, 0).versionName)
         val connection = ConnectionStore(context).load().single { it.id == "upgrade-fixture" }
         val secret = PasswordVault(context).load(connection)
         try { assertArrayEquals("synthetic-upgrade-only".toCharArray(), secret) } finally { secret?.fill('\u0000') }
@@ -27,7 +30,13 @@ class UpgradeStateVerifyTest {
         assertTrue(AppSettingsStore(context).load().defaultProduction)
         assertFalse(connection.allowExternalAi)
         assertEquals("upgrade_table", TableFavoriteStore(context).load().single().name)
-        assertFalse(AiStore(context).load().enabled)
+        val ai = AiStore(context).load()
+        assertTrue(ai.enabled)
+        assertEquals("fixture-model", ai.active!!.model)
+        val aiSecret = PasswordVault(context, "ai-keys-v1").loadBound(ai.active!!.id, ai.active!!.binding)
+        try { assertArrayEquals("synthetic-ai-upgrade-only".toCharArray(), aiSecret) } finally { aiSecret?.fill('\u0000') }
+        PasswordVault(context, "ai-keys-v1").delete(ai.active!!.id)
+        AiStore(context).save(AiPreferences())
         assertEquals(200, AppSettingsStore(context).load().columnWidth)
         // Restore defaults only for the synthetic test suite that follows.
         AppSettingsStore(context).save(AppSettings())
