@@ -33,7 +33,7 @@ data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val ha
 }
 data class ResultColumn(val name: String, val typeName: String, val jdbcType: Int)
 data class ResultPage(val columns: List<ResultColumn>, val rows: List<List<DbValue>>, val hasMore: Boolean,
-    val offset: Int = 0, val tableSchema: TableSchema? = null, val stableOrder: Boolean = false, val columnOffset: Int = 0, val totalColumns: Int = columns.size)
+    val offset: Int = 0, val tableSchema: TableSchema? = null, val stableOrder: Boolean = false, val columnOffset: Int = 0, val totalColumns: Int = columns.size, val view: TableView = TableView())
 enum class MutationKind(val label: String) { INSERT("新增"), UPDATE("修改"), DELETE("删除") }
 data class CellInput(val text: String = "", val isNull: Boolean = false)
 data class ChangePreview(val column: String, val before: String?, val after: String?)

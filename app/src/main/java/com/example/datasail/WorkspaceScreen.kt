@@ -195,7 +195,7 @@ private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiS
                 }
             }
             if (result.rows.isEmpty()) Text("没有记录。")
-            ResultGrid(result, state, settings, { selected = it }, { row, inputs -> model.preview(MutationKind.UPDATE, row, inputs) })
+            ResultGrid(result, state, settings, { selected = it }, { row, inputs -> model.preview(MutationKind.UPDATE, row, inputs) }, changeView = result.tableSchema?.let { schema -> { view -> model.page(schema.table, view = view) } })
         } else if (tab == 0) {
             Text("选择表后浏览或编辑数据，也可以切换到 SQL 编辑器编写查询。")
             Button(onClick = { showObjects = true }) { Text("选择表") }

@@ -153,22 +153,23 @@ class JdbcBrowseSession(private val connection: Connection, override val profile
         val q = if (mysql) "`" else "\""
         return q + name.replace(q, q + q) + q
     }
-    override fun page(table: TableRef, offset: Int, columnOffset: Int): ResultPage {
+    override fun page(table: TableRef, offset: Int, columnOffset: Int, view: TableView): ResultPage {
         require(offset in 0..1_000_000)
         val schema = describe(table)
         if (offset != 0 && schema.keys.isEmpty()) throw WorkspaceRejected("没有主键，仅显示首页")
         val columns = TableColumns.window(schema, columnOffset).joinToString(",") { quote(it.name) }
-        val order = if (schema.keys.isEmpty()) "" else " ORDER BY " + schema.keys.joinToString(",") { quote(it.name) }
-        return query("SELECT $columns FROM ${quote(table.schema)}.${quote(table.name)}$order LIMIT 101 OFFSET $offset", offset, schema).copy(columnOffset = columnOffset, totalColumns = schema.columns.size)
+        val compiled = TableViews.compile(schema, view, ::quote)
+        return query("SELECT $columns FROM ${quote(table.schema)}.${quote(table.name)}${compiled.where}${compiled.order} LIMIT 101 OFFSET $offset", offset, schema, compiled.parameters).copy(columnOffset = columnOffset, totalColumns = schema.columns.size, view = view)
     }
     override fun select(sql: String): ResultPage = query(ReadQueryPolicy.validate(sql, profile.kind), 0, null)
-    private fun query(sql: String, offset: Int, schema: TableSchema?): ResultPage = transaction {
+    private fun query(sql: String, offset: Int, schema: TableSchema?, parameters: List<Any> = emptyList()): ResultPage = transaction {
         connection.prepareStatement(sql).use { statement ->
             statementChanged(statement)
             try {
                 statement.queryTimeout = 10
                 statement.maxRows = 101
                 statement.fetchSize = 100
+                parameters.forEachIndexed { index, value -> statement.setObject(index + 1, value) }
                 statement.executeQuery().use { JdbcResultReader.read(it, offset, schema) }
             } finally { statementChanged(null) }
         }

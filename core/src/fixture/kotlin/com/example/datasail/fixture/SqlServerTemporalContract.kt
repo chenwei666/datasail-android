@@ -51,6 +51,11 @@ object SqlServerTemporalContract {
         check(session.confirm(restore.token).status == MutationStatus.COMMITTED)
         session.setWritable(false)
         verifyPage(session.page(table))
+        val filters = listOf(ColumnFilter("day_value", FilterOperator.EQ, "2024-02-29"),
+            ColumnFilter("precise_value", FilterOperator.EQ, "2024-02-29T12:34:56.1234567"),
+            ColumnFilter("offset_value", FilterOperator.EQ, "2024-02-29T12:34:56.1234567+07:00"),
+            ColumnFilter("clock_value", FilterOperator.GT, "23:59:58"))
+        check(session.page(table, view = TableView(filters)).rows.single()[0] == DbValue.Integer(1))
     }
 
     fun verify(session: SqlServerSession) {

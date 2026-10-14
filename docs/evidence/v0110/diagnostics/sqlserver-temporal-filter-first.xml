@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.SqlServerIntegrationTest" tests="21" skipped="0" failures="1" errors="0" timestamp="2026-10-14T06:52:23.966Z" hostname="b6e64093f9ae" time="7.044">
+  <properties/>
+  <testcase name="lostCommitAcknowledgementIsUnknownAndNeverReplayed" classname="com.example.datasail.core.SqlServerIntegrationTest" time="1.03"/>
+  <testcase name="collationAndTrailingSpaceChangesAreConflictsWithoutRowversion" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.215"/>
+  <testcase name="wideTableLastWindowIsVisibleAndCannotBeEdited" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.14"/>
+  <testcase name="aiReadAndSingleRowCrudUsePreviewTokensAndOriginalValueConflictChecks" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.194"/>
+  <testcase name="partialOperationFailureReportsActualCatalogAndReadOnlyState" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.079"/>
+  <testcase name="wrongHostnameAndUntrustedCaRejected" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.061"/>
+  <testcase name="temporalValuesPreservePrecisionWithoutDesktopOnlyApis" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.184">
+    <failure message="com.microsoft.sqlserver.jdbc.SQLServerException: The data types time and datetime are incompatible in the greater than operator." type="com.microsoft.sqlserver.jdbc.SQLServerException">com.microsoft.sqlserver.jdbc.SQLServerException: The data types time and datetime are incompatible in the greater than operator.
+	at app//com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:404)
+	at app//com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:2064)
+	at app//com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:833)
+	at app//com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:730)
+	at app//com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:8005)
+	at app//com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:5138)
+	at app//com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:370)
+	at app//com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:288)
+	at app//com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.executeQuery(SQLServerPreparedStatement.java:630)
+	at app//com.example.datasail.core.SqlServerSession.query$lambda$30(SqlServerSession.kt:227)
+	at app//com.example.datasail.core.SqlServerSession.prepared(SqlServerSession.kt:221)
+	at app//com.example.datasail.core.SqlServerSession.query(SqlServerSession.kt:224)
+	at app//com.example.datasail.core.SqlServerSession.page(SqlServerSession.kt:103)
+	at app//com.example.datasail.core.SqlWorkspaceSession.page$default(SqlWorkspaceSession.kt:14)
+	at app//com.example.datasail.fixture.SqlServerTemporalContract.verifyEditing(SqlServerTemporalContract.kt:58)
+	at app//com.example.datasail.core.SqlServerIntegrationTest.temporalValuesPreservePrecisionWithoutDesktopOnlyApis(SqlServerIntegrationTest.kt:15)
+	at java.base@21.0.8/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base@21.0.8/java.lang.reflect.Method.invoke(Method.java:580)
+	at app//org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at app//org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at app//org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at app//org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at app//org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at app//org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
+	at app//org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
+	at app//org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
+	at app//org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
+	at app//org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at app//org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at app//org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at app//org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at app//org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at app//org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at app//org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:112)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:40)
+	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:54)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:53)
+	at java.base@21.0.8/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base@21.0.8/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)
+	at jdk.proxy1/jdk.proxy1.$Proxy4.processTestClass(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker$2.run(TestWorker.java:183)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:132)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:103)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:63)
+	at org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56)
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:121)
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:71)
+	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69)
+	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
+</failure>
+  </testcase>
+  <testcase name="bufferedResponseIsRejectedByDriverBudget" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.158"/>
+  <testcase name="textBudgetPagingDoesNotSkipRecordsAndTemporalValuesRemainReadOnly" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.121"/>
+  <testcase name="productionSessionStartsReadonlyAndOnlyExplicitEnableAllowsWriteMode" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.018"/>
+  <testcase name="aiAmbiguousAndMissingRecordsNeverGenerateWritePreview" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.08"/>
+  <testcase name="boundedPagingAndUnsafeObjectsReadOnly" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.091"/>
+  <testcase name="abnormalAffectedCountRollsBackActualWrite" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.132"/>
+  <testcase name="wrongPasswordRejectsWithoutRetry" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.019"/>
+  <testcase name="changedTriggerBlocksOldApproval" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.083"/>
+  <testcase name="browseTypesAndSafeWrites" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.166"/>
+  <testcase name="serverFiltersSortsAndPagingCoverRowsBeyondTheFirstPage" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.083"/>
+  <testcase name="queryAndSwitchInvalidateApprovalAndQueryIsReadOnly" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.034"/>
+  <testcase name="failedCatalogAcknowledgementClosesAmbiguousSession" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.03"/>
+  <testcase name="probeTypesTimeoutAndCancellation" classname="com.example.datasail.core.SqlServerIntegrationTest" time="4.064"/>
+  <testcase name="conflictDoesNotOverwriteConcurrentUpdate" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.058"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

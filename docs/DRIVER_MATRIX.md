@@ -1,10 +1,10 @@
-# V0.9.1 驱动与能力矩阵
+# V0.11.0 驱动与能力矩阵
 
 当前实际实现十种连接类型；下表区分功能实现与测试证据。完整验收命令和系统范围见 TEST_REPORT。
 
 | 引擎 | 驱动 | 工作台实现 | 图形写入 | 特有约束 |
 |---|---|---|---|---|
-| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.2 / MIT | 库、Schema、表/视图、字段、分页、SELECT | 测试环境单元格/单行预览确认 | 现有保护保持，生产只读 |
+| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.2 / MIT | 库、Schema、表/视图、字段、分页、SELECT | 显式开启会话后单元格/单行预览确认 | 生产标记默认只读，确认可开启；AI 写入复用相同保护 |
 | MySQL | MariaDB Connector/J 3.5.10 / LGPL-2.1-or-later | 库、表/视图、字段、主键分页、SELECT | 未开放 | 每操作服务器只读事务；无符号 BIGINT 用精确 Decimal |
 | MariaDB | 同上，独立服务器验收 | 同上 | 未开放 | 不以复用驱动推断兼容 |
 | PostgreSQL | pgjdbc 42.7.14 / BSD-2-Clause | Schema、表/视图、字段、主键分页、SELECT | 未开放 | 一连接一库；参数化系统目录绕开 Android 缺少的 closeOnCompletion |
@@ -50,3 +50,5 @@ V0.9.1 SQL Server 源码适配更新到 datasail.2：修复 DDC 调用 Android �
 ## V0.10.0 编辑变化
 
 SQL Server 日期读取仍使用 datasail.2 驱动；会话层增加 date/time/datetime/smalldatetime/datetime2/datetimeoffset 的 ISO 文本绑定与精确并发比较，避免 Android JDBC 日期转换缺失 API。生产标记连接默认只读，经用户明确确认可开启本次编辑，切库/断开复位。其它引擎仍只读。当前实际设备和服务器证据以 TEST_REPORT 为准；未访问业务服务器或新增全引擎写入声明。
+
+V0.11.0 增加 SQL 五引擎表筛选/排序。SQL Server 及 MySQL/MariaDB/PostgreSQL 的本轮 JVM 实连结果独立保存在 `docs/evidence/v0110/`；Android 范围以 TEST_REPORT 为准。没有复跑的旧引擎证据不计入本轮。

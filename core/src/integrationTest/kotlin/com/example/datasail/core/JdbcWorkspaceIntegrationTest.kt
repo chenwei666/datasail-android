@@ -34,6 +34,18 @@ class JdbcWorkspaceIntegrationTest {
             }
         }
     }
+    @Test fun serverSideFilteringSortingAndTemporalParameters() = fixture { session, table ->
+        val sorted = session.page(table, view = TableView(sorts = listOf(ColumnSort("id", true))))
+        assertEquals(DbValue.Integer(105), sorted.rows.first()[0])
+        val filtered = session.page(table, view = TableView(listOf(ColumnFilter("id", FilterOperator.GT, "100"))))
+        assertEquals(5, filtered.rows.size); assertEquals(DbValue.Integer(101), filtered.rows.first()[0])
+        connect().use { c -> c.prepareStatement("UPDATE workbench_fixture SET code=?,moment=? WHERE id=1").use {
+            it.setString(1, "literal !%_[ ' OR 1=1 --"); it.setTimestamp(2, java.sql.Timestamp.valueOf("2024-02-29 12:34:56")); it.executeUpdate()
+        } }
+        val exact = session.page(table, view = TableView(listOf(ColumnFilter("code", FilterOperator.CONTAINS, "!%_[ ' OR 1=1 --"), ColumnFilter("moment", FilterOperator.EQ, "2024-02-29 12:34:56"))))
+        assertEquals(1, exact.rows.size); assertEquals(DbValue.Integer(1), exact.rows.single()[0])
+        assertEquals(104, session.page(table, view = TableView(listOf(ColumnFilter("moment", FilterOperator.IS_NULL)))).let { first -> first.rows.size + session.page(table, 100, view = first.view).rows.size })
+    }
     @Test fun wideTableWindowsReachLastColumnWithExactType() {
         connect().use { raw ->
             raw.createStatement().use { statement ->

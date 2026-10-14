@@ -68,6 +68,14 @@ class SqlServerDeviceTest {
                 val delete = session.preview(MutationKind.DELETE, row, emptyMap())
                 assertEquals(MutationStatus.COMMITTED, session.confirm(delete.token).status)
                 assertThrows(WorkspaceRejected::class.java) { session.confirm(delete.token) }
+                val aiInsert = AiTableActions.prepare(session, table, AiTableAction(TableAction.INSERT, TableView(), mapOf("label" to CellInput("AI Android 00123"))), true)
+                assertEquals(MutationStatus.COMMITTED, session.confirm(aiInsert.preview!!.token).status)
+                val aiView = TableView(listOf(ColumnFilter("label", FilterOperator.EQ, "AI Android 00123")))
+                val aiRead = AiTableActions.prepare(session, table, AiTableAction(TableAction.READ, aiView, emptyMap()), false)
+                assertEquals(1, aiRead.page.rows.size)
+                val aiDelete = AiTableActions.prepare(session, table, AiTableAction(TableAction.DELETE, aiView, emptyMap()), true)
+                assertEquals(MutationStatus.COMMITTED, session.confirm(aiDelete.preview!!.token).status)
+                assertTrue(session.page(table, view = aiView).rows.isEmpty())
             } }
         } finally { trust.delete() }
     }

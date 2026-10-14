@@ -23,7 +23,7 @@ internal fun aiAllowed(workspace: WorkspaceViewModel): Boolean {
 internal fun aiScope(workspace: WorkspaceViewModel): String {
     val state = workspace.state.value
     val parts = listOf(state.aiGeneration.toString(), state.connectionKey, state.catalog, state.schema, state.kind.name,
-        state.connected.toString(), aiAllowed(workspace).toString(), workspace.draftSql.value, state.result?.tableSchema.toString())
+        state.writable.toString(), state.result?.view.toString(), state.result?.offset.toString(), state.connected.toString(), aiAllowed(workspace).toString(), workspace.draftSql.value, state.result?.tableSchema.toString())
     return MessageDigest.getInstance("SHA-256").digest(parts.joinToString("") { "${it.length}:$it" }.toByteArray()).joinToString("") { "%02x".format(it) }
 }
 internal data class AiApproval(val profile: AiProfile, val scope: String, val text: String)
@@ -36,6 +36,9 @@ internal fun AiScreen(ai: AiViewModel, workspace: WorkspaceViewModel, openSettin
     val saved by workspace.saved.collectAsStateWithLifecycle()
     val scope = remember(database, sql, saved) { aiScope(workspace) }
     val allowed = aiAllowed(workspace) && !database.busy
+    var operate by remember { mutableStateOf(false) }
+    Row { FilterChip(operate, { operate = true }, label = { Text("操作当前表") }); Spacer(Modifier.width(8.dp)); FilterChip(!operate, { operate = false }, label = { Text("问答 / SQL 草稿") }) }
+    if (operate) { AiTableScreen(ai, workspace, openSettings, openEditor); return }
     var prompt by remember { mutableStateOf("") }
     var structure by remember(scope) { mutableStateOf(false) }
     var includeSql by remember(scope) { mutableStateOf(false) }

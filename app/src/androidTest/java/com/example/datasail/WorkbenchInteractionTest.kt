@@ -45,6 +45,17 @@ class WorkbenchInteractionTest {
         compose.onNodeWithTag("cell-0-0").assertTextContains("0007")
         compose.onNodeWithTag("grid-zoom").performScrollTo().performClick()
         compose.onNodeWithTag("grid-zoom").assertTextContains("100% · 重置")
+        compose.onNodeWithTag("result-grid").performScrollTo().performTouchInput {
+            val a = Offset(center.x - 60f, center.y); val b = Offset(center.x + 60f, center.y)
+            down(0, a); down(1, b)
+            for (step in 1..10) { updatePointerTo(0, a + Offset(step * 4f, 0f)); updatePointerTo(1, b - Offset(step * 4f, 0f)); move(30) }
+            up(0); up(1)
+        }
+        compose.onNodeWithTag("grid-zoom").assertTextContains("65% · 重置")
+        compose.onNodeWithText("0007", useUnmergedTree = true).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) { action ->
+            val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+            assertTrue(action(layouts)); assertEquals(1, layouts.size); assertFalse("Shrunk cell must not clip text vertically", layouts.single().didOverflowHeight)
+        }
     }
     @Test fun whereOffersColumnAndHardwareTabAcceptsWithoutExecution() {
         val table = TableRef("db", "dbo", "orders", 1, false)

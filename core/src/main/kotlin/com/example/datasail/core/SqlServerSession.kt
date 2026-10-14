@@ -89,17 +89,18 @@ class SqlServerSession(private val connection: Connection, override val profile:
         val triggers = query("SELECT COUNT(*) FROM sys.triggers WHERE parent_id=? AND is_disabled=0", listOf(table.objectId)) { it.next(); it.getInt(1) > 0 }
         return TableSchema(table, columns, triggers)
     }
-    override fun page(table: TableRef, offset: Int, columnOffset: Int): ResultPage {
+    override fun page(table: TableRef, offset: Int, columnOffset: Int, view: TableView): ResultPage {
         invalidate()
         require(offset in 0..1_000_000)
         val schema = describe(table)
         val columns = TableColumns.window(schema, columnOffset).joinToString(",") { SqlNames.quote(it.name) }
         if (schema.keys.isEmpty() && offset != 0) throw WorkspaceRejected("没有主键，不能保证稳定分页，仅显示首 100 行")
-        val order = if (schema.keys.isEmpty()) "" else " ORDER BY " + schema.keys.joinToString(",") { SqlNames.quote(it.name) }
-        val sql = if (schema.keys.isEmpty()) "SELECT TOP (101) $columns FROM ${table.qualified}"
-            else "SELECT $columns FROM ${table.qualified}$order OFFSET ? ROWS FETCH NEXT 101 ROWS ONLY"
-        val params = if (schema.keys.isEmpty()) emptyList() else listOf(offset)
-        val result = query(sql, params, 101) { JdbcResultReader.read(it, offset, schema) }.copy(columnOffset = columnOffset, totalColumns = schema.columns.size)
+        val compiled = TableViews.compile(schema, view, SqlNames::quote, sqlServer = true)
+        val order = compiled.order
+        val sql = if (schema.keys.isEmpty()) "SELECT TOP (101) $columns FROM ${table.qualified}${compiled.where}$order"
+            else "SELECT $columns FROM ${table.qualified}${compiled.where}$order OFFSET ? ROWS FETCH NEXT 101 ROWS ONLY"
+        val params = compiled.parameters + if (schema.keys.isEmpty()) emptyList() else listOf(offset)
+        val result = query(sql, params, 101) { JdbcResultReader.read(it, offset, schema) }.copy(columnOffset = columnOffset, totalColumns = schema.columns.size, view = view)
         currentPage = result
         return result
     }

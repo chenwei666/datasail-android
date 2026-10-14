@@ -41,7 +41,8 @@ internal fun spreadsheetColumn(index: Int): String {
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: AppSettings, selectRow: (Int) -> Unit,
-    preview: (Int, Map<String, CellInput>) -> Unit, expanded: Boolean = false) {
+    preview: (Int, Map<String, CellInput>) -> Unit, expanded: Boolean = false, changeView: ((TableView) -> Unit)? = null) {
+    var filterColumn by remember(page) { mutableStateOf<String?>(null) }
     var selected by remember(page) { mutableStateOf<Pair<Int, Int>?>(null) }
     var editing by remember(page) { mutableStateOf(false) }
     var input by remember(page) { mutableStateOf(CellInput()) }
@@ -58,7 +59,9 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
     val gridFocus = remember { FocusRequester() }
     val editFocus = remember { FocusRequester() }
     val context = LocalContext.current
-    val rowHeight = ((if (wrap) 88 else if (settings.compactGrid) 44 else 60) * zoom).dp
+    val lineHeight = (settings.gridFont * 1.4f * zoom).sp
+    val rowHeight = maxOf(((if (wrap) 88 else if (settings.compactGrid) 44 else 60) * zoom).dp, with(LocalDensity.current) { lineHeight.toDp() } * (if (wrap) 3 else 1) + (16 * zoom).dp)
+    val headerHeight = maxOf((64 * zoom).dp, with(LocalDensity.current) { (20 * zoom).sp.toDp() } * (if (settings.showColumnTypes) 3 else 2) + (16 * zoom).dp)
     fun editable(row: Int, column: Int): Boolean = state.writable && state.kind == DatabaseKind.SQL_SERVER && !state.busy &&
         page.tableSchema?.readOnlyReason == null && page.tableSchema?.columns?.getOrNull(page.columnOffset + column)?.let { it.editable && it.primaryKeyOrder == 0 } == true &&
         page.rows[row].none { it is DbValue.Unavailable }
@@ -71,6 +74,10 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
         if (!editing) gridFocus.requestFocus()
     }
     LaunchedEffect(editing, selected, input.isNull) { if (editing && !input.isNull) editFocus.requestFocus() }
+    if (changeView != null) {
+        TableViewBar(page, state.busy, { filterColumn = it }, changeView)
+        filterColumn?.let { ColumnViewDialog(page, it, state.kind, { filterColumn = null }, changeView) }
+    }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         AssistChip(onClick = { zoom = 1f }, label = { Text("${(zoom * 100).toInt()}% · 重置") }, modifier = Modifier.testTag("grid-zoom"))
         if (!expanded) AssistChip(onClick = { fullscreen = true }, label = { Text("全屏表格") })
@@ -132,10 +139,12 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
             }
         }.focusable().horizontalScroll(horizontal)) {
             Row(Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
-                Box(Modifier.width(48.dp).height((64 * zoom).dp), contentAlignment = Alignment.Center) { Text("#", style = MaterialTheme.typography.labelMedium) }
-                page.columns.forEachIndexed { index, column -> if (index in visible) Column(Modifier.width((width * zoom).dp).height((64 * zoom).dp).border(0.5.dp, MaterialTheme.colorScheme.outlineVariant).padding(8.dp)) {
-                    Text("${spreadsheetColumn(page.columnOffset + index)}  ${column.name}", fontSize = (14 * zoom).sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    if (settings.showColumnTypes) Text(column.typeName, fontSize = (11 * zoom).sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Box(Modifier.width(48.dp).height(headerHeight), contentAlignment = Alignment.Center) { Text("#", style = MaterialTheme.typography.labelMedium) }
+                page.columns.forEachIndexed { index, column -> if (index in visible) Column(Modifier.width((width * zoom).dp).height(headerHeight).border(0.5.dp, MaterialTheme.colorScheme.outlineVariant).testTag("column-${column.name}").clickable(enabled = changeView != null && !state.busy) { filterColumn = column.name }.padding((8 * zoom).dp)) {
+                    val sort = page.view.sorts.firstOrNull { it.column == column.name }
+                    val mark = (if (sort == null) "" else if (sort.descending) " ↓" else " ↑") + (if (page.view.filters.any { it.column == column.name }) " •" else "")
+                    Text("${column.name}$mark${if (changeView != null) " ▾" else ""}", fontSize = (14 * zoom).sp, lineHeight = (20 * zoom).sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    if (settings.showColumnTypes) Text(column.typeName, fontSize = (11 * zoom).sp, lineHeight = (15 * zoom).sp, maxLines = 1, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } }
             }
             LazyColumn(Modifier.width((48 + width * zoom * visible.size).dp).height(viewport), state = rowsScroll) {
@@ -150,11 +159,11 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
                             .border(if (active) 2.dp else 0.5.dp, if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
                             .testTag("cell-$rowIndex-$columnIndex")
                             .combinedClickable(onClick = { choose(rowIndex, columnIndex) }, onDoubleClick = { choose(rowIndex, columnIndex, true) })
-                            .padding(8.dp), contentAlignment = Alignment.CenterStart) {
+                            .padding((8 * zoom).dp), contentAlignment = Alignment.CenterStart) {
                             if (active && editing && !input.isNull) BasicTextField(input.text, { if (it.length <= 4000) input = input.copy(text = it) },
                                 modifier = Modifier.fillMaxWidth().focusRequester(editFocus).testTag("cell-editor"), singleLine = true,
-                                textStyle = LocalTextStyle.current.copy(fontSize = (settings.gridFont * zoom).sp, color = MaterialTheme.colorScheme.onSurface, fontFamily = FontFamily.Monospace))
-                            else Text((if (active && editing && input.isNull) "NULL" else spreadsheetText(value)).ifEmpty { "（空字符串）" }, fontSize = (settings.gridFont * zoom).sp, maxLines = if (wrap) 3 else 1, overflow = TextOverflow.Ellipsis,
+                                textStyle = LocalTextStyle.current.copy(fontSize = (settings.gridFont * zoom).sp, lineHeight = lineHeight, color = MaterialTheme.colorScheme.onSurface, fontFamily = FontFamily.Monospace))
+                            else Text((if (active && editing && input.isNull) "NULL" else spreadsheetText(value)).ifEmpty { "（空字符串）" }, fontSize = (settings.gridFont * zoom).sp, lineHeight = lineHeight, maxLines = if (wrap) 3 else 1, overflow = TextOverflow.Ellipsis,
                                 color = if (value == DbValue.Null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
                         }
                     } }
@@ -187,7 +196,7 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
                 Text("${state.connectionName} / ${state.catalog} / ${state.schema} · ${if (state.production) "生产" else "常规"} · ${if (state.writable) "可写" else "只读"}", style = MaterialTheme.typography.bodySmall)
                 HorizontalDivider()
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ResultGrid(page, state, settings, selectRow, { row, inputs -> fullscreen = false; preview(row, inputs) }, expanded = true)
+                    ResultGrid(page, state, settings, selectRow, { row, inputs -> fullscreen = false; preview(row, inputs) }, expanded = true, changeView = changeView)
                 }
             }
         }

@@ -139,10 +139,35 @@ class AiServiceUiTest {
         compose.onNodeWithText("AI 实时建议：关").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("接受 AI 建议").assertDoesNotExist()
     }
+    @Test fun naturalLanguageQueryRequiresApprovedContextAndShowsBoundDatabaseResults() {
+        lateinit var ai: AiViewModel; lateinit var workspace: WorkspaceViewModel
+        compose.runOnIdle { ai = ViewModelProvider(compose.activity)[AiViewModel::class.java]; workspace = ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java]; ai.createClient = ::transport }
+        compose.waitUntil(10000) { ai.state.value.ready }
+        compose.runOnIdle { ai.save(profile.copy(model = "fixture-model"), charArrayOf()) }
+        compose.waitUntil(10000) { !ai.state.value.busy }
+        compose.onNodeWithText("连接并进入工作台").performScrollTo().performClick()
+        compose.waitUntil(15000) { compose.onAllNodesWithTag("object-ai_fixture").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("object-ai_fixture").performClick()
+        compose.waitUntil(10000) { compose.onAllNodesWithTag("result-grid").fetchSemanticsNodes().isNotEmpty() }
+        assertEquals(1, workspace.state.value.result!!.rows.size)
+        compose.onNodeWithText("AI 助手").performClick()
+        compose.onNodeWithText("操作当前表").performClick()
+        compose.onNodeWithTag("ai-table-prompt").performScrollTo().performTextInput("查找 id 等于 2 的记录")
+        compose.onNodeWithText("预览操作请求").performScrollTo().performClick()
+        assertEquals(1, workspace.state.value.result!!.rows.size)
+        compose.onNodeWithText("确认发送并查询 / 预览").performClick()
+        compose.waitUntil(20000) { compose.onAllNodesWithText("AI 查询完成：0 行").fetchSemanticsNodes().isNotEmpty() }
+        assertTrue(workspace.state.value.result!!.rows.isEmpty())
+        assertEquals(listOf(ColumnFilter("id", FilterOperator.EQ, "2")), workspace.state.value.result!!.view.filters)
+        assertFalse(workspace.state.value.writable)
+        compose.onNodeWithText("查看表格结果").performScrollTo().performClick()
+        compose.onNodeWithText("清除条件").performScrollTo().performClick()
+        compose.waitUntil(10000) { workspace.state.value.result?.rows?.size == 1 && !workspace.state.value.busy }
+    }
     @Test fun androidTlsAndAllThreeProtocolContracts() {
         AiProtocol.entries.zip(listOf("openai", "anthropic", "gemini")).forEach { (protocol, path) ->
             transport(AiService(protocol, "https://localhost:18743/$path"), "synthetic-ai-only".toCharArray()).use { client ->
-                assertTrue(client.models().names.isNotEmpty()); assertTrue(client.ask("fixture-model", "synthetic question").contains("SELECT id"))
+                assertTrue(client.models().names.isNotEmpty()); assertTrue(client.ask("fixture-model", "synthetic question").contains("SELECT id")); assertEquals(TableAction.READ, client.plan("fixture-model", "synthetic table action").action)
             }
         }
         transport(AiService(AiProtocol.OPENAI, "https://127.0.0.1:18743/openai"), "synthetic-ai-only".toCharArray()).use { client -> assertThrows(AiFailure::class.java) { client.models() } }

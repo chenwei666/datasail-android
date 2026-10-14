@@ -1,0 +1,315 @@
+--------- beginning of system
+10-14 07:14:08.342   510  1667 I ActivityManager: dumpStackTraces pids=null nativepids=null
+--------- beginning of main
+10-14 07:14:08.384  1669  1669 D ApplicationLoaders: Returning zygote-cached class loader: /system/framework/android.test.base.jar
+10-14 07:14:08.390  1669  1669 D ApplicationLoaders: Returning zygote-cached class loader: /system/framework/android.hidl.base-V1.0-java.jar
+10-14 07:14:08.391  1669  1669 D ApplicationLoaders: Returning zygote-cached class loader: /system/framework/android.hidl.manager-V1.0-java.jar
+10-14 07:14:08.391  1669  1669 D ApplicationLoaders: Returning zygote-cached class loader: /system/framework/android.hidl.base-V1.0-java.jar
+10-14 07:14:08.396  1539  1689 I rcs     : [PresencePublication] onMobileDataChanged, mDataEnabled=true value=true
+10-14 07:14:08.442  1669  1669 I .quicksearchbo: The ClassLoaderContext is a special shared library.
+10-14 07:14:08.467   510   660 I SyncManager: Loaded persisted syncs: 0 periodic syncs, 0 oneshot syncs, 15 total system server jobs, JobStats: FirstLoad: 6/5/0 LastSave: 5/4/0
+10-14 07:14:08.486   510  1604 W UsageStatsService: Failed to query events for locked user 0
+10-14 07:14:08.584   510   510 W Looper  : Slow dispatch took 580ms main h=com.android.server.job.JobSchedulerService$JobHandler c=null m=4
+10-14 07:14:08.586   510   510 D BluetoothManagerService: Bluetooth Adapter name changed to Android SDK built for x86_64
+10-14 07:14:08.603   510   510 D BluetoothManagerService: Stored Bluetooth name: Android SDK built for x86_64
+10-14 07:14:08.615   510   527 W Looper  : Slow dispatch took 517ms android.fg h=com.android.server.AppStateTracker$MyHandler c=null m=0
+10-14 07:14:08.643  1669  1669 I .quicksearchbo: The ClassLoaderContext is a special shared library.
+10-14 07:14:08.653   510  1174 I system_server: The ClassLoaderContext is a special shared library.
+10-14 07:14:08.704  1669  1669 D nativeloader: classloader namespace configured for unbundled product apk. library_path=/product/app/QuickSearchBox/lib/x86_64:/product/lib64:/system/product/lib64
+10-14 07:14:09.011   510   527 W system_server: Long monitor contention with owner android.bg (535) at int com.android.server.job.JobSchedulerService.scheduleAsPackage(android.app.job.JobInfo, android.app.job.JobWorkItem, int, java.lang.String, int, java.lang.String)(JobSchedulerService.java:1154) waiters=0 in void com.android.server.job.controllers.BackgroundJobsController$1.updateJobsForUid(int, boolean) for 395ms
+10-14 07:14:09.013   510   527 W Looper  : Slow dispatch took 397ms android.fg h=com.android.server.AppStateTracker$MyHandler c=null m=0
+10-14 07:14:09.015   510   510 W system_server: Long monitor contention with owner android.bg (535) at int com.android.server.job.JobSchedulerService.scheduleAsPackage(android.app.job.JobInfo, android.app.job.JobWorkItem, int, java.lang.String, int, java.lang.String)(JobSchedulerService.java:1154) waiters=2 in android.app.job.JobInfo com.android.server.job.JobSchedulerService.getPendingJob(int, int) for 269ms
+10-14 07:14:09.016   510   510 W Looper  : Slow dispatch took 270ms main h=com.android.providers.settings.SettingsProvider$SettingsRegistry$MyHandler c=null m=2
+10-14 07:14:09.025   510   510 V NotificationAssistants: 0 notification assistant service connected: ComponentInfo{android.ext.services/android.ext.services.notification.Assistant}
+10-14 07:14:09.052  1424  1424 V MediaStore: Examining volume emulated;0 with name external_primary and state unmountable
+10-14 07:14:09.053  1424  1424 V MediaProvider: Updated external volumes to: {}
+10-14 07:14:09.108   510  1174 I system_server: The ClassLoaderContext is a special shared library.
+10-14 07:14:09.134   510  1667 I ActivityManager: Dumping to /data/anr/anr_2026-10-14-07-14-09-127
+10-14 07:14:09.140   510  1667 I ActivityManager: Collecting stacks for pid 1424
+10-14 07:14:09.147   510   510 D BluetoothManagerService: BluetoothServiceConnection: com.android.bluetooth.btservice.AdapterService
+10-14 07:14:09.152   510   529 D BluetoothManagerService: MESSAGE_BLUETOOTH_SERVICE_CONNECTED: 1
+10-14 07:14:09.162   510   510 I StorageUserConnection: Service: [ComponentInfo{com.android.providers.media.module/com.android.providers.media.fuse.ExternalStorageServiceImpl}] connected. User [0]
+10-14 07:14:09.181   510   529 D BluetoothManagerService: Broadcasting onBluetoothServiceUp() to 3 receivers.
+10-14 07:14:09.191   680   904 D BluetoothAdapter: onBluetoothServiceUp: android.bluetooth.IBluetooth$Stub$Proxy@a956881
+10-14 07:14:09.199   998   998 D RecentsOrientedState: current RecentsOrientedState: [this=RecentsOrientedState@6b73a8d mOrientationHandler=PortraitPagedViewHandler@5e91442 mDisplayRotation=0 mTouchRotation=0 mRecentsActivityRotation=0 isRecentsActivityRotationAllowed=false mSystemRotation=true mFlags=299]
+10-14 07:14:09.199   998   998 D RecentsOrientedState: current RecentsOrientedState: [this=RecentsOrientedState@6b73a8d mOrientationHandler=PortraitPagedViewHandler@5e91442 mDisplayRotation=0 mTouchRotation=0 mRecentsActivityRotation=0 isRecentsActivityRotationAllowed=false mSystemRotation=true mFlags=299]
+10-14 07:14:09.211   510   529 D BluetoothAdapter: onBluetoothServiceUp: android.bluetooth.IBluetooth$Stub$Proxy@8701018
+10-14 07:14:09.213  1385  1403 D BluetoothAdapter: onBluetoothServiceUp: com.android.bluetooth.btservice.AdapterService$AdapterServiceBinder@9088c05
+10-14 07:14:09.224   510   614 D ConnectivityService: registerNetworkAgent NetworkAgentInfo{ ni{[type: WIFI[], state: UNKNOWN/IDLE, reason: (unspecified), extra: , failover: false, available: true, roaming: false]}  network{100}  nethandle{432902426637}  lp{{LinkAddresses: [ ] DnsAddresses: [ ] Domains: null MTU: 0 Routes: [ ]}}  nc{[ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&FOREGROUND&NOT_CONGESTED&NOT_SUSPENDED LinkUpBandwidth>=300000Kbps LinkDnBandwidth>=300000Kbps OwnerUid: 1000 SSID: "AndroidWifi" RequestorUid: -1 RequestorPackageName: null]}  Score{20}  everValidated{false}  lastValidated{false}  created{false} lingering{false} explicitlySelected{false} acceptUnvalidated{false} everCaptivePortalDetected{false} lastCaptivePortalDetected{false} partialConnectivity{false} acceptPartialConnectivity{false} clat{mBaseIface: null, mIface: null, mState: IDLE} }
+10-14 07:14:09.244  1385  1403 D BluetoothAdapterService: enable() - Enable called with quiet mode status =  false
+10-14 07:14:09.248  1385  1538 I AdapterState: BLE_TURNING_ON : entered 
+10-14 07:14:09.248  1385  1538 D AdapterProperties: Setting state to BLE_TURNING_ON
+10-14 07:14:09.253  1385  1538 D BluetoothAdapterService: updateAdapterState() - Broadcasting state BLE_TURNING_ON to 1 receivers.
+10-14 07:14:09.268   510   529 D BluetoothManagerService: MESSAGE_BLUETOOTH_STATE_CHANGE: OFF > BLE_TURNING_ON
+10-14 07:14:09.269   510   529 D BluetoothManagerService: Sending BLE State Change: OFF > BLE_TURNING_ON
+10-14 07:14:09.277  1669  1669 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+10-14 07:14:09.280   510   510 W StorageManagerService: Reporting emulated;0 unmounted due to system locked
+10-14 07:14:09.341   510  1174 I system_server: The ClassLoaderContext is a special shared library.
+10-14 07:14:09.376  1669  1669 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+10-14 07:14:09.398  1424  1668 I ExternalStorageServiceImpl: Ignoring volume state for vol:external_primary. State: unmountable
+10-14 07:14:09.414   510  1667 I system_server: libdebuggerd_client: started dumping process 1424
+10-14 07:14:09.434   259   259 I tombstoned: registered intercept for pid 1424 and type kDebuggerdJavaBacktrace
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: stopIpClient IpClientWithPreConnection: false
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: java.lang.Throwable
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at com.android.server.wifi.ClientModeImpl.stopIpClient(ClientModeImpl.java:1069)
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at com.android.server.wifi.ClientModeImpl.stopDhcpSetup(ClientModeImpl.java:1084)
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at com.android.server.wifi.ClientModeImpl.startIpClient(ClientModeImpl.java:6535)
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at com.android.server.wifi.ClientModeImpl.access$6800(ClientModeImpl.java:163)
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at com.android.server.wifi.ClientModeImpl$ObtainingIpState.enter(ClientModeImpl.java:5133)
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at com.android.wifi.x.com.android.internal.util.StateMachine$SmHandler.invokeEnterMethods(StateMachine.java:1037)
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at com.android.wifi.x.com.android.internal.util.StateMachine$SmHandler.performTransitions(StateMachine.java:879)
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at com.android.wifi.x.com.android.internal.util.StateMachine$SmHandler.handleMessage(StateMachine.java:819)
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at android.os.Looper.loop(Looper.java:223)
+10-14 07:14:09.569   510   614 V WifiClientModeImpl: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+10-14 07:14:09.601   855   874 W rkstack.proces: Verification of void com.android.server.connectivity.NetworkMonitor.<init>(android.content.Context, android.net.INetworkMonitorCallbacks, android.net.Network, android.net.metrics.IpConnectivityLog, android.net.util.SharedLog, com.android.server.NetworkStackService$NetworkStackServiceManager, com.android.server.connectivity.NetworkMonitor$Dependencies, com.android.networkstack.netlink.TcpSocketTracker) took 148.748ms (2924.41 bytecodes/s) (12080B approximate peak alloc)
+10-14 07:14:09.285   510   510 W StorageManagerService: Reporting emulated;0 unmounted due to system locked
+10-14 07:14:09.628   510   527 W Looper  : Drained
+10-14 07:14:09.656   510  1174 I system_server: The ClassLoaderContext is a special shared library.
+10-14 07:14:09.687  1592  1592 E CarrierIdProvider: read carrier list from ota pb failure: java.io.FileNotFoundException: /data/misc/carrierid/carrier_list.pb: open failed: ENOENT (No such file or directory)
+10-14 07:14:09.688  1592  1592 D CarrierIdProvider: latest version: 33554466 need update: false
+10-14 07:14:09.707   855   874 W rkstack.proces: Verification of com.android.server.connectivity.NetworkMonitor$ValidationStage com.android.server.connectivity.NetworkMonitor.access$2800(com.android.server.connectivity.NetworkMonitor) took 104.573ms (47.81 bytecodes/s) (1336B approximate peak alloc)
+10-14 07:14:09.710  1669  1669 W .quicksearchbo: Verification of void com.android.quicksearchbox.google.GoogleSuggestClient.<init>(android.content.Context, android.os.Handler, com.android.quicksearchbox.util.NamedTaskExecutor, com.android.quicksearchbox.Config) took 127.375ms (227.67 bytecodes/s) (2024B approximate peak alloc)
+10-14 07:14:09.800  1385  1538 D BluetoothAdapterService: bleOnProcessStart()
+10-14 07:14:09.801  1385  1538 I AdapterProperties: init(), maxConnectedAudioDevices, default=5, propertyOverlayed=5, finalValue=5
+10-14 07:14:09.887  1424  1430 I rs.media.modul: Thread[4,tid=1430,WaitingInMainSignalCatcherLoop,Thread*=0x7eb5ddb31a60,peer=0x12d40200,"Signal Catcher"]: reacting to signal 3
+10-14 07:14:09.894  1424  1430 I rs.media.modul: 
+10-14 07:14:09.991  1669  1669 W .quicksearchbo: Verification of com.android.quicksearchbox.SourceResult com.android.quicksearchbox.google.GoogleSuggestClient.query(java.lang.String) took 231.852ms (638.34 bytecodes/s) (6936B approximate peak alloc)
+10-14 07:14:09.878   510   614 W system_server: Verification of com.android.wifi.x.android.net.shared.InitialConfiguration com.android.wifi.x.android.net.shared.InitialConfiguration.copy(com.android.wifi.x.android.net.shared.InitialConfiguration) took 107.753ms (287.69 bytecodes/s) (1816B approximate peak alloc)
+10-14 07:14:09.930  1385  1538 D BluetoothAdapterService: bleOnProcessStart() - Make Bond State Machine
+10-14 07:14:10.124   855   874 W rkstack.proces: Verification of boolean com.android.server.connectivity.NetworkMonitor.hasPrivateIpAddress(java.net.InetAddress[]) took 197.192ms (177.49 bytecodes/s) (2200B approximate peak alloc)
+10-14 07:14:10.170  1669  1669 W .quicksearchbo: Verification of void android.net.http.AndroidHttpClient.<clinit>() took 175.534ms (136.73 bytecodes/s) (1808B approximate peak alloc)
+10-14 07:14:10.209   510  1174 I system_server: The ClassLoaderContext is a special shared library.
+10-14 07:14:10.228  1385  1538 D BluetoothBondStateMachine: make
+10-14 07:14:10.277   855   874 W rkstack.proces: Verification of android.net.captiveportal.CaptivePortalProbeResult com.android.server.connectivity.NetworkMonitor.isCaptivePortal(com.android.server.connectivity.NetworkMonitor$EvaluationThreadDeps) took 152.533ms (1396.42 bytecodes/s) (4640B approximate peak alloc)
+10-14 07:14:10.350  1385  1699 I BluetoothBondStateMachine: StableState(): Entering Off State
+10-14 07:14:10.359   510   614 W system_server: Verification of void com.android.wifi.x.android.net.ProvisioningConfigurationParcelable.readFromParcel(android.os.Parcel) took 328.866ms (1064.26 bytecodes/s) (8800B approximate peak alloc)
+10-14 07:14:10.396   510   510 W Looper  : Drained
+10-14 07:14:10.476  1669  1669 W .quicksearchbo: Verification of void android.net.http.AndroidHttpClient.<init>(org.apache.http.conn.ClientConnectionManager, org.apache.http.params.HttpParams) took 306.208ms (65.32 bytecodes/s) (1976B approximate peak alloc)
+10-14 07:14:10.540   510  1447 V BackupManagerConstants: getKeyValueBackupIntervalMilliseconds(...) returns 14400000
+10-14 07:14:10.541   510  1447 V BackupManagerConstants: getKeyValueBackupFuzzMilliseconds(...) returns 600000
+10-14 07:14:10.541   510  1447 V BackupManagerConstants: getKeyValueBackupRequiredNetworkType(...) returns 1
+10-14 07:14:10.542   510  1447 V BackupManagerConstants: getKeyValueBackupRequireCharging(...) returns true
+10-14 07:14:10.542   510  1447 V KeyValueBackupJob: Scheduling k/v pass in 241 minutes
+10-14 07:14:10.547   510   639 W system_server: Long monitor contention with owner backup-0 (1447) at void com.android.server.backup.UserBackupManagerService.dataChangedImpl(java.lang.String, java.util.HashSet)(UserBackupManagerService.java:2596) waiters=0 in void com.android.server.backup.UserBackupManagerService.initPackageTracking() for 1.559s
+10-14 07:14:10.588   855   874 W rkstack.proces: Verification of android.net.captiveportal.CaptivePortalProbeSpec[] com.android.server.connectivity.NetworkMonitor.makeCaptivePortalFallbackProbeSpecs() took 117.928ms (457.91 bytecodes/s) (2856B approximate peak alloc)
+10-14 07:14:10.593  1669  1669 W .quicksearchbo: Verification of org.apache.http.entity.AbstractHttpEntity android.net.http.AndroidHttpClient.getCompressedEntity(byte[], android.content.ContentResolver) took 114.872ms (417.85 bytecodes/s) (2432B approximate peak alloc)
+10-14 07:14:10.734   259   259 I tombstoned: received crash request for pid 1424
+10-14 07:14:10.734   259   259 I tombstoned: found intercept fd 512 for pid 1424 and type kDebuggerdJavaBacktrace
+10-14 07:14:10.741  1424  1430 I rs.media.modul: Wrote stack traces to tombstoned
+10-14 07:14:10.757   510  1667 I system_server: libdebuggerd_client: done dumping process 1424
+10-14 07:14:10.783   510  1667 I ActivityManager: Done dumping
+10-14 07:14:10.852   510  1174 I system_server: The ClassLoaderContext is a special shared library.
+10-14 07:14:10.903   510  1667 E ActivityManager: ANR in com.android.providers.media.module
+10-14 07:14:10.903   510  1667 E ActivityManager: PID: 1424
+10-14 07:14:10.903   510  1667 E ActivityManager: Reason: executing service com.android.providers.media.module/com.android.providers.media.fuse.ExternalStorageServiceImpl
+10-14 07:14:10.903   510  1667 E ActivityManager: Load: 0.0 / 0.0 / 0.0
+10-14 07:14:10.903   510  1667 E ActivityManager: ----- Output from /proc/pressure/memory -----
+10-14 07:14:10.903   510  1667 E ActivityManager: some avg10=0.00 avg60=0.00 avg300=0.00 total=0
+10-14 07:14:10.903   510  1667 E ActivityManager: full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+10-14 07:14:10.903   510  1667 E ActivityManager: ----- End output from /proc/pressure/memory -----
+10-14 07:14:10.903   510  1667 E ActivityManager: 
+10-14 07:14:10.903   510  1667 E ActivityManager: CPU usage from 39055ms to 0ms ago (2026-10-14 07:13:27.776 to 2026-10-14 07:14:06.831):
+10-14 07:14:10.903   510  1667 E ActivityManager:   33% 310/surfaceflinger: 10% user + 22% kernel / faults: 84 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   25% 510/system_server: 5.9% user + 19% kernel / faults: 1563 minor 44 major
+10-14 07:14:10.903   510  1667 E ActivityManager:   24% 928/com.android.settings: 4.7% user + 20% kernel / faults: 217 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   21% 285/android.hardware.graphics.composer@2.3-service: 5.5% user + 16% kernel / faults: 3 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   7.9% 431/llkd: 0.3% user + 7.6% kernel / faults: 25 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   5.7% 998/com.android.launcher3: 2% user + 3.6% kernel / faults: 6333 minor 16 major
+10-14 07:14:10.903   510  1667 E ActivityManager:   6.4% 680/com.android.systemui: 1.2% user + 5.1% kernel / faults: 8407 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   1% 420/media.swcodec: 0% user + 0.9% kernel / faults: 5893 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   3.2% 1424/com.android.providers.media.module: 0.8% user + 2.3% kernel / faults: 1697 minor 28 major
+10-14 07:14:10.903   510  1667 E ActivityManager:   2.5% 274/android.hardware.bluetooth@1.1-service.sim: 0.4% user + 2.1% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   2.2% 1339/com.android.inputmethod.latin: 0.5% user + 1.7% kernel / faults: 486 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   1.7% 153/logd: 0.2% user + 1.5% kernel / faults: 67 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   1.8% 1385/com.android.bluetooth: 0.4% user + 1.3% kernel / faults: 602 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   1.7% 266/zygote64: 0% user + 1.6% kernel / faults: 1057 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   1.3% 10/rcu_preempt: 0% user + 1.3% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   1% 293/android.hardware.sensors@2.1-service.multihal: 0.1% user + 0.9% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.9% 383/adbd: 0% user + 0.8% kernel / faults: 491 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.5% 155/servicemanager: 0% user + 0.5% kernel / faults: 36 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.6% 855/com.android.networkstack.process: 0.1% user + 0.4% kernel / faults: 32 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.6% 1413/apexd: 0% user + 0.5% kernel / faults: 436 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.5% 5/kworker/0:0-rcu_gp: 0% user + 0.5% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.5% 1/init: 0% user + 0.4% kernel / faults: 2 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.5% 264/statsd: 0.1% user + 0.4% kernel / faults: 3 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.2% 659/wpa_supplicant: 0% user + 0.2% kernel / faults: 10 minor 2 major
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.5% 341/logcat: 0.1% user + 0.3% kernel / faults: 2 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.3% 16/ksoftirqd/1: 0% user + 0.3% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.3% 283/kworker/u4:3-kverityd: 0% user + 0.3% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.3% 7/kworker/u4:0-kverityd: 0% user + 0.3% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.2% 422/mdnsd: 0% user + 0.1% kernel / faults: 1 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.2% 184/jbd2/dm-5-8: 0% user + 0.2% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.1% 371/audioserver: 0% user + 0.1% kernel / faults: 6 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.2% 9/ksoftirqd/0: 0% user + 0.2% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.1% 156/hwservicemanager: 0% user + 0.1% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.1% 259/tombstoned: 0% user + 0.1% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 265/netd: 0% user + 0% kernel / faults: 42 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 949/android.ext.services: 0% user + 0% kernel / faults: 66 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 286/android.hardware.health@2.1-service: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 290/android.hardware.neuralnetworks@1.3-service-sample-minimal: 0% user + 0% kernel / faults: 34 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 291/android.hardware.neuralnetworks@1.3-service-sample-quant: 0% user + 0% kernel / faults: 32 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 506/hostapd_nohidl: 0% user + 0% kernel / faults: 3 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.1% 802/android.hardware.gnss@2.0-service.ranchu: 0% user + 0.1% kernel / faults: 14 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0.1% 104/kworker/1:2-kdmflush: 0% user + 0.1% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 122/kworker/u4:2-kverityd: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 231/loop20: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 284/android.hardware.graphics.allocator@3.0-service: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 289/android.hardware.neuralnetworks@1.3-service-sample-float-slow: 0% user + 0% kernel / faults: 15 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 154/lmkd: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 160/vold: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 296/android.hardware.wifi@1.0-service: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 393/cameraserver: 0% user + 0% kernel / faults: 3 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 112/kworker/1:1H-kblockd: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 179/kworker/u5:1-blk_crypto_wq: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 298/iptables-restore: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 299/ip6tables-restore: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 411/wificond: 0% user + 0% kernel / faults: 2 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 180/kworker/u5:2-blk_crypto_wq: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 205/loop7: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 288/android.hardware.neuralnetworks@1.3-service-sample-float-fast: 0% user + 0% kernel / faults: 13 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 309/gpuservice: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 400/installd: 0% user + 0% kernel / faults: 1 minor
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 403/keystore: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 410/storaged: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 501/netmgr: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:   0% 503/wifi_forwarder: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:  +0% 1539/com.android.ims.rcsservice: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:  +0% 1571/com.android.emulator.multidisplay: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:  +0% 1592/com.android.phone: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager:  +0% 1616/com.android.keychain: 0% user + 0% kernel
+10-14 07:14:10.903   510  1667 E ActivityManager: 96% TOTAL: 18% user + 70% kernel + 0% iowait + 5.1% irq + 2.3% softirq
+10-14 07:14:10.903   510  1667 E ActivityManager: CPU usage from 287492ms to 287492ms ago (1970-01-01 00:00:00.000 to 1970-01-01 00:00:00.000) with 0% awake:
+10-14 07:14:10.903   510  1667 E ActivityManager: 0% TOTAL: 0% user + 0% kernel
+10-14 07:14:11.343   510   535 E IntervalStats: Unable to parse usage stats package 146
+10-14 07:14:11.377   510  1066 W system_server: Long monitor contention with owner backup (639) at com.android.server.pm.PackageSetting com.android.server.pm.PackageManagerService.getPackageSettingInternal(java.lang.String, int)(PackageManagerService.java:25244) waiters=0 in com.android.server.pm.parsing.pkg.AndroidPackage com.android.server.pm.PackageManagerService$PackageManagerInternalImpl.getPackage(java.lang.String) for 822ms
+10-14 07:14:11.392   510   584 W system_server: Long monitor contention with owner backup (639) at com.android.server.pm.PackageSetting com.android.server.pm.PackageManagerService.getPackageSettingInternal(java.lang.String, int)(PackageManagerService.java:25244) waiters=3 in java.lang.String com.android.server.pm.PackageManagerService.getInstantAppPackageName(int) for 679ms
+10-14 07:14:11.398   510   971 W system_server: Long monitor contention with owner backup (639) at com.android.server.pm.PackageSetting com.android.server.pm.PackageManagerService.getPackageSettingInternal(java.lang.String, int)(PackageManagerService.java:25244) waiters=5 in com.android.server.pm.parsing.pkg.AndroidPackage com.android.server.pm.PackageManagerService$PackageManagerInternalImpl.getPackage(java.lang.String) for 461ms
+10-14 07:14:11.403  1424  1668 V MediaStore: Examining volume emulated;0 with name external_primary and state unmountable
+10-14 07:14:11.404  1424  1668 V MediaProvider: Updated external volumes to: {}
+10-14 07:14:11.411   510   529 W system_server: Long monitor contention with owner backup (639) at com.android.server.pm.PackageSetting com.android.server.pm.PackageManagerService.getPackageSettingInternal(java.lang.String, int)(PackageManagerService.java:25244) waiters=1 in int com.android.server.pm.PackageManagerService.getPackageUidInternal(java.lang.String, int, int, int) for 809ms
+10-14 07:14:11.414   510   614 W system_server: Long monitor contention with owner backup (639) at com.android.server.pm.PackageSetting com.android.server.pm.PackageManagerService.getPackageSettingInternal(java.lang.String, int)(PackageManagerService.java:25244) waiters=2 in java.lang.String com.android.server.pm.PackageManagerService.getInstantAppPackageName(int) for 757ms
+10-14 07:14:11.457   510  1039 W system_server: Long monitor contention with owner backup (639) at com.android.server.pm.PackageSetting com.android.server.pm.PackageManagerService.getPackageSettingInternal(java.lang.String, int)(PackageManagerService.java:25244) waiters=6 in android.content.pm.ProviderInfo com.android.server.pm.ComponentResolver.queryProvider(java.lang.String, int, int) for 511ms
+10-14 07:14:11.465   510  1214 W system_server: Long monitor contention with owner backup (639) at com.android.server.pm.PackageSetting com.android.server.pm.PackageManagerService.getPackageSettingInternal(java.lang.String, int)(PackageManagerService.java:25244) waiters=8 in android.content.pm.ApplicationInfo com.android.server.pm.PackageManagerService.getApplicationInfoInternal(java.lang.String, int, int, int) for 352ms
+10-14 07:14:11.472   510  1064 W system_server: Long monitor contention with owner backup (639) at com.android.server.pm.PackageSetting com.android.server.pm.PackageManagerService.getPackageSettingInternal(java.lang.String, int)(PackageManagerService.java:25244) waiters=4 in android.content.pm.ProviderInfo com.android.server.pm.ComponentResolver.queryProvider(java.lang.String, int, int) for 648ms
+10-14 07:14:11.373   510   535 E IntervalStats: Unable to parse usage stats package 146
+10-14 07:14:11.483   510   510 W StorageManagerService: Reporting emulated;0 unmounted due to system locked
+10-14 07:14:11.490   510  1447 W system_server: Long monitor contention with owner backup (639) at com.android.server.pm.PackageSetting com.android.server.pm.PackageManagerService.getPackageSettingInternal(java.lang.String, int)(PackageManagerService.java:25244) waiters=7 in android.content.pm.ServiceInfo com.android.server.pm.PackageManagerService.getServiceInfo(android.content.ComponentName, int, int) for 500ms
+10-14 07:14:11.509   510   535 E IntervalStats: Unable to parse usage stats package 146
+10-14 07:14:11.536   998   998 W System  : ClassLoader referenced unknown path: 
+10-14 07:14:11.548   510   510 W StorageManagerService: Reporting emulated;0 unmounted due to system locked
+10-14 07:14:11.564   510   585 W system_server: Long monitor contention with owner WifiHandlerThread (614) at int com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(android.app.IApplicationThread, java.lang.String, android.content.Intent, java.lang.String, android.content.IIntentReceiver, int, java.lang.String, android.os.Bundle, java.lang.String[], int, android.os.Bundle, boolean, boolean, int)(ActivityManagerService.java:16749) waiters=0 in android.content.ComponentName com.android.server.am.ActivityManagerService.startService(android.app.IApplicationThread, android.content.Intent, java.lang.String, boolean, java.lang.String, java.lang.String, int) for 903ms
+10-14 07:14:11.610  1424  1424 V MediaStore: Examining volume emulated;0 with name external_primary and state unmountable
+10-14 07:14:11.622   510   614 D WifiService: updateInterfaceIpState: ifaceName=wlan0 mode=-1 previous LOHS mode= -1
+10-14 07:14:11.670   510  1174 W system_server: Long monitor contention with owner WifiHandlerThread (614) at int com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(android.app.IApplicationThread, java.lang.String, android.content.Intent, java.lang.String, android.content.IIntentReceiver, int, java.lang.String, android.os.Bundle, java.lang.String[], int, android.os.Bundle, boolean, boolean, int)(ActivityManagerService.java:16749) waiters=1 in android.content.Intent com.android.server.am.ActivityManagerService.registerReceiverWithFeature(android.app.IApplicationThread, java.lang.String, java.lang.String, android.content.IIntentReceiver, android.content.IntentFilter, java.lang.String, int, int) for 801ms
+10-14 07:14:11.630  1385  1385 I BtGatt.JNI: classInitNative(L875): classInitNative: Success!
+10-14 07:14:11.675   510   972 W system_server: Long monitor contention with owner WifiHandlerThread (614) at int com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(android.app.IApplicationThread, java.lang.String, android.content.Intent, java.lang.String, android.content.IIntentReceiver, int, java.lang.String, android.os.Bundle, java.lang.String[], int, android.os.Bundle, boolean, boolean, int)(ActivityManagerService.java:16749) waiters=2 in void com.android.server.am.ActivityManagerService.publishContentProviders(android.app.IApplicationThread, java.util.List) for 793ms
+10-14 07:14:11.678   510  1667 W system_server: Long monitor contention with owner WifiHandlerThread (614) at int com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(android.app.IApplicationThread, java.lang.String, android.content.Intent, java.lang.String, android.content.IIntentReceiver, int, java.lang.String, android.os.Bundle, java.lang.String[], int, android.os.Bundle, boolean, boolean, int)(ActivityManagerService.java:16749) waiters=3 in void com.android.server.am.ActivityManagerService.appendDropBoxProcessHeaders(com.android.server.am.ProcessRecord, java.lang.String, java.lang.StringBuilder) for 758ms
+10-14 07:14:11.698   510  1333 W system_server: Long monitor contention with owner WifiHandlerThread (614) at int com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(android.app.IApplicationThread, java.lang.String, android.content.Intent, java.lang.String, android.content.IIntentReceiver, int, java.lang.String, android.os.Bundle, java.lang.String[], int, android.os.Bundle, boolean, boolean, int)(ActivityManagerService.java:16749) waiters=4 in void com.android.server.am.ActivityManagerService.publishContentProviders(android.app.IApplicationThread, java.util.List) for 641ms
+10-14 07:14:11.704   510  1064 W system_server: Long monitor contention with owner WifiHandlerThread (614) at int com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(android.app.IApplicationThread, java.lang.String, android.content.Intent, java.lang.String, android.content.IIntentReceiver, int, java.lang.String, android.os.Bundle, java.lang.String[], int, android.os.Bundle, boolean, boolean, int)(ActivityManagerService.java:16749) waiters=5 in java.lang.String com.android.server.am.ActivityManagerService.checkContentProviderAccess(java.lang.String, int) for 227ms
+10-14 07:14:11.706   510   971 W system_server: Long monitor contention with owner WifiHandlerThread (614) at int com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(android.app.IApplicationThread, java.lang.String, android.content.Intent, java.lang.String, android.content.IIntentReceiver, int, java.lang.String, android.os.Bundle, java.lang.String[], int, android.os.Bundle, boolean, boolean, int)(ActivityManagerService.java:16749) waiters=6 in boolean com.android.server.am.ActivityManagerService.isAppStartModeDisabled(int, java.lang.String) for 223ms
+10-14 07:14:11.736   510  1039 W system_server: Long monitor contention with owner WifiHandlerThread (614) at int com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(android.app.IApplicationThread, java.lang.String, android.content.Intent, java.lang.String, android.content.IIntentReceiver, int, java.lang.String, android.os.Bundle, java.lang.String[], int, android.os.Bundle, boolean, boolean, int)(ActivityManagerService.java:16749) waiters=7 in java.lang.String com.android.server.am.ActivityManagerService.checkContentProviderAccess(java.lang.String, int) for 215ms
+10-14 07:14:11.792  1424  1424 V MediaProvider: Updated external volumes to: {}
+10-14 07:14:11.837  1700  1703 I cmd     : oneway function results will be dropped but finished with status OK and parcel size 4
+10-14 07:14:11.919   510  1667 I ActivityManager: Killing 1424:com.android.providers.media.module/u0a122 (adj -700): bg anr
+10-14 07:14:11.929   510  1667 D ActivityManager: Completed ANR of com.android.providers.media.module in 5099ms, latency 95ms
+10-14 07:14:11.934   510   528 W system_server: Long monitor contention with owner Binder:510_11 (1383) at void com.android.server.am.ActivityManagerService.finishReceiver(android.os.IBinder, int, java.lang.String, android.os.Bundle, boolean, int)(ActivityManagerService.java:16858) waiters=2 in void com.android.server.am.ActivityManagerService.dispatchProcessesChanged() for 108ms
+10-14 07:14:11.943   510   510 W Looper  : Slow dispatch took 119ms main h=android.os.Handler c=android.app.-$$Lambda$LoadedApk$ReceiverDispatcher$Args$_BumDX2UKsnxLVrE6UJsJZkotuA@2357a78 m=0
+10-14 07:14:11.950   510   528 W Looper  : Slow dispatch took 124ms android.ui h=com.android.server.am.ActivityManagerService$UiHandler c=null m=31
+10-14 07:14:11.973  1385  1385 D BtGatt.DebugUtils: handleDebugAction() action=null
+10-14 07:14:12.010   510  1333 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10064; state: DISABLED
+10-14 07:14:12.057  1385  1385 D BluetoothAdapterService: getAdapterService() - returning com.android.bluetooth.btservice.AdapterService@cd7d0fa
+10-14 07:14:12.066   998  1054 D LoaderTask: loadWorkspace: loading default favorites
+10-14 07:14:12.073   510  1707 I DropBoxManagerService: add tag=system_app_anr isTagEnabled=true flags=0x2
+10-14 07:14:12.096   510   537 W ActivityManager: Slow operation: 103ms so far, now at startProcess: asking zygote to start proc
+10-14 07:14:12.097   510   537 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10064; state: ENABLED
+10-14 07:14:12.098   510  1333 W ActivityManager: Slow operation: 140ms so far, now at startProcess: done starting proc!
+10-14 07:14:12.098   510  1333 W ActivityManager: Slow operation: 142ms so far, now at getContentProviderImpl: after start process
+10-14 07:14:12.130   510  1333 W ActivityManager: Slow operation: 174ms so far, now at getContentProviderImpl: updating data structures
+10-14 07:14:12.133   510  1333 W ActivityManager: Slow operation: 177ms so far, now at getContentProviderImpl: done!
+10-14 07:14:12.217   510   535 I UsageStatsService: User[0] Rollover scheduled @ 2026-10-14 16:36:15(1791995775095)
+10-14 07:14:12.317   266   266 D Zygote  : Forked child process 1708
+10-14 07:14:12.487  1708  1708 W d.process.acor: Unexpected CPU variant for X86 using defaults: x86_64
+10-14 07:14:12.544   510   537 W ActivityManager: Slow operation: 551ms so far, now at startProcess: returned from zygote!
+10-14 07:14:12.620   510   510 I StorageUserConnection: Service: [ComponentInfo{com.android.providers.media.module/com.android.providers.media.fuse.ExternalStorageServiceImpl}] disconnected. User [0]
+10-14 07:14:12.620   510   510 I StorageUserConnection: Closing connection for user 0
+10-14 07:14:12.644   266   266 I Zygote  : Process 1424 exited due to signal 9 (Killed)
+10-14 07:14:12.667   383   419 I adbd    : jdwp connection from 1708
+10-14 07:14:12.693   510   619 D ConnectivityService: [100 WIFI] EVENT_NETWORK_INFO_CHANGED, going from UNKNOWN to UNKNOWN
+10-14 07:14:12.703   855  1088 W rkstack.proces: Verification of int android.net.apf.ApfFilter.bytesToBEInt(byte[]) took 120.840ms (314.47 bytecodes/s) (1608B approximate peak alloc)
+10-14 07:14:12.985   510  1039 W InputReader: Device virtio_input_multi_touch_10 is associated with display ADISPLAY_ID_NONE.
+10-14 07:14:12.986   510  1039 W InputReader: Device virtio_input_multi_touch_7 is associated with display ADISPLAY_ID_NONE.
+10-14 07:14:12.986   510  1039 W InputReader: Device virtio_input_multi_touch_11 is associated with display ADISPLAY_ID_NONE.
+10-14 07:14:12.986   510  1039 W InputReader: Device virtio_input_multi_touch_5 is associated with display ADISPLAY_ID_NONE.
+10-14 07:14:13.000   510   527 W Looper  : Slow dispatch took 565ms android.fg h=com.android.server.DropBoxManagerService$DropBoxManagerBroadcastHandler c=null m=1
+10-14 07:14:13.002   510  1039 W InputReader: Device virtio_input_multi_touch_2 is associated with display ADISPLAY_ID_NONE.
+10-14 07:14:13.015   855  1088 W rkstack.proces: Verification of void android.net.apf.ApfFilter.maybeStartFilter() took 157.043ms (553.99 bytecodes/s) (3592B approximate peak alloc)
+10-14 07:14:13.027   510  1039 W InputReader: Device virtio_input_multi_touch_8 is associated with display ADISPLAY_ID_NONE.
+10-14 07:14:13.031   510  1039 W InputReader: Device virtio_input_multi_touch_6 is associated with display ADISPLAY_ID_NONE.
+10-14 07:14:13.031   510  1039 W InputReader: Device virtio_input_multi_touch_3 is associated with display ADISPLAY_ID_NONE.
+10-14 07:14:13.032   510  1039 W InputReader: Device virtio_input_multi_touch_9 is associated with display ADISPLAY_ID_NONE.
+10-14 07:14:13.032   510  1039 W InputReader: Device virtio_input_multi_touch_4 is associated with display ADISPLAY_ID_NONE.
+10-14 07:14:13.041   510   537 W ActivityManager: Slow operation: 1012ms so far, now at startProcess: done updating battery stats
+10-14 07:14:13.042   510   537 W ActivityManager: Slow operation: 1049ms so far, now at startProcess: building log message
+10-14 07:14:13.048   510   537 I ActivityManager: Start proc 1708:android.process.acore/u0a64 for content provider {com.android.providers.contacts/com.android.providers.contacts.ContactsProvider2}
+10-14 07:14:13.048   510   537 W ActivityManager: Slow operation: 1055ms so far, now at startProcess: starting to update pids map
+10-14 07:14:13.052   510   537 W ActivityManager: Slow operation: 1059ms so far, now at startProcess: done updating pids map
+10-14 07:14:13.060   154   154 W lowmemorykiller: Failed to open /proc/1424/oom_score_adj; errno=2: process 1424 might have been killed
+10-14 07:14:13.064   156   156 I hwservicemanager: getTransport: Cannot find entry android.hardware.radio@1.5::IRadio/slot1 in either framework or device manifest.
+10-14 07:14:13.088   156   156 I hwservicemanager: getTransport: Cannot find entry android.hardware.radio@1.4::IRadio/slot1 in either framework or device manifest.
+10-14 07:14:13.090   156   156 I hwservicemanager: getTransport: Cannot find entry android.hardware.radio@1.3::IRadio/slot1 in either framework or device manifest.
+10-14 07:14:13.109   156   156 I hwservicemanager: getTransport: Cannot find entry android.hardware.radio@1.2::IRadio/slot1 in either framework or device manifest.
+10-14 07:14:13.117   510   510 W ActivityManager: Exception when unbinding service com.android.providers.media.module/com.android.providers.media.fuse.ExternalStorageServiceImpl
+10-14 07:14:13.117   510   510 W ActivityManager: android.os.DeadObjectException
+10-14 07:14:13.117   510   510 W ActivityManager: 	at android.os.BinderProxy.transactNative(Native Method)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at android.os.BinderProxy.transact(BinderProxy.java:540)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at android.app.IApplicationThread$Stub$Proxy.scheduleUnbindService(IApplicationThread.java:1646)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at com.android.server.am.ActiveServices.removeConnectionLocked(ActiveServices.java:3545)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at com.android.server.am.ActiveServices.unbindServiceLocked(ActiveServices.java:2280)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at com.android.server.am.ActivityManagerService.unbindService(ActivityManagerService.java:15196)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at android.app.ContextImpl.unbindService(ContextImpl.java:1877)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at com.android.server.storage.StorageUserConnection$ActiveConnection.close(StorageUserConnection.java:260)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at com.android.server.storage.StorageUserConnection$ActiveConnection$1.handleDisconnection(StorageUserConnection.java:426)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at com.android.server.storage.StorageUserConnection$ActiveConnection$1.onServiceDisconnected(StorageUserConnection.java:391)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at android.app.LoadedApk$ServiceDispatcher.doDeath(LoadedApk.java:1973)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at android.app.LoadedApk$ServiceDispatcher$RunConnection.run(LoadedApk.java:1988)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at android.os.Handler.handleCallback(Handler.java:938)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at android.os.Looper.loop(Looper.java:223)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at com.android.server.SystemServer.run(SystemServer.java:622)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at com.android.server.SystemServer.main(SystemServer.java:408)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at java.lang.reflect.Method.invoke(Native Method)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-14 07:14:13.117   510   510 W ActivityManager: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:925)
+10-14 07:14:13.150  1592  1592 I android_os_HwBinder: HwBinder: Starting thread pool for getting: android.hardware.radio@1.1::IRadio/slot1
+10-14 07:14:13.165   510   510 W Looper  : Slow dispatch took 572ms main h=android.app.ActivityThread$H c=android.app.LoadedApk$ServiceDispatcher$RunConnection@3cfd945 m=0
+10-14 07:14:13.196   510  1064 I Watchdog: Interesting Java process com.android.providers.media.module died. Pid 1424
+10-14 07:14:13.257   510   538 I libprocessgroup: Successfully killed process cgroup uid 10122 pid 1424 in 1032ms
+10-14 07:14:13.383   510   619 D ConnectivityService: NetReassign [no changes]
+10-14 07:14:13.445   510   510 W Looper  : Slow delivery took 216ms main h=com.android.server.job.controllers.QuotaController$QcHandler c=null m=3
+10-14 07:14:13.446   510   510 W Looper  : Slow dispatch took 280ms main h=com.android.server.job.controllers.QuotaController$QcHandler c=null m=3
+10-14 07:14:13.656   510   535 W system_server: Long monitor contention with owner backup (639) at android.content.pm.PackageInfo com.android.server.pm.PackageManagerService.getPackageInfoInternal(java.lang.String, long, int, int, int)(PackageManagerService.java:4564) waiters=0 in boolean com.android.server.pm.PackageManagerService$PackageManagerInternalImpl.isPackageEphemeral(int, java.lang.String) for 273ms
+10-14 07:14:13.788   510   619 D ConnectivityService: Adding iface wlan0 to network 100
+10-14 07:14:13.792   265   265 E Netd    : no such netId 100
+10-14 07:14:13.803  1385  1538 E AdapterState: BLE_TURNING_ON : BLE_START_TIMEOUT
+10-14 07:14:13.804  1385  1538 I AdapterState: BLE_TURNING_OFF : entered 
+10-14 07:14:13.804  1385  1538 D AdapterProperties: Setting state to BLE_TURNING_OFF
+10-14 07:14:13.808   510   619 E ConnectivityService: Exception adding interface: java.lang.IllegalStateException: android.os.ServiceSpecificException: Machine is not on the network (code 64)
+10-14 07:14:13.831   265   265 E Netd    : no such netId 100
+10-14 07:14:13.836  1385  1538 D BluetoothAdapterService: updateAdapterState() - Broadcasting state BLE_TURNING_OFF to 1 receivers.
+10-14 07:14:13.844   510   529 D BluetoothManagerService: MESSAGE_BLUETOOTH_STATE_CHANGE: BLE_TURNING_ON > BLE_TURNING_OFF
+10-14 07:14:13.844   510   529 D BluetoothManagerService: Sending BLE State Change: BLE_TURNING_ON > BLE_TURNING_OFF
+10-14 07:14:13.847  1385  1538 D AdapterProperties: onBleDisable
+10-14 07:14:13.849  1385  1538 D BluetoothAdapterService: stopGattProfileService() - No profiles services to stop.
+10-14 07:14:13.941   510   619 W BestClock: java.time.DateTimeException: Missing NTP fix
+10-14 07:14:13.964   156   156 I hwservicemanager: getTransport: Cannot find entry android.hardware.radio.deprecated@1.0::IOemHook/slot1 in either framework or device manifest.
+10-14 07:14:14.050   510   619 W BestClock: java.time.DateTimeException: Missing NTP fix
+10-14 07:14:14.099  1592  1592 I TetheringManager: registerTetheringEventCallback:com.android.phone
+10-14 07:14:14.180   855  1088 W rkstack.proces: Verification of android.net.dhcp.DhcpPacket android.net.dhcp.DhcpPacket.decodeFullPacket(java.nio.ByteBuffer, int, byte[]) took 229.674ms (5120.30 bytecodes/s) (28072B approximate peak alloc)
+10-14 07:14:14.378   506   506 I hostapd : wlan1: STA-OPMODE-SMPS-MODE-CHANGED 02:15:b2:00:00:00 off
+10-14 07:14:14.537  1592  1592 D TelephonyProvider: dbh.onOpen: ok, queried table=siminfo
+10-14 07:14:14.549  1592  1592 D TelephonyProvider: dbh.onOpen: ok, queried table=carriers
+10-14 07:14:14.733  1708  1720 I d.process.acor: Background young concurrent copying GC freed 3556(278KB) AllocSpace objects, 0(0B) LOS objects, 93% free, 1691KB/25MB, paused 179us total 265.422ms
+10-14 07:14:14.966   510   535 I UsageStatsService: User[0] Flushing usage stats to disk
+--------- beginning of kernel
+10-14 07:14:14.957     0     0 D logd    : logdr: UID=2000 GID=2000 PID=1732 n tail=200 logMask=99 pid=0 start=0ns timeout=0ns

@@ -30,6 +30,8 @@ class Handler(BaseHTTPRequestHandler):
         body = json.loads(raw)
         if 'tools' in body: self.reply({},400); return
         answer = '下面是只读查询草稿：\n```sql\nSELECT id, name FROM ai_fixture\n```\n请核对字段和权限。'
+        if 'You translate a user' in raw:
+            answer = json.dumps({'action':'READ','filters':[{'column':'id','operator':'EQ','value':'2'}],'sorts':[],'values':{}})
         if self.path.startswith('/anthropic'):
             self.reply({'stop_reason':'end_turn','content':[{'type':'text','text':answer}]})
         elif self.path.startswith('/gemini'):

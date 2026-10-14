@@ -55,13 +55,13 @@ class SqliteBrowseSession(file: File, override val profile: ConnectionProfile) :
             TableSchema(table, columns, false, "SQLite 导入副本只读；本版不写回源文件")
         }
     }
-    override fun page(table: TableRef, offset: Int, columnOffset: Int): ResultPage {
+    override fun page(table: TableRef, offset: Int, columnOffset: Int, view: TableView): ResultPage {
         require(offset in 0..1_000_000)
         val schema = describe(table)
         if (schema.keys.isEmpty() && offset != 0) throw WorkspaceRejected("没有主键，仅显示首页")
-        val order = if (schema.keys.isEmpty()) "" else " ORDER BY " + schema.keys.joinToString(",") { quote(it.name) }
-        val sql = "SELECT ${TableColumns.window(schema, columnOffset).joinToString(",") { quote(it.name) }} FROM main.${quote(table.name)}$order LIMIT 101 OFFSET $offset"
-        return query(sql) { read(it, offset, schema) }.copy(columnOffset = columnOffset, totalColumns = schema.columns.size)
+        val compiled = TableViews.compile(schema, view, ::quote, sqlite = true)
+        val sql = "SELECT ${TableColumns.window(schema, columnOffset).joinToString(",") { quote(it.name) }} FROM main.${quote(table.name)}${compiled.where}${compiled.order} LIMIT 101 OFFSET $offset"
+        return query(sql, compiled.parameters.map { it.toString() }.toTypedArray()) { read(it, offset, schema) }.copy(columnOffset = columnOffset, totalColumns = schema.columns.size, view = view)
     }
     override fun select(sql: String): ResultPage = query(ReadQueryPolicy.validate(sql, DatabaseKind.SQLITE)) { read(it, 0, null) }
     private fun read(cursor: Cursor, offset: Int, schema: TableSchema?): ResultPage {

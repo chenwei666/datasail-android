@@ -75,6 +75,18 @@ internal class AiViewModel(application: Application) : AndroidViewModel(applicat
         if (workspace.state.value.busy || !aiAllowed(workspace) || aiScope(workspace) != approval.scope) return
         ask(approval.profile, approval.scope, approval.text)
     }
+    internal fun actApproved(workspace: WorkspaceViewModel, approval: AiApproval, table: TableRef, allowWrites: Boolean) {
+        if (workspace.state.value.busy || !aiAllowed(workspace) || aiScope(workspace) != approval.scope || approval.profile != state.value.preferences.active) return
+        request { profile, transport ->
+            val action = transport.plan(profile.model, approval.text);
+            {
+                if (aiAllowed(workspace) && aiScope(workspace) == approval.scope && approval.profile == state.value.preferences.active && workspace.state.value.connected && !workspace.state.value.busy) {
+                    workspace.aiTableAction(approval.scope, table, action, allowWrites)
+                    mutable.value = mutable.value.copy(message = "操作计划已通过格式校验，正在校验数据库目标；写入仍需确认")
+                } else mutable.value = mutable.value.copy(message = "目标或权限已变化，已丢弃 AI 操作计划")
+            }
+        }
+    }
     fun completeSql(workspace: WorkspaceViewModel, binding: String, text: String) {
         if (!aiAllowed(workspace) || workspace.state.value.busy) return
         if (text.length > 24000) { mutable.value = mutable.value.copy(message = "SQL 与表结构超过发送上限，请缩短 SQL 或关闭结构附加"); return }
@@ -122,7 +134,7 @@ internal class AiViewModel(application: Application) : AndroidViewModel(applicat
                     } finally { key.fill('\u0000'); synchronized(clientLock) { client = null } }
                 }
                 if (!cancelled.get()) complete()
-            } catch (error: Exception) { if (!cancelled.get()) mutable.value = mutable.value.copy(message = (error as? AiFailure)?.safeMessage ?: "AI 请求或响应格式无效；请检查配置，未自动重试") }
+            } catch (error: Exception) { if (!cancelled.get()) mutable.value = mutable.value.copy(message = (error as? AiFailure)?.safeMessage ?: (error as? WorkspaceRejected)?.explanation ?: "AI 请求或响应格式无效；请检查配置，未自动重试") }
             finally { mutable.value = mutable.value.copy(busy = false) }
         }
     }

@@ -1,0 +1,57 @@
+{
+  "version": "0.11.0",
+  "versionCode": 17,
+  "finalApkSha256": "7472e7c1540f1747faafedd0716235fdc31512cb73e9a5921b0e4cfdecd72ca7",
+  "androidTestApkSha256": "6c7990cff0d153a7f12a5853aa2ac8aa39d54a20f1ebd6eddc4a179715364394",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest",
+    "jdbcWorkspaceTest"
+  ],
+  "jvmTests": {
+    "core-unit": 85,
+    "app-unit": 14,
+    "driver-profile": 14,
+    "sqlserver": 21,
+    "MYSQL": 7,
+    "MARIADB": 7,
+    "POSTGRESQL": 7
+  },
+  "androidTests": {
+    "upgrade-api26.txt": 5,
+    "mobile-api26.txt": 4,
+    "ai-emulator-5556.txt": 4,
+    "SQL_SERVER/android-emulator-5556.txt": 3,
+    "upgrade-api30.txt": 5,
+    "mobile-api30.txt": 8,
+    "ai-emulator-5554.txt": 4,
+    "SQL_SERVER/android-emulator-5554.txt": 3
+  },
+  "previousVersionUpgradeSeedTests": {
+    "api26": 1,
+    "api30": 1
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "Server-side bound filters and stable sort/paging on SQL Server, MySQL, MariaDB, PostgreSQL and SQLite; column menu and 65% zoom clipping regression; strict AI current-table JSON actions with approved outbound context, bounded reads and explicit SQL Server single-row write preview/confirmation, conflict rejection. API26/API30 synthetic HTTPS AI and isolated SQL Server, prior-version upgrade continuity. Final artifact hashes bound to installed bytes.",
+  "recoveries": [
+    "SQL Server time filter originally failed because JDBC sent time as datetime; fixed with exact metadata-typed CONVERT and reran the original real-server assertions. Failure retained in diagnostics.",
+    "API26 first full eight-test UI run and intermediate checks predated temporal validation fixes and are retained separately. Final APK reruns selected changed UI, AI, SQL Server and upgrade-state checks; API30 full eight-test UI suite."
+  ],
+  "environmentRecovery": "API30 system media/System UI startup ANR before application tests; retained logs/screenshot, selected system Wait, verified Launcher/services recovered before all application checks.",
+  "testFixtureRecovery": "An extra standalone upgrade verifier rerun failed because its prior successful run had intentionally restored defaults and cleared the AI seed. Retained failure, then reran complete V0.10.0 install/seed/in-place-upgrade checks on final APK successfully.",
+  "unverified": [
+    "physical/arm64",
+    "user business database and other server versions",
+    "live AI vendor accounts and billing",
+    "other engine writes, bulk or cross-table AI actions",
+    "Redis/Valkey/MongoDB/Elasticsearch/OpenSearch matrix not rerun",
+    "full DBeaver functionality",
+    "Release/R8 and protected production signing",
+    "independent archived-source rebuild",
+    "fresh cloud restore"
+  ]
+}

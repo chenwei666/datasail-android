@@ -1,0 +1,13 @@
+
+com.example.datasail.SettingsUiTest:.
+com.example.datasail.TablePresentationTest:.
+com.example.datasail.AiNavigationTest:.
+com.example.datasail.MobileWorkflowTest:.
+com.example.datasail.WorkbenchInteractionTest:...
+com.example.datasail.TableFilteringTest:.
+
+Time: 410.073
+
+OK (8 tests)
+
+

@@ -386,7 +386,13 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         mutable.value = mutable.value.copy(schema = schema, tables = emptyList(), result = null, navigationIssues = emptyList())
         execute({ SqlNavigator.load(it, schema) }) { navigation(it) }
     }
-    fun page(table: TableRef, offset: Int = 0, columnOffset: Int = 0) = execute({ it.page(table, offset, columnOffset) }) { copy(result = it) }
+    fun page(table: TableRef, offset: Int = 0, columnOffset: Int = 0, view: TableView = mutable.value.result?.takeIf { it.tableSchema?.table == table }?.view ?: TableView()) = execute({ it.page(table, offset, columnOffset, view) }) { copy(result = it) }
+    internal fun aiTableAction(scope: String, table: TableRef, action: AiTableAction, allowWrites: Boolean) {
+        if (!mutable.value.connected || mutable.value.busy || !aiAllowed(this) || aiScope(this) != scope || mutable.value.result?.tableSchema?.table != table) return
+        execute({ AiTableActions.prepare(it, table, action, allowWrites) }) {
+            copy(result = it.page, preview = it.preview, message = if (it.preview == null) "AI 查询完成：${it.page.rows.size} 行${if (it.page.hasMore) "（还有更多）" else ""}" else "AI 已生成单条写入预览；确认后才会提交")
+        }
+    }
     fun query(sql: String) = execute({ it.select(sql) }) { copy(result = it) }
     fun writable(enabled: Boolean) = execute({ it.setWritable(enabled) }) { copy(writable = enabled) }
     fun preview(kind: MutationKind, row: Int?, inputs: Map<String, CellInput>) = execute({ it.preview(kind, row, inputs) }) { copy(preview = it) }
@@ -400,7 +406,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             var refreshed: ResultPage? = null
             var failed = false
             if (mutation.status != MutationStatus.UNKNOWN && schema != null) {
-                try { refreshed = session.page(schema.table, original.offset) }
+                try { refreshed = session.page(schema.table, original.offset, original.columnOffset, original.view) }
                 catch (_: Exception) { failed = true; runCatching { session.close() } }
             }
             ConfirmedPage(mutation, refreshed, failed)

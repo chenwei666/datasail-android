@@ -11,7 +11,7 @@ interface SqlWorkspaceSession : AutoCloseable {
     fun switchCatalog(name: String)
     fun tables(schema: String): List<TableRef>
     fun describe(table: TableRef): TableSchema
-    fun page(table: TableRef, offset: Int = 0, columnOffset: Int = 0): ResultPage
+    fun page(table: TableRef, offset: Int = 0, columnOffset: Int = 0, view: TableView = TableView()): ResultPage
     fun select(sql: String): ResultPage
     fun cancel() {}
     fun isClosed(): Boolean

@@ -1,0 +1,27 @@
+
+com.example.datasail.SmokeTest:...
+com.example.datasail.UpgradeTest:.
+com.example.datasail.UpgradeStateVerifyTest:
+Error in passwordAndSettingsSurviveInPlaceUpgrade(com.example.datasail.UpgradeStateVerifyTest):
+java.lang.AssertionError: expected:<18> but was:<14>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.example.datasail.UpgradeStateVerifyTest.passwordAndSettingsSurviveInPlaceUpgrade(UpgradeStateTest.kt:29)
+
+
+Time: 37.605
+There was 1 failure:
+1) passwordAndSettingsSurviveInPlaceUpgrade(com.example.datasail.UpgradeStateVerifyTest)
+java.lang.AssertionError: expected:<18> but was:<14>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.example.datasail.UpgradeStateVerifyTest.passwordAndSettingsSurviveInPlaceUpgrade(UpgradeStateTest.kt:29)
+
+FAILURES!!!
+Tests run: 5,  Failures: 1
+
+

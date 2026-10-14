@@ -60,6 +60,50 @@ class SqlServerIntegrationTest {
             }
         }
     }
+    @Test fun serverFiltersSortsAndPagingCoverRowsBeyondTheFirstPage() = fixture { session, table ->
+        connect().use { c ->
+            c.catalog = table.catalog
+            c.createStatement().use { it.execute("INSERT dbo.records(label,amount) SELECT TOP (205) N'group', 10 FROM sys.all_objects") }
+            c.prepareStatement("INSERT dbo.records(label,amount) VALUES(?,?)").use { p -> p.setString(1, "literal !%_[ ' OR 1=1 --"); p.setInt(2, 20); p.executeUpdate() }
+        }
+        val view = TableView(listOf(ColumnFilter("label", FilterOperator.EQ, "group")), listOf(ColumnSort("amount", true)))
+        val first = session.page(table, view = view); val next = session.page(table, 100, view = view)
+        assertEquals(100, first.rows.size); assertEquals(100, next.rows.size); assertTrue(next.hasMore)
+        assertTrue(first.rows.map { it[0] }.toSet().intersect(next.rows.map { it[0] }.toSet()).isEmpty())
+        assertEquals(5, session.page(table, 200, view = view).rows.size)
+        val exact = session.page(table, view = TableView(listOf(ColumnFilter("label", FilterOperator.CONTAINS, "!%_[ ' OR 1=1 --"))))
+        assertEquals(1, exact.rows.size); assertEquals(DbValue.Text("literal !%_[ ' OR 1=1 --"), exact.rows.single()[1])
+        val id = (exact.rows.single()[0] as DbValue.Integer).value
+        assertEquals(id, (session.page(table, view = TableView(sorts = listOf(ColumnSort("id", true)))).rows.first()[0] as DbValue.Integer).value)
+    }
+    @Test fun aiReadAndSingleRowCrudUsePreviewTokensAndOriginalValueConflictChecks() = fixture { session, table ->
+        fun action(kind: TableAction, id: String = "1", values: Map<String, CellInput> = emptyMap()) = AiTableAction(kind,
+            if (kind == TableAction.INSERT) TableView() else TableView(listOf(ColumnFilter("id", FilterOperator.EQ, id))), values)
+        val read = AiTableActions.prepare(session, table, action(TableAction.READ), false)
+        assertEquals(1, read.page.rows.size); assertNull(read.preview); assertFalse(session.writable)
+        val update = AiTableActions.prepare(session, table, action(TableAction.UPDATE, values = mapOf("label" to CellInput("AI 单条修改"))), true)
+        connect().use { c -> c.catalog = table.catalog; c.createStatement().use { st -> st.executeQuery("SELECT label FROM dbo.records WHERE id=1").use { r -> r.next(); assertFalse(r.getString(1) == "AI 单条修改") } } }
+        assertEquals(MutationStatus.COMMITTED, session.confirm(update.preview!!.token).status)
+        val conflict = AiTableActions.prepare(session, table, action(TableAction.UPDATE, values = mapOf("label" to CellInput("不应写入"))), true)
+        connect().use { c -> c.catalog = table.catalog; c.createStatement().use { it.execute("UPDATE dbo.records SET label=N'其他客户端' WHERE id=1") } }
+        assertEquals(MutationStatus.CONFLICT, session.confirm(conflict.preview!!.token).status)
+        val insert = AiTableActions.prepare(session, table, action(TableAction.INSERT, values = mapOf("label" to CellInput("AI 新增"))), true)
+        assertEquals(MutationStatus.COMMITTED, session.confirm(insert.preview!!.token).status)
+        val inserted = session.page(table, view = TableView(listOf(ColumnFilter("label", FilterOperator.EQ, "AI 新增"))))
+        val id = (inserted.rows.single()[0] as DbValue.Integer).value.toString()
+        val deletion = AiTableActions.prepare(session, table, action(TableAction.DELETE, id), true)
+        assertEquals(MutationStatus.COMMITTED, session.confirm(deletion.preview!!.token).status)
+        assertTrue(AiTableActions.prepare(session, table, action(TableAction.READ, id), false).page.rows.isEmpty())
+    }
+    @Test fun aiAmbiguousAndMissingRecordsNeverGenerateWritePreview() = fixture { session, table ->
+        connect().use { c -> c.catalog = table.catalog; c.createStatement().use { it.execute("INSERT dbo.records(label) VALUES(N'second')") } }
+        for (filter in listOf(ColumnFilter("id", FilterOperator.GE, "1"), ColumnFilter("id", FilterOperator.EQ, "999999"))) {
+            val plan = AiTableAction(TableAction.DELETE, TableView(listOf(filter)), emptyMap())
+            assertThrows(WorkspaceRejected::class.java) { AiTableActions.prepare(session, table, plan, true) }
+            assertFalse(session.writable)
+            assertEquals(2, session.page(table).rows.size)
+        }
+    }
     @Test fun wideTableLastWindowIsVisibleAndCannotBeEdited() {
         connect().use { connection ->
             connection.createStatement().use { statement ->

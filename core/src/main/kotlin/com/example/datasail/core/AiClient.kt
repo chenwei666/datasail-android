@@ -44,16 +44,17 @@ internal object AiWire {
             AiProtocol.GEMINI -> "/models?pageSize=100" + (encoded?.let { "&pageToken=$it" } ?: "")
         })
     }
-    fun chat(protocol: AiProtocol, model: String, text: String): AiRequest {
+    fun chat(protocol: AiProtocol, model: String, text: String, tableAction: Boolean = false): AiRequest {
+        val system = if (tableAction) AiTableAction.SYSTEM else SYSTEM
         require(model.isNotBlank() && model.length <= 256 && model.none { it < ' ' })
         require(text.isNotBlank() && text.length <= 24000)
         val message = o("role" to s("user"), "content" to s(text))
         return when (protocol) {
-            AiProtocol.OPENAI -> AiRequest("/chat/completions", o("model" to s(model), "messages" to a(o("role" to s("system"), "content" to s(SYSTEM)), message), "stream" to SearchJson.Atom("false"), "max_tokens" to SearchJson.Atom("2048")).encode())
-            AiProtocol.ANTHROPIC -> AiRequest("/messages", o("model" to s(model), "system" to s(SYSTEM), "messages" to a(message), "max_tokens" to SearchJson.Atom("2048")).encode())
+            AiProtocol.OPENAI -> AiRequest("/chat/completions", o("model" to s(model), "messages" to a(o("role" to s("system"), "content" to s(system)), message), "stream" to SearchJson.Atom("false"), "max_tokens" to SearchJson.Atom("2048")).encode())
+            AiProtocol.ANTHROPIC -> AiRequest("/messages", o("model" to s(model), "system" to s(system), "messages" to a(message), "max_tokens" to SearchJson.Atom("2048")).encode())
             AiProtocol.GEMINI -> {
                 val name = model.removePrefix("models/"); require(name.matches(Regex("[A-Za-z0-9._-]{1,200}")))
-                AiRequest("/models/$name:generateContent", o("systemInstruction" to o("parts" to a(o("text" to s(SYSTEM)))), "contents" to a(o("role" to s("user"), "parts" to a(o("text" to s(text))))), "generationConfig" to o("maxOutputTokens" to SearchJson.Atom("2048"))).encode())
+                AiRequest("/models/$name:generateContent", o("systemInstruction" to o("parts" to a(o("text" to s(system)))), "contents" to a(o("role" to s("user"), "parts" to a(o("text" to s(text))))), "generationConfig" to o("maxOutputTokens" to SearchJson.Atom("2048"))).encode())
             }
         }
     }
@@ -126,6 +127,7 @@ class AiClient internal constructor(private val service: AiService, private val 
         return AiModels(names.sorted(), true)
     }
     fun ask(model: String, text: String): String = AiWire.answer(service.protocol, request(AiWire.chat(service.protocol, model, text)))
+    fun plan(model: String, text: String): AiTableAction = AiTableAction.parse(AiWire.answer(service.protocol, request(AiWire.chat(service.protocol, model, text, tableAction = true))))
     private fun request(request: AiRequest): String {
         check(!closed.get())
         val timedOut = AtomicBoolean(false)
