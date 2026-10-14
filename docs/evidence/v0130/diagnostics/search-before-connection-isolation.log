@@ -1,0 +1,51 @@
+Synthetic search server ready: ELASTICSEARCH 8.19.5
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 11 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:processResources UP-TO-DATE
+> Task :core:processIntegrationTestResources NO-SOURCE
+
+> Task :core:compileKotlin
+w: file:///workspace/datasail-android/core/src/main/kotlin/com/example/datasail/core/SearchSession.kt:135:26 'constructor(p0: String!, p1: String!, p2: Int, p3: String!): URL' is deprecated. Deprecated in Java.
+
+> Task :core:compileJava NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileIntegrationTestKotlin UP-TO-DATE
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:searchTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+SearchIntegrationTest > strictTlsAndAuthentication PASSED
+
+SearchIntegrationTest > readsMappingPaginationAndTypes PASSED
+
+SearchIntegrationTest > singleObjectWritesAndConflicts FAILED
+    java.lang.AssertionError at SearchIntegrationTest.kt:12
+
+SearchIntegrationTest > adversarialTransport PASSED
+
+4 tests completed, 1 failed
+
+> Task :core:searchTest FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:searchTest'.
+> There were failing tests. See the report at: file:///workspace/datasail-android/core/build/reports/tests/searchTest/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 16s
+8 actionable tasks: 3 executed, 5 up-to-date

@@ -27,7 +27,7 @@ class AiNavigationTest {
         compose.onNodeWithText("前往 AI 设置").performScrollTo().performClick()
         compose.onNodeWithTag("ai-endpoint").performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag("ai-key").assertExists()
-        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+        compose.runOnIdle { compose.activity.onBackPressedDispatcher.onBackPressed() }
         compose.onNodeWithText("配置 AI 服务与模型").performScrollTo().assertIsDisplayed().performClick()
         compose.onNodeWithTag("ai-model").assertExists()
         compose.onNodeWithText("打开 AI 助手").performScrollTo().performClick()

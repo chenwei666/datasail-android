@@ -26,7 +26,8 @@ class WorkbenchInteractionTest {
         compose.runOnUiThread { compose.activity.setContent { MaterialTheme { Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             ResultGrid(page, WorkspaceUiState(connected = true, writable = true), AppSettings(), {}, { _, _ -> })
         } } } }
-        compose.onNodeWithText("全屏表格").performScrollTo().performClick()
+        compose.onNodeWithTag("grid-tools").performScrollTo()
+        compose.onNodeWithText("全屏表格").assertIsDisplayed().performClick()
         compose.onNode(hasTestTag("table-editing-status") and hasAnyAncestor(isDialog())).assertIsDisplayed().assertTextContains("没有主键", substring = true)
     }
     @Test fun pickerSearchesHundredsWithoutGrowingThePage() {

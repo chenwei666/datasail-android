@@ -39,7 +39,7 @@ p=Path(sys.argv[1]); password=secrets.token_hex(24)
 (p/'env').write_text('ELASTIC_PASSWORD='+password+'\n'); (p/'env').chmod(0o600)
 PY
 if [[ "$kind" == ELASTICSEARCH ]]; then
- docker run -d --name "$container" -p '127.0.0.1::9200' --env-file "$fixture/env" -e 'discovery.type=single-node' -e 'ES_JAVA_OPTS=-Xms512m -Xmx512m' -e 'node.store.allow_mmap=false' -e 'xpack.security.enabled=true' -e 'xpack.security.http.ssl.enabled=true' -e 'xpack.security.http.ssl.key=fixture/key.pem' -e 'xpack.security.http.ssl.certificate=fixture/cert.pem' -e 'xpack.security.http.ssl.certificate_authorities=fixture/ca.pem' --mount "type=bind,src=$fixture/server,dst=$server_home/config/fixture,readonly" "$image" >/dev/null
+ docker run -d --name "$container" --tmpfs "$server_home/data:rw,size=1g,uid=1000,gid=1000,mode=0750" -p '127.0.0.1::9200' --env-file "$fixture/env" -e 'discovery.type=single-node' -e 'ES_JAVA_OPTS=-Xms512m -Xmx512m' -e 'node.store.allow_mmap=false' -e 'xpack.security.enabled=true' -e 'xpack.security.http.ssl.enabled=true' -e 'xpack.security.http.ssl.key=fixture/key.pem' -e 'xpack.security.http.ssl.certificate=fixture/cert.pem' -e 'xpack.security.http.ssl.certificate_authorities=fixture/ca.pem' --mount "type=bind,src=$fixture/server,dst=$server_home/config/fixture,readonly" "$image" >/dev/null
 else
  # Use the image's security configuration schema, replacing all built-in users and roles.
  docker create --name "$container" "$image" >/dev/null
@@ -49,7 +49,7 @@ else
 from pathlib import Path
 import crypt,sys
 p=Path(sys.argv[1]); hashed=crypt.crypt((p/'password').read_text(),crypt.mksalt(crypt.METHOD_BLOWFISH))
-(p/'security/internal_users.yml').write_text('_meta:\n  type: internalusers\n  config_version: 2\n'+''.join(f'{u}:\n  hash: "{hashed}"\n  reserved: false\n' for u in ['admin','reader','denied']))
+(p/'security/internal_users.yml').write_text('_meta:\n  type: internalusers\n  config_version: 2\n'+''.join(f'{u}:\n  hash: "{hashed}"\n  reserved: false\n' for u in ['admin','reader','writer','denied']))
 (p/'security/roles.yml').write_text('''_meta:
   type: roles
   config_version: 2
@@ -60,6 +60,11 @@ fixture_admin:
       allowed_actions: ['*']
 fixture_denied:
   cluster_permissions: ['cluster_monitor']
+fixture_writer:
+  cluster_permissions: ['cluster_monitor', 'indices:data/write/bulk']
+  index_permissions:
+    - index_patterns: ['synthetic']
+      allowed_actions: ['read', 'write', 'indices_monitor', 'indices:admin/mappings/get']
 fixture_reader:
   cluster_permissions: ['cluster_monitor']
   index_permissions:
@@ -71,6 +76,8 @@ fixture_reader:
   config_version: 2
 fixture_admin:
   users: ['admin']
+fixture_writer:
+  users: ['writer']
 fixture_reader:
   users: ['reader']
 fixture_denied:
@@ -93,8 +100,9 @@ plugins.security.nodes_dn: ['CN=localhost']
 plugins.security.allow_default_init_securityindex: true
 YAML
  chmod -R a+rX "$fixture/security"
- docker run -d --name "$container" -p '127.0.0.1::9200' -e DISABLE_INSTALL_DEMO_CONFIG=true -e 'OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m' --mount "type=bind,src=$fixture/server,dst=$server_home/config/fixture,readonly" --mount "type=bind,src=$fixture/security,dst=$server_home/config/opensearch-security,readonly" --mount "type=bind,src=$fixture/opensearch.yml,dst=$server_home/config/opensearch.yml,readonly" "$image" >/dev/null
+ docker run -d --name "$container" --tmpfs "$server_home/data:rw,size=1g,uid=1000,gid=1000,mode=0750" -p '127.0.0.1::9200' -e DISABLE_INSTALL_DEMO_CONFIG=true -e 'OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m' --mount "type=bind,src=$fixture/server,dst=$server_home/config/fixture,readonly" --mount "type=bind,src=$fixture/security,dst=$server_home/config/opensearch-security,readonly" --mount "type=bind,src=$fixture/opensearch.yml,dst=$server_home/config/opensearch.yml,readonly" "$image" >/dev/null
 fi
+# Data uses bounded ephemeral tmpfs so host image storage cannot trigger server disk watermarks.
 port="$(docker port "$container" 9200/tcp | sed 's/.*://')"
 printf '%s' "$port" > "$fixture/port"
 if ! python3 scripts/fixtures/search-control.py seed "$fixture" "$kind"; then docker logs --tail 70 "$container"; exit 1; fi
@@ -104,10 +112,10 @@ fault_port="$(cat "$fixture/fault-port")"
 printf 'port=%s\nfaultPort=%s\n' "$port" "$fault_port" >> "$fixture/database.properties"
 keytool -importcert -noprompt -alias fixture-ca -file "$fixture/server/ca.pem" -keystore "$fixture/trust.p12" -storepass changeit >/dev/null 2>&1
 export DATASAIL_TEST_CONFIG="$fixture/database.properties" DATASAIL_TEST_TRUSTSTORE="$fixture/trust.p12"
-evidence="docs/evidence/v071/$kind"; mkdir -p "$evidence"
+evidence="docs/evidence/v0130/$kind"; mkdir -p "$evidence"
 cp "$fixture/server-version.json" "$evidence/"
 if [[ "${DATASAIL_SKIP_JVM:-0}" != 1 ]]; then
- ./gradlew :core:searchTest --console=plain
+ if ! ./gradlew :core:searchTest --console=plain; then docker logs "$container" > /tmp/datasail-search-server-diagnostic.log 2>&1; exit 1; fi
  cp core/build/test-results/searchTest/TEST-*.xml "$evidence/"
 fi
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
@@ -128,7 +136,7 @@ if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb reverse "tcp:$port" "tcp:$port"; adb reverse "tcp:$fault_port" "tcp:$fault_port"
  adb shell am instrument -w -e class com.example.datasail.SearchDeviceTest,com.example.datasail.SearchUiTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  cp "$fixture/android-result.txt" "$evidence/android-${ANDROID_SERIAL}.txt"
- rg -q 'OK \(5 tests\)' "$fixture/android-result.txt"
+ rg -q 'OK \(6 tests\)' "$fixture/android-result.txt"
  adb shell run-as com.example.datasail rm -f files/search-fixture.properties files/search-ca.pem
  adb reverse --remove "tcp:$port"; adb reverse --remove "tcp:$fault_port"
  done

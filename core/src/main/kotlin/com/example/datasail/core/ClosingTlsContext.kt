@@ -21,8 +21,8 @@ internal class SocketRegistry {
     }
     @Synchronized fun close() { closed = true; sockets.forEach { try { it.close() } catch (_: Exception) {} }; sockets.clear() }
 }
-private class ClosingTlsSpi(private val delegate: SSLContext, registry: SocketRegistry) : SSLContextSpi() {
-    private val factory = object : SSLSocketFactory() {
+private class ClosingTlsSpi(private val delegate: SSLContext, private val registry: SocketRegistry) : SSLContextSpi() {
+    private fun freshFactory() = object : SSLSocketFactory() {
         private val original = delegate.socketFactory
         override fun getDefaultCipherSuites() = original.defaultCipherSuites
         override fun getSupportedCipherSuites() = original.supportedCipherSuites
@@ -34,7 +34,9 @@ private class ClosingTlsSpi(private val delegate: SSLContext, registry: SocketRe
         override fun createSocket(host: InetAddress, port: Int, local: InetAddress, localPort: Int): Socket = registry.add(original.createSocket(host, port, local, localPort))
     }
     override fun engineInit(km: Array<out KeyManager>?, tm: Array<out TrustManager>?, random: SecureRandom?) = throw UnsupportedOperationException()
-    override fun engineGetSocketFactory() = factory
+    // HttpsURLConnection keys its connection cache by socket-factory identity.
+    // A fresh facade prevents reuse of a peer-closed socket across separate HTTP operations.
+    override fun engineGetSocketFactory() = freshFactory()
     override fun engineGetServerSocketFactory() = delegate.serverSocketFactory
     override fun engineCreateSSLEngine() = delegate.createSSLEngine()
     override fun engineCreateSSLEngine(host: String, port: Int) = delegate.createSSLEngine(host, port)

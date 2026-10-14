@@ -26,8 +26,8 @@ fun binaryLabel(bytes: ByteArray): String = try {
 } catch (_: Exception) { "hex:" + bytes.joinToString("") { "%02x".format(it) } }
 data class KeyScan(val cursor: String, val keys: List<BinaryKey>, val pattern: String)
 data class KeyContent(val key: BinaryKey, val type: String, val ttlMillis: Long, val length: Long,
-    val rows: List<List<String>>, val cursor: String = "0", val limited: Boolean = false)
-interface KeyValueSession : AutoCloseable {
+    val rows: List<List<String>>, val cursor: String = "0", val limited: Boolean = false, val textValue: String? = null)
+interface KeyValueSession : AutoCloseable, RecordWrites {
     fun scan(cursor: String = "0", pattern: String = "*"): KeyScan
     fun inspect(key: BinaryKey, cursor: String = "0"): KeyContent
     fun isClosed(): Boolean
@@ -41,6 +41,8 @@ class RespKeyValueSession(private val profile: ConnectionProfile) : KeyValueSess
     private val closed = AtomicBoolean(false)
     private var reader: RespReader? = null
     private var output: OutputStream? = null
+    private var pending: Pair<MutationPreview, RecordDraft>? = null
+    private var inspected: KeyContent? = null
 
     fun login(credentials: Credentials, selectDatabase: Boolean = true) {
         require(profile.kind.isKeyValue)
@@ -69,6 +71,7 @@ class RespKeyValueSession(private val profile: ConnectionProfile) : KeyValueSess
         }.take(DiscoveredDatabases.LIMIT + 1).toList()
     }
     override fun scan(cursor: String, pattern: String): KeyScan = bounded {
+        pending = null
         validCursor(cursor)
         require(pattern.toByteArray(Charsets.UTF_8).size <= 1024) { "Pattern too long" }
         val response = command("SCAN", cursor, "MATCH", pattern, "COUNT", "100").array()
@@ -85,6 +88,7 @@ class RespKeyValueSession(private val profile: ConnectionProfile) : KeyValueSess
         val ttl = keyCommand("PTTL", key).integer()
         var next = "0"
         var limited = false
+        var textValue: String? = null
         val length: Long
         val rows: List<List<String>>
         when (type) {
@@ -93,6 +97,7 @@ class RespKeyValueSession(private val profile: ConnectionProfile) : KeyValueSess
                 length = keyCommand("STRLEN", key).integer()
                 val value = keyCommand("GETRANGE", key, "0", "2047").bytes()
                 rows = listOf(listOf(binaryLabel(value))); limited = length > value.size
+                if (!limited) textValue = runCatching { Charsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(value)).toString() }.getOrNull()
             }
             "list" -> {
                 length = keyCommand("LLEN", key).integer()
@@ -123,7 +128,55 @@ class RespKeyValueSession(private val profile: ConnectionProfile) : KeyValueSess
             }
             else -> throw WorkspaceRejected("此键类型尚未支持内容预览")
         }
-        KeyContent(key, type, ttl, length, rows, next, limited)
+        KeyContent(key, type, ttl, length, rows, next, limited, textValue).also { inspected = it; pending = null }
+    }
+    override fun discardRecord() { pending = null }
+    override fun previewRecord(draft: RecordDraft): MutationPreview {
+        pending = null; requireRecord(draft)
+        if (draft.namespace != profile.database || draft.identity.isEmpty() || draft.replacement.toByteArray().size > 8192) throw WorkspaceRejected("键或值超出编辑范围")
+        if (draft.kind != MutationKind.INSERT) {
+            val content = inspected ?: throw WorkspaceRejected("请先读取键")
+            if (!content.key.bytes().contentEquals(draft.identity.toByteArray()) || content.type != "string" || content.limited || content.textValue != draft.original)
+                throw WorkspaceRejected("本版仅编辑完整加载的 UTF-8 字符串键")
+        }
+        return bounded {
+            val value = command("GET", draft.identity)
+            val old = if (value == Resp.Nil) null else Charsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(value.bytes())).toString()
+            if (old != draft.original || (draft.kind == MutationKind.INSERT && old != null)) throw WorkspaceRejected("键已变化，请刷新")
+            recordPreview(draft, "${profile.kind.label} / ${profile.database} / ${draft.identity}", if (draft.kind == MutationKind.DELETE) "WATCH → 校验原值 → MULTI / DEL / EXEC" else "WATCH → 校验原值 → MULTI / SET ${if (draft.kind == MutationKind.INSERT) "NX" else "XX KEEPTTL"} / EXEC")
+                .also { pending = it to draft }
+        }
+    }
+    override fun confirmRecord(token: String): MutationResult {
+        val (preview, draft) = pending ?: throw WorkspaceRejected("确认已失效")
+        pending = null; requireToken(preview, token)
+        var executing = false
+        return try { bounded {
+            command("WATCH", draft.identity).expectOk()
+            val current = command("GET", draft.identity)
+            val matches = if (draft.original == null) current == Resp.Nil else current is Resp.Bytes && current.value.contentEquals(draft.original.toByteArray())
+            if (!matches) {
+                command("UNWATCH").expectOk()
+                MutationResult(MutationStatus.CONFLICT, "键已变化或过期，未写入；请刷新")
+            } else {
+                command("MULTI").expectOk()
+                if (draft.kind == MutationKind.DELETE) command("DEL", draft.identity)
+                else if (draft.kind == MutationKind.INSERT) command("SET", draft.identity, draft.replacement, "NX")
+                else command("SET", draft.identity, draft.replacement, "XX", "KEEPTTL")
+                executing = true
+                val result = command("EXEC")
+                if (result == Resp.Nil) MutationResult(MutationStatus.CONFLICT, "提交前键被修改，事务未执行；请刷新")
+                else {
+                    val reply = result.array().single()
+                    if (draft.kind == MutationKind.DELETE) check(reply.integer() == 1L) else reply.expectOk()
+                    MutationResult(MutationStatus.COMMITTED, "单键变更已提交；修改保留当前过期时间")
+                }
+            }
+        } } catch (_: Exception) {
+            close()
+            MutationResult(if (executing) MutationStatus.UNKNOWN else MutationStatus.ROLLED_BACK,
+                if (executing) "执行结果未知，请重新连接核对；不会自动重试" else "未执行写入；请检查键类型、权限及服务器是否支持事务和 KEEPTTL")
+        }
     }
     private fun keyCommand(name: String, key: BinaryKey, vararg args: String) = send(
         listOf(name.toByteArray(Charsets.US_ASCII), key.bytes()) + args.map { it.toByteArray(Charsets.UTF_8) })

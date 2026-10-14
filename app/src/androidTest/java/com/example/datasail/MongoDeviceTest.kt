@@ -21,6 +21,7 @@ class MongoDeviceTest {
             trustStore = TrustStoreSpec(trust.path)), config.getProperty("password")).block() }
         finally { trust.delete() }
     }
+    @Test fun singleObjectWritesAndConflicts() = fixture { writes() }
     @Test fun readsAndBoundsOnArt() = fixture { reads() }
     @Test fun identityAndAuthOnArt() = fixture { identityAndAuth() }
     @Test fun deadlinesAndCancellationOnArt() = fixture { deadlinesAndCancellation() }

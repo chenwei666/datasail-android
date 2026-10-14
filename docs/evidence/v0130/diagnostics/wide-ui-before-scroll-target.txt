@@ -1,0 +1,21 @@
+
+com.example.datasail.TablePresentationTest:
+Error in all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:103)
+
+
+Time: 74.689
+There was 1 failure:
+1) all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:103)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+

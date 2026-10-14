@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.SqlServerIntegrationTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-10-14T12:46:15.597Z" hostname="b6e64093f9ae" time="8.209">
+  <properties/>
+  <testcase name="lostCommitAcknowledgementIsUnknownAndNeverReplayed" classname="com.example.datasail.core.SqlServerIntegrationTest" time="1.076"/>
+  <testcase name="collationAndTrailingSpaceChangesAreConflictsWithoutRowversion" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.17"/>
+  <testcase name="wideTableLastWindowIsVisibleAndCannotBeEdited" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.149"/>
+  <testcase name="aiReadAndSingleRowCrudUsePreviewTokensAndOriginalValueConflictChecks" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.199"/>
+  <testcase name="partialOperationFailureReportsActualCatalogAndReadOnlyState" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.088"/>
+  <testcase name="wrongHostnameAndUntrustedCaRejected" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.058"/>
+  <testcase name="temporalValuesPreservePrecisionWithoutDesktopOnlyApis" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.171"/>
+  <testcase name="bufferedResponseIsRejectedByDriverBudget" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.204"/>
+  <testcase name="explicitDropHasTargetConfirmationAndCannotReplayOrCrossMetadataChanges" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.15"/>
+  <testcase name="textBudgetPagingDoesNotSkipRecordsAndTemporalValuesRemainReadOnly" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.245"/>
+  <testcase name="maxTextDeclarationsAllowLoadedRowsAndRetainConflictChecks" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.47"/>
+  <testcase name="productionSessionStartsReadonlyAndOnlyExplicitEnableAllowsWriteMode" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.018"/>
+  <testcase name="floatingCoordinatesWithoutRowVersionAllowEditsAndDetectBitChanges" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.207"/>
+  <testcase name="aiAmbiguousAndMissingRecordsNeverGenerateWritePreview" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.072"/>
+  <testcase name="boundedPagingAndUnsafeObjectsReadOnly" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.139"/>
+  <testcase name="abnormalAffectedCountRollsBackActualWrite" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.07"/>
+  <testcase name="wrongPasswordRejectsWithoutRetry" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.025"/>
+  <testcase name="changedTriggerBlocksOldApproval" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.083"/>
+  <testcase name="browseTypesAndSafeWrites" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.195"/>
+  <testcase name="serverFiltersSortsAndPagingCoverRowsBeyondTheFirstPage" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.147"/>
+  <testcase name="queryAndSwitchInvalidateApprovalAndQueryIsReadOnly" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.046"/>
+  <testcase name="failedCatalogAcknowledgementClosesAmbiguousSession" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.037"/>
+  <testcase name="probeTypesTimeoutAndCancellation" classname="com.example.datasail.core.SqlServerIntegrationTest" time="4.083"/>
+  <testcase name="conflictDoesNotOverwriteConcurrentUpdate" classname="com.example.datasail.core.SqlServerIntegrationTest" time="0.099"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

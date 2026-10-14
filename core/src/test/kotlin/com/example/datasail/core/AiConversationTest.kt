@@ -22,6 +22,6 @@ class AiConversationTest {
         assertEquals(emptyList<AiChatTurn>(), AiConversation.context(listOf(AiChatTurn("q", "a".repeat(24000))), "next"))
         assertEquals(turns.takeLast(1), AiConversation.context(listOf(AiChatTurn("q", "a".repeat(24000))) + turns.takeLast(1), "next"))
         assertThrows(IllegalArgumentException::class.java) { AiConversation.context(turns, " ") }
-        assertThrows(IllegalArgumentException::class.java) { AiConversation.context(turns, "a".repeat(12001)) }
+        assertThrows(IllegalArgumentException::class.java) { AiConversation.context(turns, "a".repeat(24001)) }
     }
 }

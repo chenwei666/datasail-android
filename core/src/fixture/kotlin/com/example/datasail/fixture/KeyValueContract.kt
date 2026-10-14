@@ -46,6 +46,27 @@ class KeyValueContract(private val profile: ConnectionProfile, private val passw
         // A large list element is rejected before allocation and the stream is disposed.
         assertThrows(Exception::class.java) { inspect("oversized") }; assertTrue(session.isClosed())
     }
+    fun writes() {
+        val writer = ConnectionProfile(profile.kind, profile.host, profile.port, profile.database, "writer", trustStore = profile.trustStore)
+        connect(writer).use { session -> connect(writer).use { other ->
+            val key = "write-fixture-${java.util.UUID.randomUUID()}"
+            fun read(s: RespKeyValueSession) = s.inspect(BinaryKey(key.toByteArray())).textValue!!
+            val insert = session.previewRecord(RecordDraft(MutationKind.INSERT, "0", key, replacement = "0007 数舟"))
+            assertEquals(MutationStatus.COMMITTED, session.confirmRecord(insert.token).status)
+            assertThrows(WorkspaceRejected::class.java) { session.confirmRecord(insert.token) }
+            val old = read(session)
+            val stale = session.previewRecord(RecordDraft(MutationKind.UPDATE, "0", key, old, "stale"))
+            val concurrent = other.previewRecord(RecordDraft(MutationKind.UPDATE, "0", key, read(other), "changed"))
+            assertEquals(MutationStatus.COMMITTED, other.confirmRecord(concurrent.token).status)
+            assertEquals(MutationStatus.CONFLICT, session.confirmRecord(stale.token).status)
+            val update = session.previewRecord(RecordDraft(MutationKind.UPDATE, "0", key, read(session), ""))
+            assertEquals(MutationStatus.COMMITTED, session.confirmRecord(update.token).status)
+            assertEquals("", read(session))
+            val remove = session.previewRecord(RecordDraft(MutationKind.DELETE, "0", key, read(session)))
+            assertEquals(MutationStatus.COMMITTED, session.confirmRecord(remove.token).status)
+            assertEquals("none", session.inspect(BinaryKey(key.toByteArray())).type)
+        } }
+    }
     fun identityAndAuth() {
         val wrongHost = ConnectionProfile(profile.kind, "127.0.0.1", profile.port, "0", profile.username, trustStore = profile.trustStore)
         val unknownCa = ConnectionProfile(profile.kind, "localhost", profile.port, "0", profile.username)

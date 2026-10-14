@@ -14,13 +14,13 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 
 /** Search capability has no arbitrary endpoint, update, bulk, script or administrative API. */
-interface SearchSession : AutoCloseable {
+interface SearchSession : AutoCloseable, RecordWrites {
     fun indices(): List<String>
     fun mapping(index: String): String
     fun search(index: String, query: String, offset: Int = 0): SearchPage
     fun isClosed(): Boolean
 }
-data class SearchHit(val id: String, val json: String?, val unavailable: String? = null)
+data class SearchHit(val id: String, val json: String?, val unavailable: String? = null, val sequence: Long? = null, val primaryTerm: Long? = null)
 data class SearchPage(val index: String, val query: String, val offset: Int, val hits: List<SearchHit>, val hasMore: Boolean, val windowLimit: Boolean)
 internal class SearchHttpFailure(val status: Int) : Exception("Search HTTP failure")
 
@@ -32,6 +32,9 @@ class HttpsSearchSession(private val profile: ConnectionProfile) : SearchSession
     @Volatile private var active: HttpsURLConnection? = null
     @Volatile private var auth: String? = null
     private var knownIndices = emptySet<String>()
+    private var latest: SearchPage? = null
+    private data class Plan(val preview: MutationPreview, val draft: RecordDraft, val hit: SearchHit?)
+    private var pending: Plan? = null
     init {
         require(profile.kind.isSearch)
         val trust = SqlServerTrustManager(CertificateTrust.configuration(profile))
@@ -70,10 +73,11 @@ class HttpsSearchSession(private val profile: ConnectionProfile) : SearchSession
         return result
     }
     override fun search(index: String, query: String, offset: Int): SearchPage {
+        pending = null; latest = null
         checkIndex(index)
         if (offset !in 0..900 || offset % 100 != 0) throw WorkspaceRejected("最多浏览前 1000 条，请缩小查询范围")
         val condition = SearchPolicy.query(query)
-        val body = "{\"query\":${condition.encode()},\"from\":$offset,\"size\":101,\"sort\":[\"_doc\"],\"timeout\":\"8s\",\"track_total_hits\":false}"
+        val body = "{\"query\":${condition.encode()},\"from\":$offset,\"size\":101,\"sort\":[\"_doc\"],\"timeout\":\"8s\",\"track_total_hits\":false,\"seq_no_primary_term\":true}"
         val root = request("/$index/_search?allow_partial_search_results=false", body).obj()
         if ((root["timed_out"] as? SearchJson.Atom)?.raw != "false" ||
             (root["_shards"]?.obj()?.get("failed") as? SearchJson.Atom)?.raw != "0")
@@ -87,12 +91,46 @@ class HttpsSearchSession(private val profile: ConnectionProfile) : SearchSession
             val source = fields["_source"]?.encode()
             if (source == null) SearchHit(id, null, "此文档未提供 _source")
             else if (source.length > 8192 || source.length > remaining) SearchHit(id, null, "文档超过单条或页面显示上限，未展开")
-            else { remaining -= source.length; SearchHit(id, source) }
+            else { remaining -= source.length; SearchHit(id, source, sequence = (fields["_seq_no"] as? SearchJson.Atom)?.raw?.toLongOrNull(), primaryTerm = (fields["_primary_term"] as? SearchJson.Atom)?.raw?.toLongOrNull()) }
         }
-        return SearchPage(index, query, offset, previews, hits.values.size > 100 && offset < 900, hits.values.size > 100 && offset == 900)
+        return SearchPage(index, query, offset, previews, hits.values.size > 100 && offset < 900, hits.values.size > 100 && offset == 900).also { latest = it }
+    }
+    override fun discardRecord() { pending = null }
+    override fun previewRecord(draft: RecordDraft): MutationPreview {
+        pending = null; requireRecord(draft); checkIndex(draft.namespace)
+        if (draft.identity.isEmpty()) throw WorkspaceRejected("请填写文档 ID")
+        // Android HTTP stacks/proxies can normalize path segments before routing a DELETE.
+        if (draft.identity in setOf(".", "..") || draft.identity.any { it in "/\\%" })
+            throw WorkspaceRejected("此文档 ID 包含路径保留字符，暂不支持直接写入")
+        if (draft.kind != MutationKind.DELETE) SearchJson.parse(draft.replacement).obj()
+        val hit = if (draft.kind == MutationKind.INSERT) null else latest?.takeIf { it.index == draft.namespace }?.hits?.singleOrNull { it.id == draft.identity && it.json == draft.original }
+        if (draft.kind != MutationKind.INSERT && (hit?.sequence == null || hit.primaryTerm == null)) throw WorkspaceRejected("缺少完整原文或版本号，请重新搜索")
+        return recordPreview(draft, "${profile.kind.label} / ${draft.namespace} / ${draft.identity}",
+            if (draft.kind == MutationKind.INSERT) "CREATE：只允许新 ID" else "${draft.kind.label}：if_seq_no=${hit?.sequence} & if_primary_term=${hit?.primaryTerm}")
+            .also { pending = Plan(it, draft, hit) }
+    }
+    override fun confirmRecord(token: String): MutationResult {
+        val plan = pending ?: throw WorkspaceRejected("确认已失效")
+        pending = null; requireToken(plan.preview, token); checkIndex(plan.draft.namespace)
+        val draft = plan.draft
+        val id = draft.identity.toByteArray(Charsets.UTF_8).joinToString("") { val byte = it.toInt() and 255; val char = byte.toChar()
+            if (char in 'a'..'z' || char in 'A'..'Z' || char in '0'..'9' || char in "-._~") char.toString() else "%%%02X".format(byte) }
+        val condition = if (plan.hit == null) "" else "&if_seq_no=${plan.hit.sequence}&if_primary_term=${plan.hit.primaryTerm}"
+        val path = "/${draft.namespace}/${if (draft.kind == MutationKind.INSERT) "_create" else "_doc"}/$id?refresh=wait_for$condition"
+        return try {
+            request(path, draft.replacement.takeUnless { draft.kind == MutationKind.DELETE }, if (draft.kind == MutationKind.DELETE) "DELETE" else "PUT")
+            latest = null
+            MutationResult(MutationStatus.COMMITTED, "单文档变更已提交，请刷新搜索结果")
+        } catch (e: SearchHttpFailure) {
+            when (e.status) {
+                404, 409 -> MutationResult(MutationStatus.CONFLICT, "文档不存在、ID 重复或版本已变化，未写入")
+                400, 401, 403 -> MutationResult(MutationStatus.ROLLED_BACK, "服务器拒绝写入，请检查映射、权限或文档格式")
+                else -> { close(); MutationResult(MutationStatus.UNKNOWN, "执行结果未知（HTTP ${e.status}），请重新连接核对；不会自动重试") }
+            }
+        } catch (e: Exception) { close(); MutationResult(MutationStatus.UNKNOWN, "执行结果未知（${e.javaClass.simpleName}），请重新连接核对；不会自动重试") }
     }
     private fun checkIndex(index: String) { if (index !in knownIndices || !SearchPolicy.validIndex(index)) throw WorkspaceRejected("请从当前连接的索引列表选择索引") }
-    private fun request(path: String, body: String? = null): SearchJson {
+    private fun request(path: String, body: String? = null, method: String = if (body == null) "GET" else "POST"): SearchJson {
         check(!closed.get())
         val expired = AtomicBoolean(false)
         val deadline = timer.schedule({ expired.set(true); close() }, 12, TimeUnit.SECONDS)
@@ -113,9 +151,10 @@ class HttpsSearchSession(private val profile: ConnectionProfile) : SearchSession
             connection.setRequestProperty("Accept-Encoding", "identity")
             connection.setRequestProperty("Connection", "close")
             synchronized(this) { if (closed.get()) throw java.net.SocketException("Cancelled"); active = connection }
-            if (body != null) {
-                val bytes = body.toByteArray(Charsets.UTF_8)
-                connection.requestMethod = "POST"; connection.doOutput = true
+            connection.requestMethod = method
+            if (body != null || method == "DELETE") {
+                val bytes = body.orEmpty().toByteArray(Charsets.UTF_8)
+                connection.doOutput = true
                 connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
                 connection.setFixedLengthStreamingMode(bytes.size)
                 connection.outputStream.use { it.write(bytes) }
@@ -137,7 +176,7 @@ class HttpsSearchSession(private val profile: ConnectionProfile) : SearchSession
             if (closed.get()) throw java.net.SocketException("Cancelled")
             return result
         } catch (error: Exception) {
-            close()
+            if (error !is SearchHttpFailure || error.status !in setOf(400, 401, 403, 404, 409)) close()
             if (expired.get()) throw SocketTimeoutException("Search deadline exceeded")
             throw error
         } finally { deadline.cancel(false); connection?.disconnect(); active = null }

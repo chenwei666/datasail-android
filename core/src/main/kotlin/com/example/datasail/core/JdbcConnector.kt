@@ -97,6 +97,7 @@ class JdbcConnector : SqlConnector {
                     setProperty("socketTimeout", "15000")
                     setProperty("allowLocalInfile", "false")
                     setProperty("allowMultiQueries", "false")
+                    setProperty("useServerPrepStmts", "true") // Typed binary float parameters must not become rounded SQL literals.
                     setProperty("allowPublicKeyRetrieval", "false")
                 }
             }

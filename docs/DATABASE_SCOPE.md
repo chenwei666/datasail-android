@@ -2,7 +2,7 @@
 
 根据用户确认，保留现有 SQL Server，产品继续向 DBeaver / DbGate 类通用管理工具发展，覆盖主流关系型、文档、键值、搜索、分析、时序和图数据库。该目标不是“当前已支持所有数据库”的声明。
 
-V0.6.0 实现 SQL Server、MySQL、MariaDB、PostgreSQL 、SQLite、Redis、Valkey 、MongoDB、Elasticsearch 和 OpenSearch 的统一连接入口。SQL Server 保留原单行编辑；新增引擎先提供对象、列、主键、分页和受限 SELECT，写入入口禁用。Redis/Valkey 使用独立只读键值工作台，支持 SCAN、六类内容和 TTL。MongoDB 使用独立文档工作台，支持集合、受限 JSON 筛选和游标分页。服务器版本、Android 与 JVM 的验证分别见 DRIVER_MATRIX 和 TEST_REPORT。
+V0.13.0 已有 SQL Server、MySQL、MariaDB、PostgreSQL、SQLite、Redis、Valkey、MongoDB、Elasticsearch 和 OpenSearch 的独立工作台。关系型表可在主键、完整原行及元数据条件满足时进行单行增删改；SQLite 修改私有副本；Redis/Valkey 仅完整 UTF-8 字符串可写；MongoDB 限有界完整文档；搜索引擎限带版本校验的单文档。不是所有对象和字段都可编辑。服务器版本、Android 与 JVM 的实际验证分别见 DRIVER_MATRIX 和 TEST_REPORT。
 
 | 类别 | 后续接入范围（尚未实现） |
 |---|---|
@@ -24,4 +24,4 @@ V0.6.0 实现 SQL Server、MySQL、MariaDB、PostgreSQL 、SQLite、Redis、Valk
 
 下一批最小闭环：ClickHouse 表与查询；随后独立接入企业及国产驱动。每批都产出实际 APK 与验证矩阵，不用目录数量代替能力完成度。
 
-搜索引擎使用 SearchSession：索引、映射、受限条件与前 1000 条分页，保留 JSON 数值原文。暂无聚合、脚本、PIT/scroll、写入、导出或云 IAM。
+搜索引擎使用 SearchSession：索引、映射、受限条件与前 1000 条分页，保留 JSON 数值原文。新增单文档创建、版本校验修改和删除；暂无聚合、脚本、PIT/scroll、批量写入、导出或云 IAM。

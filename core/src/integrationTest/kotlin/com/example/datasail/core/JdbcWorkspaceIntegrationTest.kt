@@ -24,7 +24,7 @@ class JdbcWorkspaceIntegrationTest {
                 for (i in 1..105) {
                     statement.setLong(1, i.toLong()); statement.setString(2, if (i == 1) "0007 中文 🚢" else "")
                     statement.setBigDecimal(3, java.math.BigDecimal("12345678901234.5678"))
-                    statement.setString(4, if (i == 1) "x".repeat(3000) else null); statement.addBatch()
+                    statement.setString(4, if (i == 1) "x".repeat(4001) else null); statement.addBatch()
                 }
                 statement.executeBatch()
             }
@@ -83,7 +83,7 @@ class JdbcWorkspaceIntegrationTest {
         val description = session.describe(table)
         assertEquals(listOf("id"), description.keys.map { it.name })
         assertFalse(description.columns.single { it.name == "moment" }.rowVersion)
-        assertNotNull(description.readOnlyReason)
+        assertNull(description.readOnlyReason)
         val page = session.page(table)
         assertEquals(100, page.rows.size); assertTrue(page.hasMore)
         assertEquals(DbValue.Text("0007 中文 🚢"), page.rows[0][1])
@@ -94,9 +94,50 @@ class JdbcWorkspaceIntegrationTest {
         assertEquals(DbValue.Integer(101), second.rows[0][0]); assertEquals(5, second.rows.size); assertFalse(second.hasMore)
         assertEquals(DbValue.Integer(105), session.select("SELECT COUNT(*) FROM workbench_fixture").rows.single().single())
         assertFalse(session.writable)
-        assertThrows(WorkspaceRejected::class.java) { session.setWritable(true) }
+        session.setWritable(true); session.setWritable(false)
         connect().use { other -> other.createStatement().use { it.executeUpdate("UPDATE workbench_fixture SET code='updated' WHERE id=1") } }
         assertEquals(DbValue.Text("updated"), session.page(table).rows.first()[1])
+    }
+    @Test fun writesUseBoundValuesFullRowConflictsAndOneUseTokens() = fixture { session, table ->
+        session.page(table); session.setWritable(true)
+        assertThrows(WorkspaceRejected::class.java) { session.preview(MutationKind.UPDATE, 0, mapOf("code" to CellInput("blocked"))) }
+        val insert = session.preview(MutationKind.INSERT, null, mapOf("id" to CellInput("200"), "code" to CellInput("00042 ' OR 1=1 --"), "amount" to CellInput("12.3400")))
+        assertEquals(MutationStatus.COMMITTED, session.confirm(insert.token).status)
+        assertThrows(WorkspaceRejected::class.java) { session.confirm(insert.token) }
+        val view = TableView(listOf(ColumnFilter("id", FilterOperator.EQ, "200")))
+        assertEquals(DbValue.Text("00042 ' OR 1=1 --"), session.page(table, view = view).rows.single()[1])
+        val update = session.preview(MutationKind.UPDATE, 0, mapOf("code" to CellInput(""), "moment" to CellInput("2024-02-29 12:34:56")))
+        val result = session.confirm(update.token)
+        assertEquals(result.message, MutationStatus.COMMITTED, result.status)
+        assertEquals(DbValue.Text(""), session.page(table, view = view).rows.single()[1])
+        val stale = session.preview(MutationKind.UPDATE, 0, mapOf("code" to CellInput("must not commit")))
+        connect().use { raw -> raw.createStatement().use { it.executeUpdate("UPDATE workbench_fixture SET note='concurrent' WHERE id=200") } }
+        assertEquals(MutationStatus.CONFLICT, session.confirm(stale.token).status)
+        assertEquals(DbValue.Text(""), session.page(table, view = view).rows.single()[1])
+        val delete = session.preview(MutationKind.DELETE, 0, emptyMap())
+        assertEquals(MutationStatus.COMMITTED, session.confirm(delete.token).status)
+        assertTrue(session.page(table, view = view).rows.isEmpty())
+        assertEquals(DbValue.Integer(105), session.select("SELECT COUNT(*) FROM workbench_fixture").rows.single().single())
+    }
+    @Test fun floatsAndBinaryTextComparisonDoNotLoseConcurrentChanges() {
+        connect().use { raw ->
+            raw.createStatement().use {
+                it.execute("CREATE TABLE write_types_fixture(id BIGINT PRIMARY KEY, label VARCHAR(40), small_value ${if (pg) "REAL" else "FLOAT"}, big_value ${if (pg) "DOUBLE PRECISION" else "DOUBLE"})")
+                it.execute("INSERT INTO write_types_fixture VALUES(1,'Abc ',1.2,1.23456789012345)")
+            }
+            JdbcBrowseSession(raw, profile()).use { session ->
+                val table = session.tables(if (pg) "public" else "synthetic").single { it.name == "write_types_fixture" }
+                session.page(table); session.setWritable(true)
+                val update = session.preview(MutationKind.UPDATE, 0, mapOf("label" to CellInput("ABC")))
+                val changed = session.confirm(update.token)
+                assertEquals(changed.message, MutationStatus.COMMITTED, changed.status)
+                session.page(table)
+                val stale = session.preview(MutationKind.DELETE, 0, emptyMap())
+                connect().use { c -> c.createStatement().use { it.executeUpdate("UPDATE write_types_fixture SET label='abc' WHERE id=1") } }
+                assertEquals(MutationStatus.CONFLICT, session.confirm(stale.token).status)
+                assertEquals(DbValue.Text("abc"), session.page(table).rows.single()[1])
+            }
+        }
     }
     @Test fun rejectsWrongHostnameUntrustedCaAndWrongPassword() {
         for (p in listOf(profile("127.0.0.1"), profile(trusted = false))) {

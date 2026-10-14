@@ -105,6 +105,12 @@ class TableActionsTest {
         }
         assertThrows(WorkspaceRejected::class.java) { AiTableActions.prepare(session, table, AiTableAction.parse(plan()), false) }
     }
+    @Test fun answersRemainSeparateFromExplicitWholeTableDeletion() {
+        assertEquals(TableAction.ANSWER, AiTableAction.parse("{\"answer\":\"这是考勤记录表，但业务含义需确认\"}").action)
+        assertEquals(TableAction.DROP_TABLE, AiTableAction.parse(plan("DROP_TABLE", filters = "[]", values = "{}")).action)
+        assertThrows(WorkspaceRejected::class.java) { AiTableAction.parse(plan("DROP_TABLE", values = "{}")) }
+        assertThrows(WorkspaceRejected::class.java) { AiTableAction.parse("{\"answer\":\"hello\",\"sql\":\"DROP TABLE x\"}") }
+    }
     @Test fun eachProtocolKeepsDraftAndActionSystemRulesSeparate() {
         AiProtocol.entries.forEach { protocol ->
             val draft = AiWire.chat(protocol, "model", "hello").body!!

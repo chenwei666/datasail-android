@@ -107,7 +107,7 @@ manifest = {
     "drivers": {"mssql-jdbc": "13.6.0.jre8", "mariadb-java-client": "3.5.10", "postgresql": "42.7.14", "mongodb-driver-sync": "5.6.5", "android-sasl-api": "Apache Harmony 02970cb7227a335edd2c8457ebdde0195a735733 (two unmodified API types)", "sqlite": "Android platform", "redis-valkey": "DataSail bounded RESP2/TLS implementation", "elasticsearch-opensearch": "DataSail bounded platform HTTPS/JSON implementation"},
     "sqlServerAndroidProfile": {"version": profile_lock["profile"], "jarSha256": sha(profile_jar), "upstreamSourceSha256": profile_lock["sourceSha256"], "patchSha256": sha(ROOT / "sqlserver-android/patches/android-platform.patch")},
     "verification": verification, "devices": devices,
-    "limitations": ["Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence", "New engines are read-only; other catalog entries are planned and cannot connect", "Release/R8 fails on missing APIs; no release APK"],
+    "limitations": ["Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence", "Writes are restricted to documented types and single objects; planned engines cannot connect", "Release/R8 fails on missing APIs; no release APK"],
     "artifacts": {p.name: {"bytes": p.stat().st_size, "sha256": sha(p)} for p in sorted((staging / "apk").glob("*.apk"))},
 }
 (staging / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")

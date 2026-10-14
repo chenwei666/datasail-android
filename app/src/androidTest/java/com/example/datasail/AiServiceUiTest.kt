@@ -61,27 +61,37 @@ class AiServiceUiTest {
         compose.runOnIdle { ai.save(profile.copy(model = "fixture-model"), charArrayOf()) }
         compose.waitUntil(10000) { !ai.state.value.busy }
         compose.onNodeWithText("AI 助手").performClick()
-        compose.onNodeWithTag("ai-chat-input").performScrollTo().performTextInput("你好，我叫小舟")
+        compose.onNodeWithTag("ai-prompt").performScrollTo().performTextInput("你好，我叫小舟")
         compose.onNodeWithText("发送").performScrollTo().performClick()
         compose.onNodeWithTag("ai-preview").assertDoesNotExist()
         compose.waitUntil(20000) { !ai.state.value.busy && ai.state.value.chat.size == 1 }
         assertEquals("你好，小舟", ai.state.value.chat.single().answer)
-        compose.onNodeWithTag("ai-chat-input").performScrollTo().performTextInput("我叫什么？")
+        val key = ai.state.value.historyKey
+        compose.waitUntil(10000) { AiHistoryStore(context).load(key).size == 1 }
+        compose.activityRule.scenario.recreate()
+        compose.runOnIdle {
+            ai = ViewModelProvider(compose.activity)[AiViewModel::class.java]
+            workspace = ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java]
+            ai.createClient = ::transport
+        }
+        compose.waitUntil(10000) { ai.state.value.historyReady && ai.state.value.chat.size == 1 }
+        compose.onNodeWithTag("ai-prompt").performScrollTo().performTextInput("我叫什么？")
         compose.onNodeWithText("发送").performScrollTo().performClick()
         compose.waitUntil(20000) { !ai.state.value.busy && ai.state.value.chat.size == 2 }
         assertEquals("你叫小舟，已收到上一轮对话", ai.state.value.chat.last().answer)
         assertFalse(workspace.state.value.connected)
         assertNull(workspace.state.value.result)
         compose.runOnIdle { compose.activity.window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE) }
-        compose.onNodeWithTag("chat-answer-1").performScrollTo().assertIsDisplayed()
-        compose.onRoot().captureToImage().asAndroidBitmap().let { image -> File(context.filesDir, "ai-chat-v0121.png").outputStream().use { image.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) } }
+        compose.onNodeWithTag("ai-conversation").performScrollTo().performScrollToIndex(1)
+        compose.onNodeWithTag("chat-answer-1").assertIsDisplayed()
+        compose.onRoot().captureToImage().asAndroidBitmap().let { image -> File(context.filesDir, "ai-chat-v0130.png").outputStream().use { image.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) } }
         compose.runOnIdle { ai.save(profile.copy(model = "fixture-second"), charArrayOf()) }
         compose.waitUntil(10000) { !ai.state.value.busy }
-        assertTrue(ai.state.value.chat.isEmpty())
-        compose.onNodeWithTag("ai-chat-input").performScrollTo().performTextInput("你好，我叫小舟")
+        compose.waitUntil(10000) { ai.state.value.historyReady && ai.state.value.chat.isEmpty() }
+        compose.onNodeWithTag("ai-prompt").performScrollTo().performTextInput("你好，我叫小舟")
         compose.onNodeWithText("发送").performScrollTo().performClick()
         compose.waitUntil(20000) { !ai.state.value.busy && ai.state.value.chat.size == 1 }
-        compose.onNodeWithText("清空对话").performScrollTo().performClick()
+        compose.onNodeWithText("新建对话").performScrollTo().performClick()
         compose.runOnIdle { assertTrue(ai.state.value.chat.isEmpty()) }
     }
     @Test fun modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows() {
@@ -97,7 +107,11 @@ class AiServiceUiTest {
         compose.onNodeWithTag("ai-endpoint").assertDoesNotExist()
         compose.onNodeWithTag("ai-key").assertDoesNotExist()
         compose.onNodeWithText("前往 AI 设置").performScrollTo().performClick()
-        assertTrue("AI must be enabled", ai.state.value.preferences.enabled)
+        compose.runOnIdle { ai.preferences(ai.state.value.preferences.copy(enabled = false)) }
+        compose.waitUntil(10000) { !ai.state.value.busy && !ai.state.value.preferences.enabled }
+        compose.runOnIdle { ai.forgetKey(profile) }
+        compose.waitUntil(10000) { !ai.state.value.busy }
+        compose.onNodeWithTag("ai-key").performScrollTo().performTextInput("synthetic-ai-only")
         assertEquals(profile, ai.state.value.preferences.active)
         compose.onNodeWithText("获取上游模型").performScrollTo().assertIsDisplayed().assertIsEnabled()
         compose.runOnIdle { compose.activity.window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE) }
@@ -105,16 +119,16 @@ class AiServiceUiTest {
         compose.onNodeWithText("获取上游模型").performClick()
         compose.waitUntil(15000) { !ai.state.value.busy }
         assertEquals(ai.state.value.message, 2, ai.state.value.models.size)
-        compose.onNodeWithText("选择模型（2）").performScrollTo().performClick()
         compose.onNodeWithText("fixture-model").performClick()
-        compose.onNodeWithText("保存服务").performScrollTo().performClick()
         compose.waitUntil(10000) { !ai.state.value.busy && ai.state.value.preferences.active?.model == "fixture-model" }
+        compose.onNodeWithTag("ai-enabled").performScrollTo().performClick()
+        compose.waitUntil(10000) { !ai.state.value.busy && ai.state.value.preferences.enabled }
         compose.onNodeWithText("打开 AI 助手").performScrollTo().performClick()
         compose.onNodeWithTag("ai-endpoint").assertDoesNotExist()
         compose.onNodeWithTag("ai-model").assertDoesNotExist()
-        compose.onNodeWithText("问答 / SQL 草稿").performScrollTo().performClick()
+        compose.onNodeWithText("问答 / 写 SQL").performScrollTo().performClick()
         compose.onNodeWithTag("ai-prompt").performScrollTo().performTextInput("请生成只读查询")
-        compose.onNodeWithTag("ai-include-structure").performScrollTo().performClick()
+        compose.onNodeWithTag("ai-include-structure").performScrollTo().assertIsOn()
         compose.onNodeWithText("预览发送内容").performScrollTo().performClick()
         compose.onNodeWithTag("ai-preview").assertTextContains("请生成只读查询", substring = true).assertTextContains("ai_fixture", substring = true)
         assertFalse(compose.onNodeWithTag("ai-preview").fetchSemanticsNode().config[androidx.compose.ui.semantics.SemanticsProperties.EditableText].text.contains("ROW_MUST_NOT_LEAK"))
@@ -136,7 +150,7 @@ class AiServiceUiTest {
         }
         compose.waitUntil(10000) { workspace.saved.value.single().allowExternalAi == false }
         compose.onNodeWithText("AI 助手").performClick()
-        compose.onNodeWithText("问答 / SQL 草稿").performScrollTo().performClick()
+        compose.onNodeWithText("问答 / 写 SQL").performScrollTo().performClick()
         compose.onNodeWithText("此连接禁止外部 AI。可在连接配置中显式允许，重新连接后生效。").assertExists()
         compose.onNodeWithText("预览发送内容").performScrollTo().assertIsNotEnabled()
     }
@@ -188,6 +202,15 @@ class AiServiceUiTest {
         assertEquals(1, workspace.state.value.result!!.rows.size)
         compose.onNodeWithText("AI 助手").performClick()
         compose.onNodeWithText("操作当前表").performClick()
+        val before = workspace.state.value.result
+        compose.onNodeWithTag("ai-table-prompt").performScrollTo().performTextInput("这个表是什么表？")
+        compose.onNodeWithText("预览操作请求").performScrollTo().performClick()
+        compose.onNodeWithText("确认发送并查询 / 预览").performClick()
+        compose.waitUntil(20000) { !ai.state.value.busy && ai.state.value.chat.size == 1 }
+        assertTrue(ai.state.value.chat.single().answer.contains("业务用途"))
+        assertEquals(before, workspace.state.value.result)
+        compose.onNodeWithText("新建对话").performScrollTo().performClick()
+        compose.waitUntil(10000) { ai.state.value.historyReady && ai.state.value.chat.isEmpty() }
         compose.onNodeWithTag("ai-table-prompt").performScrollTo().performTextInput("查找 id 等于 2 的记录")
         compose.onNodeWithText("预览操作请求").performScrollTo().performClick()
         assertEquals(1, workspace.state.value.result!!.rows.size)

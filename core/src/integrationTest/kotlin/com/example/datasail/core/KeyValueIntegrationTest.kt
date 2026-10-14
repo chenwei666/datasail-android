@@ -11,6 +11,7 @@ class KeyValueIntegrationTest {
         return KeyValueContract(ConnectionProfile(DatabaseKind.valueOf(config.getProperty("kind")), "localhost", config.getProperty("port").toInt(), "0", "reader",
             trustStore = TrustStoreSpec(System.getProperty("datasail.test.trust"))), config.getProperty("password"))
     }
+    @Test fun singleObjectWritesAndConflicts() = fixture().writes()
     @Test fun readsAndBounds() = fixture().reads()
     @Test fun strictIdentityAndAuthentication() = fixture().identityAndAuth()
     @Test fun deadlinesAndCancellation() = fixture().deadlinesAndCancellation()

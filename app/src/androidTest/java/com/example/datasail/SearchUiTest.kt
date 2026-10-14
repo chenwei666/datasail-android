@@ -44,7 +44,7 @@ class SearchUiTest {
             }
         }
         compose.onNodeWithText("new-index").performScrollTo().performClick()
-        compose.onNodeWithText("当前索引：new-index").performScrollTo().assertExists()
+        compose.onNodeWithText("索引：new-index").performScrollTo().assertExists()
         compose.onNodeWithText("索引映射：original-index").performScrollTo().assertExists()
         compose.onNodeWithText("索引映射：new-index").assertDoesNotExist()
     }

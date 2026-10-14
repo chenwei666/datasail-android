@@ -77,6 +77,25 @@ class SqlServerIntegrationTest {
             }
         }
     }
+    @Test fun explicitDropHasTargetConfirmationAndCannotReplayOrCrossMetadataChanges() = fixture { session, table ->
+        session.page(table)
+        assertThrows(WorkspaceRejected::class.java) { AiTableActions.prepare(session, table, AiTableAction(TableAction.DROP_TABLE, TableView(), emptyMap()), false) }
+        val planned = AiTableActions.prepare(session, table, AiTableAction(TableAction.DROP_TABLE, TableView(), emptyMap()), true).preview!!
+        assertEquals(table.label, planned.requiredConfirmation)
+        assertEquals(MutationKind.DROP_TABLE, planned.kind)
+        session.discardPreview()
+        assertThrows(WorkspaceRejected::class.java) { session.confirm(planned.token) }
+        assertEquals(1, session.page(table).rows.size)
+        val stale = session.previewDrop(table)
+        connect().use { c -> c.catalog = table.catalog; c.createStatement().use { it.execute("ALTER TABLE dbo.records ADD concurrent_column int NULL") } }
+        assertEquals(MutationStatus.ROLLED_BACK, session.confirm(stale.token).status)
+        assertTrue(session.tables("dbo").any { it.name == table.name })
+        session.page(table)
+        val confirmed = session.previewDrop(table)
+        assertEquals(MutationStatus.COMMITTED, session.confirm(confirmed.token).status)
+        assertFalse(session.tables("dbo").any { it.name == table.name })
+        assertThrows(WorkspaceRejected::class.java) { session.confirm(confirmed.token) }
+    }
     @Test fun serverFiltersSortsAndPagingCoverRowsBeyondTheFirstPage() = fixture { session, table ->
         connect().use { c ->
             c.catalog = table.catalog

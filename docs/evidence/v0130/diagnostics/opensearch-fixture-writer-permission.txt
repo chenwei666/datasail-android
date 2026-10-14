@@ -1,0 +1,34 @@
+<stdin>:2: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+Traceback (most recent call last):
+  File "/workspace/datasail-android/scripts/fixtures/search-control.py", line 34, in <module>
+    request('PUT','/synthetic/_create/write-control?refresh=wait_for', {'code':'control'}, user='writer', expected=201)
+  File "/workspace/datasail-android/scripts/fixtures/search-control.py", line 21, in request
+    raise RuntimeError('Fixture HTTP status '+str(e.code)) from None
+RuntimeError: Fixture HTTP status 403
+[2026-10-14T13:04:01,935][INFO ][o.o.p.PluginsService     ] [4e2b93601f18] PluginService:onIndexModule index:[.opendistro_security/gSWvQJUERcSoXOXscFiiVQ]
+[2026-10-14T13:04:01,938][INFO ][o.o.c.m.MetadataMappingService] [4e2b93601f18] [.opendistro_security/gSWvQJUERcSoXOXscFiiVQ] create_mapping
+[2026-10-14T13:04:01,970][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Doc with id 'config' and version 2 is updated in .opendistro_security index.
+[2026-10-14T13:04:01,971][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Will update 'roles' with /usr/share/opensearch/config/opensearch-security/roles.yml and populate it with empty doc if file missing and populateEmptyIfFileMissing=false
+[2026-10-14T13:04:01,979][INFO ][o.o.p.PluginsService     ] [4e2b93601f18] PluginService:onIndexModule index:[.opendistro_security/gSWvQJUERcSoXOXscFiiVQ]
+[2026-10-14T13:04:01,983][INFO ][o.o.c.m.MetadataMappingService] [4e2b93601f18] [.opendistro_security/gSWvQJUERcSoXOXscFiiVQ] update_mapping [_doc]
+[2026-10-14T13:04:02,016][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Doc with id 'roles' and version 2 is updated in .opendistro_security index.
+[2026-10-14T13:04:02,016][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Will update 'rolesmapping' with /usr/share/opensearch/config/opensearch-security/roles_mapping.yml and populate it with empty doc if file missing and populateEmptyIfFileMissing=false
+[2026-10-14T13:04:02,026][INFO ][o.o.p.PluginsService     ] [4e2b93601f18] PluginService:onIndexModule index:[.opendistro_security/gSWvQJUERcSoXOXscFiiVQ]
+[2026-10-14T13:04:02,030][INFO ][o.o.c.m.MetadataMappingService] [4e2b93601f18] [.opendistro_security/gSWvQJUERcSoXOXscFiiVQ] update_mapping [_doc]
+[2026-10-14T13:04:02,070][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Doc with id 'rolesmapping' and version 2 is updated in .opendistro_security index.
+[2026-10-14T13:04:02,070][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Will update 'internalusers' with /usr/share/opensearch/config/opensearch-security/internal_users.yml and populate it with empty doc if file missing and populateEmptyIfFileMissing=false
+[2026-10-14T13:04:02,083][INFO ][o.o.p.PluginsService     ] [4e2b93601f18] PluginService:onIndexModule index:[.opendistro_security/gSWvQJUERcSoXOXscFiiVQ]
+[2026-10-14T13:04:02,089][INFO ][o.o.c.m.MetadataMappingService] [4e2b93601f18] [.opendistro_security/gSWvQJUERcSoXOXscFiiVQ] update_mapping [_doc]
+[2026-10-14T13:04:02,136][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Doc with id 'internalusers' and version 2 is updated in .opendistro_security index.
+[2026-10-14T13:04:02,136][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Will update 'actiongroups' with /usr/share/opensearch/config/opensearch-security/action_groups.yml and populate it with empty doc if file missing and populateEmptyIfFileMissing=false
+[2026-10-14T13:04:02,142][INFO ][o.o.p.PluginsService     ] [4e2b93601f18] PluginService:onIndexModule index:[.opendistro_security/gSWvQJUERcSoXOXscFiiVQ]
+[2026-10-14T13:04:02,146][INFO ][o.o.c.m.MetadataMappingService] [4e2b93601f18] [.opendistro_security/gSWvQJUERcSoXOXscFiiVQ] update_mapping [_doc]
+[2026-10-14T13:04:02,173][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Doc with id 'actiongroups' and version 2 is updated in .opendistro_security index.
+[2026-10-14T13:04:02,174][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Will update 'tenants' with /usr/share/opensearch/config/opensearch-security/tenants.yml and populate it with empty doc if file missing and populateEmptyIfFileMissing=false
+[2026-10-14T13:04:02,180][INFO ][o.o.p.PluginsService     ] [4e2b93601f18] PluginService:onIndexModule index:[.opendistro_security/gSWvQJUERcSoXOXscFiiVQ]
+[2026-10-14T13:04:02,184][INFO ][o.o.c.m.MetadataMappingService] [4e2b93601f18] [.opendistro_security/gSWvQJUERcSoXOXscFiiVQ] update_mapping [_doc]
+[2026-10-14T13:04:02,211][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Doc with id 'tenants' and version 2 is updated in .opendistro_security index.
+[2026-10-14T13:04:02,211][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Will update 'nodesdn' with /usr/share/opensearch/config/opensearch-security/nodes_dn.yml and populate it with empty doc if file missing and populateEmptyIfFileMissing=true
+[2026-10-14T13:04:02,216][INFO ][o.o.p.PluginsService     ] [4e2b93601f18] PluginService:onIndexModule index:[.opendistro_security/gSWvQJUERcSoXOXscFiiVQ]
+[2026-10-14T13:04:02,220][INFO ][o.o.c.m.MetadataMappingService] [4e2b93601f18] [.opendistro_security/gSWvQJUERcSoXOXscFiiVQ] update_mapping [_doc]
+[2026-10-14T13:04:02,254][INFO ][o.o.s.s.ConfigHelper     ] [4e2b93601f18] Doc with id 'nodesdn' and version 2 is updated in .opendistro_security index.

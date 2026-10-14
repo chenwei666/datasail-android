@@ -39,7 +39,7 @@ internal fun spreadsheetColumn(index: Int): String {
 }
 
 internal fun tableEditingBlockReason(page: ResultPage, state: WorkspaceUiState): String? = when {
-    state.kind != DatabaseKind.SQL_SERVER -> "${state.kind.label} 当前仅支持查询，尚未开放写入"
+    !state.kind.isSql -> "${state.kind.label} 当前仅支持查询，尚未开放写入"
     state.resultStale -> "当前是上次结果，请刷新成功后编辑"
     page.tableSchema == null -> "SQL 查询结果只读，请从表浏览入口打开目标表"
     else -> page.tableSchema?.readOnlyReason
@@ -49,7 +49,7 @@ internal fun tableEditingBlockReason(page: ResultPage, state: WorkspaceUiState):
 internal fun TableEditingStatus(page: ResultPage, state: WorkspaceUiState) {
     val reason = tableEditingBlockReason(page, state)
     Text(if (reason != null) "此表只读：$reason" else if (state.writable) "编辑已开启 · 双击字段修改，预览后提交"
-        else "当前只读 · 点击「编辑模式」或「开启编辑」并确认后，可双击字段修改",
+        else "双击字段即可编辑草稿 · 预览并确认后写入",
         style = MaterialTheme.typography.bodySmall,
         color = if (reason != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.testTag("table-editing-status"))
@@ -85,7 +85,7 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
     val lineHeight = (settings.gridFont * 1.4f * zoom).sp
     val rowHeight = maxOf(((if (wrap) 88 else if (settings.compactGrid) 44 else 60) * zoom).dp, with(LocalDensity.current) { lineHeight.toDp() } * (if (wrap) 3 else 1) + (16 * zoom).dp)
     val headerHeight = maxOf((64 * zoom).dp, with(LocalDensity.current) { (20 * zoom).sp.toDp() } * (if (settings.showColumnTypes) 3 else 2) + (16 * zoom).dp)
-    fun editable(row: Int, column: Int): Boolean = state.writable && state.kind == DatabaseKind.SQL_SERVER && !state.busy && !state.resultStale &&
+    fun editable(row: Int, column: Int): Boolean = state.kind.isSql && !state.busy && !state.resultStale &&
         tableEditingBlockReason(page, state) == null && page.tableSchema?.columns?.getOrNull(page.columnOffset + column)?.let { it.editable && it.primaryKeyOrder == 0 } == true &&
         page.rows[row].none { it is DbValue.Unavailable }
     fun choose(row: Int, column: Int, edit: Boolean = false) {
@@ -101,7 +101,7 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
         TableViewBar(page, state.busy, { column, filter -> filterColumn = column; editingFilter = filter }, changeView)
         filterColumn?.let { ColumnViewDialog(page, it, state.kind, editingFilter, { filterColumn = null }, changeView) }
     }
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(Modifier.testTag("grid-tools").horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         AssistChip(onClick = { updateOptions(options.copy(zoom = 1f)) }, label = { Text("${(zoom * 100).toInt()}% · 重置") }, modifier = Modifier.testTag("grid-zoom"))
         if (!expanded) AssistChip(enabled = !editing, onClick = { fullscreen = true }, label = { Text("全屏表格") })
         AssistChip(onClick = { chooseColumns = true }, label = { Text("显示列 ${visible.size}/${page.columns.size}") })
@@ -146,7 +146,7 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
                 TextButton(onClick = { editing = false }) { Text("取消修改") }
             }
             Text("先预览或取消当前修改，再选择其它单元格。", style = MaterialTheme.typography.bodySmall)
-        } else if (!editable(row, column)) Text(tableEditingBlockReason(page, state) ?: if (!state.writable) "请先点击「编辑模式」或「开启编辑」并确认" else if (page.rows[row].any { it is DbValue.Unavailable }) "当前行只读，以下字段未完整加载：" + page.columns.indices.filter { page.rows[row][it] is DbValue.Unavailable }.joinToString { page.columns[it].name } else "此列只读（主键、自增或不支持的类型）", style = MaterialTheme.typography.bodySmall)
+        } else if (!editable(row, column)) Text(tableEditingBlockReason(page, state) ?: if (page.rows[row].any { it is DbValue.Unavailable }) "当前行只读，以下字段未完整加载：" + page.columns.indices.filter { page.rows[row][it] is DbValue.Unavailable }.joinToString { page.columns[it].name } else "此列只读（主键、自增或不支持的类型）", style = MaterialTheme.typography.bodySmall)
     }
     Surface(modifier = Modifier.testTag("result-grid").pointerInput(state.connectionKey, page.tableSchema?.table) {
         awaitEachGesture {

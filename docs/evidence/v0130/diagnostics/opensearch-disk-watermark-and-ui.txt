@@ -1,0 +1,90 @@
+<stdin>:2: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+Synthetic search server ready: OPENSEARCH 2.19.4
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 11 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileIntegrationTestKotlin UP-TO-DATE
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:processIntegrationTestResources NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:searchTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+SearchIntegrationTest > strictTlsAndAuthentication PASSED
+
+SearchIntegrationTest > readsMappingPaginationAndTypes PASSED
+
+SearchIntegrationTest > singleObjectWritesAndConflicts PASSED
+
+SearchIntegrationTest > adversarialTransport PASSED
+
+BUILD SUCCESSFUL in 16s
+8 actionable tasks: 2 executed, 6 up-to-date
+Verified existing APK: com.example.datasail
+Verified existing APK: com.example.datasail.test
+
+com.example.datasail.SearchDeviceTest:...
+Error in singleObjectWritesAndConflicts(com.example.datasail.SearchDeviceTest):
+java.lang.AssertionError: 执行结果未知（HTTP 429），请重新连接核对；不会自动重试 expected:<COMMITTED> but was:<UNKNOWN>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at com.example.datasail.fixture.SearchContract.writes(SearchContract.kt:45)
+	at com.example.datasail.SearchDeviceTest.singleObjectWritesAndConflicts$lambda$4(SearchDeviceTest.kt:24)
+	at com.example.datasail.SearchDeviceTest.$r8$lambda$Oy3c2HEYv-8rxeS5WQoaqwdg49A(Unknown Source:0)
+	at com.example.datasail.SearchDeviceTest$$ExternalSyntheticLambda2.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.SearchDeviceTest.fixture(SearchDeviceTest.kt:21)
+	at com.example.datasail.SearchDeviceTest.singleObjectWritesAndConflicts(SearchDeviceTest.kt:24)
+
+com.example.datasail.SearchUiTest:.
+Error in mappingKeepsItsOriginalIndexWhileSelectionChanges(com.example.datasail.SearchUiTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '当前索引：new-index' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.SearchUiTest.mappingKeepsItsOriginalIndexWhileSelectionChanges(SearchUiTest.kt:47)
+
+
+Time: 96.904
+There were 2 failures:
+1) singleObjectWritesAndConflicts(com.example.datasail.SearchDeviceTest)
+java.lang.AssertionError: 执行结果未知（HTTP 429），请重新连接核对；不会自动重试 expected:<COMMITTED> but was:<UNKNOWN>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at com.example.datasail.fixture.SearchContract.writes(SearchContract.kt:45)
+	at com.example.datasail.SearchDeviceTest.singleObjectWritesAndConflicts$lambda$4(SearchDeviceTest.kt:24)
+	at com.example.datasail.SearchDeviceTest.$r8$lambda$Oy3c2HEYv-8rxeS5WQoaqwdg49A(Unknown Source:0)
+	at com.example.datasail.SearchDeviceTest$$ExternalSyntheticLambda2.invoke(D8$$SyntheticClass:0)
+	at com.example.datasail.SearchDeviceTest.fixture(SearchDeviceTest.kt:21)
+	at com.example.datasail.SearchDeviceTest.singleObjectWritesAndConflicts(SearchDeviceTest.kt:24)
+2) mappingKeepsItsOriginalIndexWhileSelectionChanges(com.example.datasail.SearchUiTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '当前索引：new-index' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.SearchUiTest.mappingKeepsItsOriginalIndexWhileSelectionChanges(SearchUiTest.kt:47)
+
+FAILURES!!!
+Tests run: 6,  Failures: 2
+
+

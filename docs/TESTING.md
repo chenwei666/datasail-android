@@ -1,5 +1,9 @@
 # 可复现验证
 
+V0.13.0 当前套件：核心与 app 单元、SQL Server 24 项、MySQL/MariaDB/PostgreSQL 各 10 项、Redis/Valkey/MongoDB/Elasticsearch/OpenSearch 各 4 项 JVM 合同；各引擎独立 Android 验证。AI HTTPS 5 项、加密记忆 3 项、SQLite 3 项，以及工作台触摸、筛选排序、宽表和升级测试。实际执行与准确计数见 TEST_REPORT，不把下面历史版本说明当作本轮通过证据。
+
+当前 Android 完整合同：SQL Server 4 项（2 个驱动 + 2 个 UI），JDBC 各 4 项，Redis/Valkey 各 4 项，MongoDB 5 项，搜索引擎各 6 项。新增写入只使用独立临时 writer 权限；reader 拒绝写入的反例保留。搜索的响应丢失测试另用本机故障服务器，验证写请求只到达一次；不冒充真实集群断网。
+
 先激活 `scripts/env.sh`；本云机器先设置 `DATASAIL_TOOLS_DIR=/workspace/toolchains`。
 
 ```bash
@@ -36,7 +40,7 @@ Android 数据库测试显式启用；不由默认 UI 测试顺带连接。脚�
 bash scripts/test-android-upgrade.sh --reset-synthetic-emulator
 ```
 
-先安装不可变 V0.6.0/code8 APK，写入 schema 3 的 SQL Server/MongoDB/OpenSearch 合成连接、schema 1 收藏和私有文件标记，再 `adb install -r` 覆盖 V0.7.0/code9。测试核对旧连接、生产策略、MongoDB 自定义 authDatabase 与收藏保留，以及旧版保存的搜索引擎索引范围。保持 applicationId 和签名；不代表可降级。
+当前先安装不可变 V0.12.2/code20 APK，写入 schema 4 的 SQL Server/MongoDB/OpenSearch 合成连接、收藏、加密密码、AI 配置、表视图与私有文件标记，再 `adb install -r` 覆盖 V0.13.0/code21。测试核对旧连接、生产策略、MongoDB 自定义 authDatabase 与收藏保留，以及旧版保存的搜索引擎索引范围。保持 applicationId 和签名；不代表可降级。
 
 ## Release 与未验证项
 
@@ -46,7 +50,7 @@ API26 使用同样步骤，将系统镜像改为 `system-images;android-26;defau
 
 驱动审查：`./gradlew :core:driverCompatibilityReport`，结果只用于适配评审，不修改驱动或屏蔽错误。
 
-源码适配回归：`:sqlserver-android:check` 包含 11 个 JVM 用例与产物完整性检查；`:core:sqlServerTest` 新增 full buffering 超过 8 MB 的真实拒绝反例。原生应用仍用 adaptive，该预算不代表累计响应字节上限。
+源码适配回归：`:sqlserver-android:check` 包含 14 个 JVM 用例与产物完整性检查；`:core:sqlServerTest` 新增 full buffering 超过 8 MB 的真实拒绝反例。原生应用仍用 adaptive，该预算不代表累计响应字节上限。
 
 
 V0.3.0 多数据库验收（先构建 Debug 和 AndroidTest APK）：
@@ -95,7 +99,7 @@ MongoContract 三项分别覆盖 205 文档的 100/100/5 游标分页（第一�
 
 构建时排除 MongoDB 两份重复 GraalVM 元数据，正式 R8 单独失败记录，不等同 Android Debug 已通过即可发行。CI 添加此 JVM 夹具，本轮本地执行不代表 GitHub Actions 已运行。
 
-MongoDB 脚本在安装前比较本机构建与设备 APK 的 SHA-256，相同则复用已验证安装；不同才覆盖安装。`DATASAIL_MONGO_UI_ONLY=1` 仅供定位界面问题，完整验收必须去掉此标志并得到 4 项通过。相关诊断失败保存在 evidence 的 diagnostics 下，不计入通过总数。
+MongoDB 脚本在安装前比较本机构建与设备 APK 的 SHA-256，相同则复用已验证安装；不同才覆盖安装。`DATASAIL_MONGO_UI_ONLY=1` 仅供定位界面问题，完整验收必须去掉此标志；V0.13.0 应得到 5 项通过。相关诊断失败保存在 evidence 的 diagnostics 下，不计入通过总数。
 
 ## V0.6.0 Elasticsearch / OpenSearch
 

@@ -431,7 +431,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         if (!mutable.value.connected || mutable.value.busy || mutable.value.resultStale || !aiAllowed(this) || aiScope(this) != scope || mutable.value.result?.tableSchema?.table != table) return
         execute({ AiTableActions.prepare(it, table, action, allowWrites) }) {
             memory.remember(connectionKey, it.page)
-            copy(result = it.page, selectedSchema = it.page.tableSchema, resultStale = false, preview = it.preview, message = if (it.preview == null) "AI 查询完成：${it.page.rows.size} 行${if (it.page.hasMore) "（还有更多）" else ""}" else "AI 已生成单条写入预览；确认后才会提交")
+            copy(result = it.page, selectedSchema = it.page.tableSchema, resultStale = false, preview = it.preview, message = if (it.preview == null) "AI 查询完成：${it.page.rows.size} 行${if (it.page.hasMore) "（还有更多）" else ""}" else if (it.preview?.kind == MutationKind.DROP_TABLE) "AI 已生成整表删除预览；请核对目标并输入表名确认" else "AI 已生成单条写入预览；确认后才会提交")
         }
     }
     fun query(sql: String) {
@@ -444,26 +444,45 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     fun writable(enabled: Boolean) = execute({ it.setWritable(enabled) }) { copy(writable = enabled) }
     fun preview(kind: MutationKind, row: Int?, inputs: Map<String, CellInput>) {
         if (mutable.value.resultStale) { message("上次操作失败，请刷新数据后再编辑"); return }
-        execute({ it.preview(kind, row, inputs) }) { copy(preview = it) }
+        execute({ it.setWritable(true); it.preview(kind, row, inputs) }) { copy(preview = it) }
     }
-    fun discardPreview() = execute({ it.discardPreview() }) { copy(preview = null) }
+    fun discardPreview() {
+        if (state.value.kind.isSql) execute({ it.discardPreview() }) { copy(preview = null) }
+        else executeRecord({ it.discardRecord() }) { copy(preview = null) }
+    }
+    fun previewRecord(draft: RecordDraft) = executeRecord({ it.previewRecord(draft) }) { copy(preview = it) }
+    private fun <T> executeRecord(operation: (RecordWrites) -> T, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
+        when {
+            state.value.kind.isKeyValue -> executeKeyValue(operation, update)
+            state.value.kind.isDocument -> executeDocument(operation, update)
+            state.value.kind.isSearch -> executeSearch(operation, update)
+        }
+    }
     private data class ConfirmedPage(val mutation: MutationResult, val page: ResultPage?, val refreshFailed: Boolean)
     fun confirm(token: String) {
+        if (!state.value.kind.isSql) {
+            if (state.value.preview?.token != token) { message("确认已失效"); return }
+            executeRecord({ it.confirmRecord(token) }) { copy(preview = null, keyContent = null, documents = null, searchPage = null, message = it.message) }
+            return
+        }
         if (mutable.value.resultStale || mutable.value.preview?.token != token) { message("确认已失效，请刷新并重新预览"); return }
+        val dropping = mutable.value.preview?.kind == MutationKind.DROP_TABLE
         val original = mutable.value.result
         val schema = original?.tableSchema
         execute({ session ->
             val mutation = session.confirm(token)
             var refreshed: ResultPage? = null
             var failed = false
-            if (mutation.status != MutationStatus.UNKNOWN && schema != null) {
+            if (mutation.status != MutationStatus.UNKNOWN && schema != null && !(dropping && mutation.status == MutationStatus.COMMITTED)) {
                 try { refreshed = session.page(schema.table, original.offset, original.columnOffset, original.view) }
                 catch (_: Exception) { failed = true; runCatching { session.close() } }
             }
             ConfirmedPage(mutation, refreshed, failed)
         }) {
+            val dropped = dropping && it.mutation.status == MutationStatus.COMMITTED
+            if (dropped && schema != null) memory.forgetView(connectionKey, schema.table)
             it.page?.let { page -> memory.remember(connectionKey, page) }
-            copy(preview = null, result = it.page, selectedSchema = it.page?.tableSchema ?: selectedSchema, resultStale = false, connected = connected && !it.refreshFailed && it.mutation.status != MutationStatus.UNKNOWN,
+            copy(preview = null, result = it.page, selectedSchema = if (dropped) null else it.page?.tableSchema ?: selectedSchema, tables = if (dropped) tables.filterNot { t -> t == schema?.table } else tables, resultStale = false, connected = connected && !it.refreshFailed && it.mutation.status != MutationStatus.UNKNOWN,
                 writable = writable && !it.refreshFailed && it.mutation.status != MutationStatus.UNKNOWN,
                 message = it.mutation.message + if (it.refreshFailed) "；刷新失败，已断开。请重新连接核对，不会重放修改。" else "")
         }
@@ -483,12 +502,12 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     fun inspectKey(key: BinaryKey, cursor: String = "0") = executeKeyValue({ it.inspect(key, cursor) }) { copy(keyContent = it) }
     private fun <T> executeKeyValue(operation: (KeyValueSession) -> T, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
         if (mutable.value.busy || !mutable.value.connected || !mutable.value.kind.isKeyValue) return
-        mutable.value = mutable.value.copy(busy = true)
+        mutable.value = mutable.value.copy(busy = true, preview = null)
         val ticket = epoch
         val accepted = keyValueRunner.execute({ result, connected -> viewModelScope.launch {
             if (ticket != epoch) return@launch
             mutable.value = mutable.value.copy(busy = false, connected = connected)
-            result.fold(onSuccess = { mutable.value = mutable.value.update(it).copy(message = "只读操作完成") }, onFailure = ::failure)
+            result.fold(onSuccess = { mutable.value = mutable.value.copy(message = "操作完成").update(it) }, onFailure = ::failure)
         } }, operation)
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后重试") }
     }
@@ -497,12 +516,12 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     fun nextDocuments() = executeDocument({ it.next() }) { copy(documents = it) }
     private fun <T> executeDocument(operation: (DocumentSession) -> T, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
         if (mutable.value.busy || !mutable.value.connected || !mutable.value.kind.isDocument) return
-        mutable.value = mutable.value.copy(busy = true)
+        mutable.value = mutable.value.copy(busy = true, preview = null)
         val ticket = epoch
         val accepted = documentRunner.execute({ result, connected -> viewModelScope.launch {
             if (ticket != epoch) return@launch
             mutable.value = mutable.value.copy(busy = false, connected = connected)
-            result.fold(onSuccess = { mutable.value = mutable.value.update(it).copy(message = "只读文档操作完成") }, onFailure = ::failure)
+            result.fold(onSuccess = { mutable.value = mutable.value.copy(message = "操作完成").update(it) }, onFailure = ::failure)
         } }, operation)
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后重试") }
     }
@@ -511,12 +530,12 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     fun mapping(index: String) = executeSearch({ it.mapping(index) }) { copy(mapping = IndexMapping(index, it), searchPage = null) }
     private fun <T> executeSearch(operation: (SearchSession) -> T, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
         if (mutable.value.busy || !mutable.value.connected || !mutable.value.kind.isSearch) return
-        mutable.value = mutable.value.copy(busy = true)
+        mutable.value = mutable.value.copy(busy = true, preview = null)
         val ticket = epoch
         val accepted = searchRunner.execute({ result, connected -> viewModelScope.launch {
             if (ticket != epoch) return@launch
             mutable.value = mutable.value.copy(busy = false, connected = connected)
-            result.fold(onSuccess = { mutable.value = mutable.value.update(it).copy(message = "只读搜索操作完成") }, onFailure = ::failure)
+            result.fold(onSuccess = { mutable.value = mutable.value.copy(message = "操作完成").update(it) }, onFailure = ::failure)
         } }, operation)
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后重试") }
     }

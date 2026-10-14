@@ -1,0 +1,64 @@
+
+com.example.datasail.AiHistoryTest:...
+com.example.datasail.SqliteDeviceTest:...
+com.example.datasail.AiNavigationTest:.
+com.example.datasail.WorkbenchInteractionTest:....
+com.example.datasail.TablePresentationTest:
+Error in all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but found '2' nodes that satisfy: (Text + InputText + EditableText contains '整行详情' (ignoreCase: false))
+Nodes found:
+1) Node #2373 at (l=32.0, t=1022.0, r=241.0, b=1127.0)px
+Focused = 'false'
+Role = 'Button'
+Text = '[整行详情]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 2 siblings
+2) Node #2395 at (l=32.0, t=498.0, r=241.0, b=603.0)px
+Focused = 'false'
+Role = 'Button'
+Text = '[整行详情]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 2 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:109)
+
+com.example.datasail.TableFilteringTest:....
+
+Time: 192.131
+There was 1 failure:
+1) all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but found '2' nodes that satisfy: (Text + InputText + EditableText contains '整行详情' (ignoreCase: false))
+Nodes found:
+1) Node #2373 at (l=32.0, t=1022.0, r=241.0, b=1127.0)px
+Focused = 'false'
+Role = 'Button'
+Text = '[整行详情]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 2 siblings
+2) Node #2395 at (l=32.0, t=498.0, r=241.0, b=603.0)px
+Focused = 'false'
+Role = 'Button'
+Text = '[整行详情]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 2 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:109)
+
+FAILURES!!!
+Tests run: 16,  Failures: 1
+
+

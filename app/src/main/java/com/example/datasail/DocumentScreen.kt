@@ -10,14 +10,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import com.example.datasail.core.*
 
 @Composable
 internal fun DocumentWorkbench(model: WorkspaceViewModel, state: WorkspaceUiState) {
+    var editing by remember(state.connectionKey, state.catalog) { mutableStateOf<RecordDraft?>(null) }
+    editing?.let { draft -> RecordEditor(draft, state.kind, { editing = null }) { editing = null; model.previewRecord(it) } }
     var selected by remember(state.target, state.catalog) { mutableStateOf("") }
     var filter by remember(state.target, state.catalog) { mutableStateOf("{}") }
     var search by remember { mutableStateOf("") }
     Text("集合与文档", style = MaterialTheme.typography.titleLarge)
-    Text("只读 · 每页最多 100 个文档 · 保留 BSON 类型的 Extended JSON", style = MaterialTheme.typography.bodySmall)
+    Text("每页最多 100 个文档 · 保留 BSON 类型的 Extended JSON", style = MaterialTheme.typography.bodySmall)
     TextButton(enabled = !state.busy, onClick = model::collections) { Text("刷新集合") }
     OutlinedTextField(search, { search = it }, Modifier.fillMaxWidth(), label = { Text("搜索集合名称") }, singleLine = true)
     LazyColumn(Modifier.testTag("mongo-collections").fillMaxWidth().heightIn(max = 200.dp)) {
@@ -27,7 +30,7 @@ internal fun DocumentWorkbench(model: WorkspaceViewModel, state: WorkspaceUiStat
     }
     if (state.collections.isEmpty()) Text("此账号没有可浏览的集合")
     if (selected.isNotEmpty()) {
-        Text("筛选集合：$selected")
+        Row { Text("集合：$selected", Modifier.weight(1f)); TextButton(enabled = !state.busy, onClick = { editing = RecordDraft(MutationKind.INSERT, selected, replacement = "{}") }) { Text("新增文档") } }
         OutlinedTextField(filter, { if (it.length <= 8000) filter = it }, Modifier.fillMaxWidth(), label = { Text("文档筛选 JSON") }, minLines = 2, maxLines = 5)
         Text("示例：{\"name\":\"0007\"}。支持比较、包含、存在与逻辑条件；不执行脚本。", style = MaterialTheme.typography.bodySmall)
         Button(enabled = !state.busy, onClick = { model.findDocuments(selected, filter) }) { Text("重新查询文档") }
@@ -39,7 +42,10 @@ internal fun DocumentWorkbench(model: WorkspaceViewModel, state: WorkspaceUiStat
         LazyColumn(Modifier.fillMaxWidth().heightIn(max = 520.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             itemsIndexed(page.documents) { index, document -> OutlinedCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp)) {
-                    Text("文档 ${(page.page - 1) * 100 + index + 1}")
+                    Row { Text("文档 ${(page.page - 1) * 100 + index + 1}", Modifier.weight(1f))
+                        TextButton(enabled = !state.busy && document.json != null, onClick = { editing = RecordDraft(MutationKind.UPDATE, page.collection, original = document.json, replacement = document.json!!) }) { Text("编辑") }
+                        TextButton(enabled = !state.busy && document.json != null, onClick = { model.previewRecord(RecordDraft(MutationKind.DELETE, page.collection, original = document.json)) }) { Text("删除") }
+                    }
                     SelectionContainer { Text(document.json ?: document.unavailable.orEmpty(), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall) }
                 }
             } }

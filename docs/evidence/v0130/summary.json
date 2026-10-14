@@ -1,0 +1,97 @@
+{
+  "version": "0.13.0",
+  "versionCode": 21,
+  "finalApkSha256": "0f03dbd7408d2c015f0e12fa71a14e0f61403462624723e7e1a309242cdb72f5",
+  "androidTestApkSha256": "dd7b2eb46ee2a78a9427c2c4b6d738618c4f794f8ad7df193bc8966ba0ff9a96",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest",
+    "jdbcWorkspaceTest",
+    "keyValueTest",
+    "mongoTest",
+    "searchTest"
+  ],
+  "jvmTests": {
+    "core-unit": 96,
+    "app-unit": 17,
+    "driver-profile": 14,
+    "SQL_SERVER": 24,
+    "MYSQL": 10,
+    "MARIADB": 10,
+    "POSTGRESQL": 10,
+    "REDIS": 4,
+    "VALKEY": 4,
+    "MONGODB": 4,
+    "ELASTICSEARCH": 4,
+    "OPENSEARCH": 4
+  },
+  "androidTests": {
+    "ai-emulator-5556.txt": 5,
+    "local-ui-emulator-5556.txt": 16,
+    "upgrade-api26.txt": 5,
+    "SQL_SERVER/android-emulator-5556.txt": 4,
+    "MYSQL/android-emulator-5556.txt": 4,
+    "MARIADB/android-emulator-5556.txt": 4,
+    "POSTGRESQL/android-emulator-5556.txt": 4,
+    "REDIS/android-emulator-5556.txt": 4,
+    "VALKEY/android-emulator-5556.txt": 4,
+    "MONGODB/android-emulator-5556.txt": 5,
+    "ELASTICSEARCH/android-emulator-5556.txt": 6,
+    "OPENSEARCH/android-emulator-5556.txt": 6
+  },
+  "previousVersionUpgradeSeedTests": {
+    "api26": 1
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "AI draft-key model discovery, two conversational workspaces, encrypted bounded local context memory and isolation, direct double-tap cell drafts, restricted single-object writes across ten implemented engines. SQL Server DROP_TABLE is local fixed DDL with separate target confirmation. Actual loopback TLS servers and API26 ART contracts; no user business database access.",
+  "recoveries": [
+    "MySQL/MariaDB floating old-value mismatch fixed with binary server prepared statements and typed float binding; regression passed for each JDBC engine.",
+    "HTTPS peer-closed connection cache reuse fixed with fresh socket-factory facade; separate transport fixture checks lost write responses remain UNKNOWN and arrive exactly once.",
+    "Wide-table UI test initially targeted a nested horizontal scroll container instead of the outer vertical viewport; explicit visible toolbar targeting retains fullscreen and row-detail assertions. Earlier software emulator System UI ANR is not counted as a product or test pass.",
+    "Context history keys now encode schema and table separately; dotted SQL identifiers cannot collide through the same display label. Android isolation regression included.",
+    "Search container data moved to bounded 1 GiB tmpfs after host disk watermarks caused setup timeouts and HTTP 429; server disk protection remains enabled. Fixture initialization has a 30-second administrative setup budget and OpenSearch single-document writes required the documented bulk cluster action plus scoped index write permission; application budgets and reader denial remain unchanged.",
+    "Search document writes reject dot path segments and path-reserved identifiers before HTTP routing; real-engine JVM and Android contracts verify the index remains intact.",
+    "Previous-version upgrade seeding now reflects the actual V0.12.2 PasswordVault constructor; the new constructor cannot be invoked inside the immutable old APK.",
+    "OpenSearch first startup failed from temporary filesystem capacity; stopped API30 AVD storage moved to /tmp preserving it, then retried."
+  ],
+  "unverified": [
+    "current APK on Android11/API30",
+    "physical/arm64 and vendor Android builds",
+    "user business databases including dbo.iclock_transaction",
+    "other server versions, managed cloud services and complex unsupported field types",
+    "live paid AI providers, streaming/multimodal and IAM protocols",
+    "NoSQL AI execution and non-SQLServer AI DROP_TABLE",
+    "Release/R8 and protected production signing",
+    "independent archived-source rebuild",
+    "full DBeaver functionality, exhaustive UI and performance acceptance"
+  ],
+  "androidArtifactCoverage": {
+    "finalApk": {
+      "sha256": "0f03dbd7408d2c015f0e12fa71a14e0f61403462624723e7e1a309242cdb72f5",
+      "suites": [
+        "ai-emulator-5556.txt",
+        "local-ui-emulator-5556.txt",
+        "ELASTICSEARCH/android-emulator-5556.txt",
+        "OPENSEARCH/android-emulator-5556.txt",
+        "upgrade-api26.txt"
+      ]
+    },
+    "previousValidationBuild": {
+      "sha256": "05f8743f22260506c0695d8eac02ba8a627b84963c7b6f33c5e354ea714f89ff",
+      "suites": [
+        "SQL_SERVER/android-emulator-5556.txt",
+        "MYSQL/android-emulator-5556.txt",
+        "MARIADB/android-emulator-5556.txt",
+        "POSTGRESQL/android-emulator-5556.txt",
+        "REDIS/android-emulator-5556.txt",
+        "VALKEY/android-emulator-5556.txt",
+        "MONGODB/android-emulator-5556.txt"
+      ],
+      "difference": "Final production change only rejects reserved path identifiers in HttpsSearchSession.previewRecord; all SQL/JDBC/SQLite/Redis/MongoDB/AI implementation bytes in source unchanged. Targeted final APK regressions cover both affected engines, local UI, memory and previous-version upgrade."
+    }
+  }
+}

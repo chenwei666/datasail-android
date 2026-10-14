@@ -32,7 +32,7 @@ from pathlib import Path
 import secrets,sys,hashlib
 p=Path(sys.argv[1]); password=secrets.token_hex(24); hashed=hashlib.sha256(password.encode()).hexdigest()
 reads='ping select scan type pttl strlen getrange llen lrange hlen hscan scard sscan zcard zrange xlen xrange'.split()
-(p/'server/users.acl').write_text('user default off\n'+f'user seed on #{hashed} ~* +@all\n'+f'user reader on #{hashed} ~* -@all '+ ' '.join('+'+r for r in reads)+' +info|keyspace\n'+f'user noinfo on #{hashed} ~* -@all '+ ' '.join('+'+r for r in reads)+'\n'+f'user pauser on #{hashed} -@all +client|pause\n')
+(p/'server/users.acl').write_text('user default off\n'+f'user seed on #{hashed} ~* +@all\n'+f'user writer on #{hashed} ~* +@read +ping +select +get +set +del +watch +unwatch +multi +exec +discard\n'+f'user reader on #{hashed} ~* -@all '+ ' '.join('+'+r for r in reads)+' +info|keyspace\n'+f'user noinfo on #{hashed} ~* -@all '+ ' '.join('+'+r for r in reads)+'\n'+f'user pauser on #{hashed} -@all +client|pause\n')
 (p/'server/server.conf').write_text('port 0\ntls-port 6379\nbind 0.0.0.0\nprotected-mode yes\ntls-cert-file /fixture/cert.pem\ntls-key-file /fixture/key.pem\ntls-ca-cert-file /fixture/ca.pem\ntls-auth-clients no\naclfile /fixture/users.acl\nsave ""\nappendonly no\n')
 (p/'database.properties').write_text(f'kind={sys.argv[2]}\npassword={password}\n')
 (p/'database.properties').chmod(0o600)
@@ -77,16 +77,15 @@ keytool -importcert -noprompt -alias fixture-ca -file "$fixture/server/ca.pem" -
 export DATASAIL_TEST_CONFIG="$fixture/database.properties"
 export DATASAIL_TEST_TRUSTSTORE="$fixture/trust.p12"
 ./gradlew :core:keyValueTest --console=plain
-mkdir -p "docs/evidence/v071/$kind"
-cp core/build/test-results/keyValueTest/TEST-*.xml "docs/evidence/v071/$kind/"
+mkdir -p "docs/evidence/v0130/$kind"
+cp core/build/test-results/keyValueTest/TEST-*.xml "docs/evidence/v0130/$kind/"
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
- adb install -r app/build/outputs/apk/debug/app-debug.apk
- adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+ bash scripts/install-android-test-apks.sh
  adb shell run-as com.example.datasail mkdir -p files
  adb shell run-as com.example.datasail sh -c "'cat > files/kv-fixture.properties'" < "$fixture/database.properties"
  adb shell run-as com.example.datasail sh -c "'cat > files/kv-ca.pem'" < "$fixture/server/ca.pem"
  adb reverse "tcp:$port" "tcp:$port"
  adb shell am instrument -w -e class com.example.datasail.KeyValueDeviceTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
- rg -q 'OK \(3 tests\)' "$fixture/android-result.txt"
- cp "$fixture/android-result.txt" "docs/evidence/v071/$kind/android-${ANDROID_SERIAL}.txt"
+ rg -q 'OK \(4 tests\)' "$fixture/android-result.txt"
+ cp "$fixture/android-result.txt" "docs/evidence/v0130/$kind/android-${ANDROID_SERIAL}.txt"
 fi

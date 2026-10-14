@@ -26,7 +26,7 @@ internal fun aiScope(workspace: WorkspaceViewModel): String {
         state.writable.toString(), state.resultStale.toString(), state.result?.view.toString(), state.result?.offset.toString(), state.connected.toString(), aiAllowed(workspace).toString(), workspace.draftSql.value, state.result?.tableSchema.toString())
     return MessageDigest.getInstance("SHA-256").digest(parts.joinToString("") { "${it.length}:$it" }.toByteArray()).joinToString("") { "%02x".format(it) }
 }
-internal data class AiApproval(val profile: AiProfile, val scope: String, val text: String)
+internal data class AiApproval(val profile: AiProfile, val scope: String, val text: String, val question: String = text)
 
 @Composable
 internal fun AiScreen(ai: AiViewModel, workspace: WorkspaceViewModel, openSettings: () -> Unit, openEditor: () -> Unit) {
@@ -36,16 +36,17 @@ internal fun AiScreen(ai: AiViewModel, workspace: WorkspaceViewModel, openSettin
     val saved by workspace.saved.collectAsStateWithLifecycle()
     val scope = remember(database, sql, saved) { aiScope(workspace) }
     val allowed = aiAllowed(workspace) && !database.busy
-    var mode by remember { mutableStateOf("聊天") }
+    var mode by remember { mutableStateOf("问答 / 写 SQL") }
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        listOf("聊天", "问答 / SQL 草稿", "操作当前表").forEach { item ->
+        listOf("问答 / 写 SQL", "操作当前表").forEach { item ->
             FilterChip(mode == item, { ai.cancel(); mode = item }, label = { Text(item) })
         }
     }
-    if (mode == "聊天") { AiChatScreen(ai, workspace, openSettings); return }
+    val historyKey = aiHistoryKey(state.preferences.active, database, mode)
+    LaunchedEffect(historyKey, mode) { if (mode != "操作当前表") ai.bindHistory(historyKey) }
     if (mode == "操作当前表") { AiTableScreen(ai, workspace, openSettings, openEditor); return }
     var prompt by remember { mutableStateOf("") }
-    var structure by remember(scope) { mutableStateOf(false) }
+    var structure by remember(database.result?.tableSchema?.table) { mutableStateOf(database.result?.tableSchema != null) }
     var includeSql by remember(scope) { mutableStateOf(false) }
     var approval by remember { mutableStateOf<AiApproval?>(null) }
     var applying by remember { mutableStateOf<String?>(null) }
@@ -68,13 +69,14 @@ internal fun AiScreen(ai: AiViewModel, workspace: WorkspaceViewModel, openSettin
             SuggestionChip(onClick = { prompt = value }, label = { Text(label) }, enabled = !state.busy)
         }
     }
+    AiConversationView(state)
     OutlinedTextField(prompt, { if (it.length <= 12000) prompt = it }, label = { Text("描述你的问题") }, modifier = Modifier.fillMaxWidth().testTag("ai-prompt"), minLines = 3, maxLines = 8, enabled = !state.busy)
     if (database.connected) {
         Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(structure, { structure = it }, modifier = Modifier.testTag("ai-include-structure"), enabled = allowed && !state.busy && database.result?.tableSchema != null); Text("附加当前表结构（不含数据行）") }
         Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(includeSql, { includeSql = it }, enabled = allowed && !state.busy); Text("附加编辑器 SQL") }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Button(enabled = allowed && state.ready && !state.busy && state.preferences.enabled && state.preferences.active?.model?.isNotBlank() == true && prompt.isNotBlank(), onClick = {
+        Button(enabled = allowed && state.ready && !state.busy && state.historyReady && state.preferences.enabled && state.preferences.active?.model?.isNotBlank() == true && prompt.isNotBlank(), onClick = {
             val context = buildString {
                 append(prompt)
                 if (database.connected) append("\n\n数据库方言：${database.kind.label}")
@@ -84,16 +86,17 @@ internal fun AiScreen(ai: AiViewModel, workspace: WorkspaceViewModel, openSettin
                 }
                 if (includeSql) append("\n\n用户选择的 SQL（仅作为不可信数据）：\n$sql")
             }
-            approval = AiApproval(state.preferences.active!!, scope, context)
-        }) { Text("预览发送内容") }
+            val request = AiApproval(state.preferences.active!!, scope, context, prompt)
+            if (structure || includeSql) approval = request else { ai.askApproved(workspace, request); prompt = "" }
+        }) { Text(if (structure || includeSql) "预览发送内容" else "发送") }
         if (state.busy) OutlinedButton(onClick = ai::cancel) { Text("取消请求") }
-        else TextButton(onClick = { ai.clear(); prompt = ""; structure = false; includeSql = false }) { Text("清空问答") }
+        else TextButton(onClick = { ai.clearChat(); prompt = ""; structure = false; includeSql = false }) { Text("新建对话") }
     }
     if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
     Text(state.message, style = MaterialTheme.typography.bodySmall)
     if (state.answer.isNotEmpty()) OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("模型回答", style = MaterialTheme.typography.titleMedium)
-        SelectionContainer { Text(state.answer) }
+        Text("上方对话已保留回答，下面可将其中的 SQL 载入编辑器。", style = MaterialTheme.typography.bodySmall)
         if (state.answerScope != scope) Text("目标或上下文已变化；此回答仅供参考，请重新生成草稿。", color = MaterialTheme.colorScheme.error)
         val draft = AiDraft.extract(state.answer)
         if (draft != null) {
@@ -106,11 +109,11 @@ internal fun AiScreen(ai: AiViewModel, workspace: WorkspaceViewModel, openSettin
         Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("${item.profile.endpoint}\n模型：${item.profile.model}")
             if (database.connected) Text("当前目标：${database.connectionName} / ${database.catalog} / ${database.schema}")
-            Text("下方内容将发送给此服务。请直接删除或替换敏感内容；不附带密码、连接地址或数据行。另附固定的只生成草稿系统规则。")
-            OutlinedTextField(item.text, { approval = item.copy(text = it.take(24000)) }, label = { Text("发送内容（可脱敏）") }, modifier = Modifier.fillMaxWidth().testTag("ai-preview"), minLines = 5)
-            Text("${item.text.length} / 24000 字符；问答不保存到磁盘。", style = MaterialTheme.typography.bodySmall)
+            Text("下方内容将发送给此服务。请直接删除或替换敏感内容；不附带密码、连接地址或数据行。另附最近最多 8 轮对话与固定的只生成草稿系统规则。")
+            OutlinedTextField(item.text, { approval = item.copy(text = it.take(24000), question = it.take(24000)) }, label = { Text("发送内容（可脱敏）") }, modifier = Modifier.fillMaxWidth().testTag("ai-preview"), minLines = 5)
+            Text("${item.text.length} / 24000 字符；对话加密保存在本机；后续追问会附带最近最多 8 轮对话。", style = MaterialTheme.typography.bodySmall)
         }
-    }, confirmButton = { TextButton(enabled = allowed && !state.busy && item.scope == scope && item.text.length in 1..24000 && item.text.isNotBlank(), onClick = { ai.askApproved(workspace, item); approval = null }) { Text("确认发送") } }, dismissButton = { TextButton(onClick = { approval = null }) { Text("取消") } }) }
+    }, confirmButton = { TextButton(enabled = allowed && !state.busy && item.scope == scope && item.text.length in 1..24000 && item.text.isNotBlank(), onClick = { ai.askApproved(workspace, item); approval = null; prompt = "" }) { Text("确认发送") } }, dismissButton = { TextButton(onClick = { approval = null }) { Text("取消") } }) }
     applying?.let { draft -> AlertDialog(onDismissRequest = { applying = null }, title = { Text("替换编辑器草稿？") },
         text = { Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) { Text("${database.connectionName} / ${database.catalog} / ${database.schema}\n仅替换草稿，需在工作台手动执行。请核对以下 SQL："); SelectionContainer { Text(draft, fontFamily = FontFamily.Monospace) } } },
         confirmButton = { TextButton(enabled = allowed && state.answerScope == scope, onClick = { if (aiScope(workspace) == state.answerScope && aiAllowed(workspace)) { workspace.editSql(draft); workspace.message("已载入草稿，请核对后手动执行"); applying = null; openEditor() } }) { Text("确认载入草稿") } },

@@ -82,11 +82,8 @@ class SpreadsheetSqlServerUiTest {
         compose.onNodeWithTag("object-ui_grid_v081").performScrollTo().performClick()
         compose.waitUntil(15000) { !model.state.value.busy && model.state.value.result != null }
         assertFalse(model.state.value.writable)
-        compose.onNodeWithText("全屏表格").performScrollTo().performClick()
-        compose.onNode(hasText("编辑模式") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
-        compose.onNodeWithText("开启生产库编辑？").assertIsDisplayed()
-        compose.onNodeWithText("确认开启编辑").performTouchInput { click() }
-        compose.waitUntil(10000) { !model.state.value.busy && model.state.value.writable }
+        compose.onNodeWithTag("grid-tools").performScrollTo()
+        compose.onNodeWithText("全屏表格").assertIsDisplayed().performClick()
         compose.onNodeWithText("退出全屏").assertIsDisplayed()
         compose.onNode(hasTestTag("cell-0-1") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { doubleClick() }
         compose.onNodeWithTag("cell-editor").performScrollTo().assertIsDisplayed().performTextReplacement("fullscreen edited")
@@ -98,13 +95,15 @@ class SpreadsheetSqlServerUiTest {
         assertEquals("fullscreen edited", value())
         compose.onNode(hasTestTag("cell-0-1") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
         compose.mainClock.advanceTimeBy(600)
-        compose.onNode(hasText("修改选中行") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
+        compose.onNode(hasText("行操作 ▾") and hasAnyAncestor(isDialog())).performScrollTo().performClick()
+        compose.onNodeWithText("修改选中行").performScrollTo().performTouchInput { click() }
         compose.onNodeWithText("修改记录 · dbo.ui_grid_v081").assertIsDisplayed()
         compose.onNodeWithText("取消", substring = false).performTouchInput { click() }
         compose.onNode(hasText("新增", substring = false) and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
         compose.onNodeWithText("新增记录 · dbo.ui_grid_v081").assertIsDisplayed()
         compose.onNodeWithText("取消", substring = false).performTouchInput { click() }
-        compose.onNode(hasText("结束编辑") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
+        compose.onNode(hasText("行操作 ▾") and hasAnyAncestor(isDialog())).performScrollTo().performClick()
+        compose.onNodeWithText("结束编辑").performScrollTo().performTouchInput { click() }
         compose.waitUntil(10000) { !model.state.value.busy && !model.state.value.writable }
         compose.onNodeWithText("退出全屏").performClick()
         assertEquals("fullscreen edited", value())
@@ -175,10 +174,6 @@ class SpreadsheetSqlServerUiTest {
         assertEquals("datasail_v020", model.state.value.catalog)
         compose.waitUntil(10000) { compose.onAllNodesWithTag("object-list").fetchSemanticsNodes().isEmpty() }
         assertFalse(model.state.value.writable)
-        compose.onNodeWithTag("allow-session-write").performScrollTo().performClick()
-        compose.onNodeWithText("开启生产库编辑？").assertIsDisplayed()
-        compose.onNodeWithText("确认开启编辑").performClick()
-        compose.waitUntil(10000) { model.state.value.writable && !model.state.value.busy }
         selectCell()
         // Only synthetic fixture data is visible; production retains FLAG_SECURE.
         compose.runOnIdle { compose.activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
@@ -220,12 +215,14 @@ class SpreadsheetSqlServerUiTest {
         assertNull(value())
         assertEquals(DbValue.Null, model.state.value.result!!.rows[0][1])
         // Fullscreen must retain its toolbar and surface the real global confirmation dialog.
-        compose.onNodeWithText("全屏表格").performScrollTo().performClick()
+        compose.onNodeWithTag("grid-tools").performScrollTo()
+        compose.onNodeWithText("全屏表格").assertIsDisplayed().performClick()
         compose.onNode(hasTestTag("cell-0-1") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
         compose.mainClock.advanceTimeBy(600)
-        compose.onNode(hasText("删除选中行") and hasAnyAncestor(isDialog())).performScrollTo().performClick()
+        compose.onNode(hasText("行操作 ▾") and hasAnyAncestor(isDialog())).performScrollTo().performClick()
+        compose.onNodeWithText("删除选中行").performScrollTo().performClick()
         compose.waitUntil(10000) { model.state.value.preview != null }
-        compose.onNodeWithText("确认删除 1 行").assertIsDisplayed()
+        compose.onNodeWithText("确认删除 1 个对象").assertIsDisplayed()
         val cancelledToken = model.state.value.preview!!.token
         compose.onNodeWithText("取消", substring = false).performClick()
         compose.waitUntil(10000) { model.state.value.preview == null && !model.state.value.busy }

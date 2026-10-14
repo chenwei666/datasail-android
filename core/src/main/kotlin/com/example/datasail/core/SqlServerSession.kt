@@ -114,6 +114,7 @@ class SqlServerSession(private val connection: Connection, override val profile:
         if (!writable) throw WorkspaceRejected("连接处于只读模式")
         val page = currentPage ?: throw WorkspaceRejected("请先浏览目标表")
         val schema = page.tableSchema ?: throw WorkspaceRejected("查询、JOIN、聚合结果只读")
+        if (kind == MutationKind.DROP_TABLE) return previewDrop(schema.table)
         schema.readOnlyReason?.let { throw WorkspaceRejected(it) }
         val original = if (kind == MutationKind.INSERT) null else (page.rows.getOrNull(rowIndex ?: -1)
             ?: throw WorkspaceRejected("请重新选择当前页中的记录"))
@@ -151,6 +152,7 @@ class SqlServerSession(private val connection: Connection, override val profile:
         val predicateParams = parameters.toList(); parameters.clear()
         val identityGuard = "OBJECT_ID(?)=?"
         val sql = when (kind) {
+            MutationKind.DROP_TABLE -> throw WorkspaceRejected("请使用整表删除预览")
             MutationKind.INSERT -> "INSERT INTO ${schema.table.qualified} (${changes.keys.joinToString(",") { SqlNames.quote(it.name) }}) SELECT ${changes.entries.joinToString(",") { bind(it.key, it.value) }} WHERE $identityGuard"
             MutationKind.UPDATE -> "UPDATE ${schema.table.qualified} SET ${changes.entries.joinToString(",") { "${SqlNames.quote(it.key.name)}=${bind(it.key, it.value)}" }} WHERE $where AND $identityGuard"
             MutationKind.DELETE -> "DELETE FROM ${schema.table.qualified} WHERE $where AND $identityGuard"
@@ -166,6 +168,22 @@ class SqlServerSession(private val connection: Connection, override val profile:
         pending = Plan(preview, schema, parameters.toList())
         return preview
     }
+    override fun previewDrop(table: TableRef): MutationPreview {
+        pending = null
+        if (!writable || currentPage?.tableSchema?.table != table || table.view) throw WorkspaceRejected("请先打开当前表并明确允许删除预览")
+        val schema = describe(table)
+        checkDropTriggers(schema)
+        val preview = MutationPreview(UUID.randomUUID().toString(), MutationKind.DROP_TABLE,
+            "${profile.host}:${profile.port} / $catalog / ${table.label}", "DROP TABLE ${table.qualified}",
+            listOf(ChangePreview("整张表（结构、索引及全部记录，包括确认前新增的记录）", table.label, null)),
+            table.label, now() + 120000, table.label)
+        pending = Plan(preview, schema, emptyList())
+        return preview
+    }
+    private fun checkDropTriggers(schema: TableSchema) {
+        if (schema.hasTriggers || query("SELECT COUNT(*) FROM sys.triggers WHERE parent_class=0 AND is_disabled=0") { it.next(); it.getInt(1) > 0 })
+            throw WorkspaceRejected("存在启用的触发器，不能执行整表删除")
+    }
     override fun discardPreview() { pending = null }
     override fun confirm(token: String): MutationResult {
         val plan = pending ?: throw WorkspaceRejected("确认已失效，请重新预览")
@@ -175,14 +193,15 @@ class SqlServerSession(private val connection: Connection, override val profile:
         try {
             connection.autoCommit = false
             // A short table lock also prevents a concurrent DDL/trigger change between validation and DML.
-            query("SELECT TOP (1) 1 FROM ${plan.schema.table.qualified} WITH (TABLOCK,HOLDLOCK)") { while (it.next()) { } }
+            query("SELECT TOP (1) 1 FROM ${plan.schema.table.qualified} WITH (${if (plan.preview.kind == MutationKind.DROP_TABLE) "TABLOCKX" else "TABLOCK"},HOLDLOCK)") { while (it.next()) { } }
             if (describe(plan.schema.table) != plan.schema) throw WorkspaceRejected("表结构或主键已变化，请刷新后重新编辑")
+            if (plan.preview.kind == MutationKind.DROP_TABLE) checkDropTriggers(plan.schema)
             val affected = prepared(plan.preview.sql) { statement ->
                 statement.maxRows = 0
                 plan.parameters.forEachIndexed { i, param -> bindValue(statement, i + 1, param) }
                 statement.executeUpdate()
             }
-            if (affected != 1) {
+            if (plan.preview.kind != MutationKind.DROP_TABLE && affected != 1) {
                 connection.rollback()
                 connection.autoCommit = true
                 invalidate()
@@ -192,7 +211,7 @@ class SqlServerSession(private val connection: Connection, override val profile:
             connection.commit()
             invalidate()
             try { connection.autoCommit = true } catch (_: Exception) { close() }
-            return MutationResult(MutationStatus.COMMITTED, "服务端确认已提交 1 行；请刷新读取提交后的值")
+            return MutationResult(MutationStatus.COMMITTED, if (plan.preview.kind == MutationKind.DROP_TABLE) "服务端确认已删除整张表；应用不提供撤销" else "服务端确认已提交 1 行；请刷新读取提交后的值")
         } catch (error: Exception) {
             val failure = Failures.classify(error)
             val uncertain = commitAttempted || failure.kind in setOf(ErrorKind.NETWORK, ErrorKind.TIMEOUT, ErrorKind.CANCELLED)

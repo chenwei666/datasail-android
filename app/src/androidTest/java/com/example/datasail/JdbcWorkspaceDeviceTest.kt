@@ -44,7 +44,17 @@ class JdbcWorkspaceDeviceTest {
             assertEquals(DbValue.Integer(105), session.select("SELECT COUNT(*) FROM workbench_fixture").rows.single().single())
             assertEquals(DbValue.Text("0007"), session.select("SELECT '0007'").rows.single().single())
             assertFalse(session.writable)
-            assertThrows(WorkspaceRejected::class.java) { session.setWritable(true) }
+            session.page(table); session.setWritable(true)
+            val insert = session.preview(MutationKind.INSERT, null, mapOf("id" to CellInput("999"), "code" to CellInput("0007 Android")))
+            assertEquals(MutationStatus.COMMITTED, session.confirm(insert.token).status)
+            val view = TableView(listOf(ColumnFilter("id", FilterOperator.EQ, "999")))
+            assertEquals(DbValue.Text("0007 Android"), session.page(table, view = view).rows.single()[1])
+            val update = session.preview(MutationKind.UPDATE, 0, mapOf("code" to CellInput("")))
+            assertEquals(MutationStatus.COMMITTED, session.confirm(update.token).status)
+            assertEquals(DbValue.Text(""), session.page(table, view = view).rows.single()[1])
+            val delete = session.preview(MutationKind.DELETE, 0, emptyMap())
+            assertEquals(MutationStatus.COMMITTED, session.confirm(delete.token).status)
+            assertTrue(session.page(table, view = view).rows.isEmpty())
             assertThrows(WorkspaceRejected::class.java) { session.select("DELETE FROM workbench_fixture") }
         } }
     }

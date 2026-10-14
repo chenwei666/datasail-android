@@ -3,12 +3,12 @@ package com.example.datasail.core
 /** Product scope is deliberately separate from selectable, implemented connection types. */
 data class DatabaseTarget(val name: String, val family: String, val connectionKind: DatabaseKind? = null) {
     val capability: String get() = when (connectionKind) {
-        DatabaseKind.SQL_SERVER -> "实验性：浏览、查询、单行编辑"
-        DatabaseKind.MYSQL, DatabaseKind.MARIADB, DatabaseKind.POSTGRESQL -> "实验性：只读浏览、查询"
-        DatabaseKind.SQLITE -> "实验性：导入副本、只读浏览、查询"
-        DatabaseKind.REDIS, DatabaseKind.VALKEY -> "实验性：只读键扫描、类型、TTL、内容预览"
-        DatabaseKind.MONGODB -> "实验性：只读集合、筛选、文档游标分页"
-        DatabaseKind.ELASTICSEARCH, DatabaseKind.OPENSEARCH -> "实验性：只读索引、映射、DSL 查询与分页"
+        DatabaseKind.SQL_SERVER -> "浏览、查询、单行编辑；整表删除另行确认"
+        DatabaseKind.MYSQL, DatabaseKind.MARIADB, DatabaseKind.POSTGRESQL -> "浏览、查询、受限单行增删改"
+        DatabaseKind.SQLITE -> "导入副本、浏览查询、受限单行增删改"
+        DatabaseKind.REDIS, DatabaseKind.VALKEY -> "键扫描、类型、TTL；完整字符串增删改"
+        DatabaseKind.MONGODB -> "集合、筛选、分页；完整单文档增删改"
+        DatabaseKind.ELASTICSEARCH, DatabaseKind.OPENSEARCH -> "索引、映射、DSL 分页；版本校验单文档增删改"
         null -> "规划中，尚不可连接"
     }
 }

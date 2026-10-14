@@ -38,6 +38,29 @@ class MongoContract(private val profile: ConnectionProfile, private val password
         assertThrows(WorkspaceRejected::class.java) { session.find("documents", "{\"\$where\":\"return true\"}") }
         assertFalse(session.isClosed()) // Local validation does not contact the server or destroy an existing cursor.
     }
+    fun writes() {
+        val writer = ConnectionProfile(profile.kind, profile.host, profile.port, profile.database, "writer", trustStore = profile.trustStore)
+        connect(writer).use { session -> connect(writer).use { other ->
+            session.collections(); other.collections()
+            val id = "write-fixture-${java.util.UUID.randomUUID()}"
+            val first = "{\"_id\":\"$id\",\"name\":\"0007\",\"nested\":{\"number\":1},\"items\":[null,2]}"
+            fun read(s: MongoSession) = s.find("documents", "{\"_id\":\"$id\"}").documents.single().json!!
+            val insert = session.previewRecord(RecordDraft(MutationKind.INSERT, "documents", replacement = first))
+            val result = session.confirmRecord(insert.token)
+            assertEquals(result.message, MutationStatus.COMMITTED, result.status)
+            assertThrows(WorkspaceRejected::class.java) { session.confirmRecord(insert.token) }
+            val old = read(session)
+            val stale = session.previewRecord(RecordDraft(MutationKind.UPDATE, "documents", original = old, replacement = old.replace("0007", "stale")))
+            val concurrent = other.previewRecord(RecordDraft(MutationKind.UPDATE, "documents", original = read(other), replacement = first.replace("0007", "changed")))
+            val changed = other.confirmRecord(concurrent.token)
+            assertEquals(changed.message, MutationStatus.COMMITTED, changed.status)
+            assertEquals(MutationStatus.CONFLICT, session.confirmRecord(stale.token).status)
+            val current = read(session)
+            val remove = session.previewRecord(RecordDraft(MutationKind.DELETE, "documents", original = current))
+            assertEquals(MutationStatus.COMMITTED, session.confirmRecord(remove.token).status)
+            assertTrue(session.find("documents", "{\"_id\":\"$id\"}").documents.isEmpty())
+        } }
+    }
     fun identityAndAuth() {
         for (p in listOf(
             ConnectionProfile(DatabaseKind.MONGODB, "127.0.0.1", profile.port, profile.database, profile.username, trustStore = profile.trustStore),

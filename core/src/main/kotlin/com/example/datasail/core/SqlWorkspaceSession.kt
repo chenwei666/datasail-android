@@ -17,6 +17,7 @@ interface SqlWorkspaceSession : AutoCloseable {
     fun isClosed(): Boolean
     fun setWritable(enabled: Boolean) { if (enabled) throw WorkspaceRejected("此数据库当前提供只读浏览和查询") }
     fun preview(kind: MutationKind, rowIndex: Int?, inputs: Map<String, CellInput>): MutationPreview = throw WorkspaceRejected("此数据库尚未开放图形编辑")
+    fun previewDrop(table: TableRef): MutationPreview = throw WorkspaceRejected("此引擎暂不支持删除整表")
     fun discardPreview() {}
     fun confirm(token: String): MutationResult = throw WorkspaceRejected("此数据库尚未开放图形编辑")
 }

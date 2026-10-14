@@ -1,22 +1,21 @@
-# V0.12.2 驱动与能力矩阵
+# V0.13.0 驱动与能力矩阵
 
-当前实际实现十种连接类型；下表区分功能实现与测试证据。完整验收命令和系统范围见 TEST_REPORT。
+每种引擎独立验收。下面是实现范围；本轮实际执行的服务器、Android 版本与失败记录以 [测试报告](TEST_REPORT.md) 为准。未通过的 Release、真机和其它服务器版本不能从 JVM 成功推断。
 
-| 引擎 | 驱动 | 工作台实现 | 图形写入 | 特有约束 |
-|---|---|---|---|---|
-| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.2 / MIT | 库、Schema、表/视图、字段、分页、SELECT | 显式开启会话后单元格/单行预览确认 | 生产标记默认只读，确认可开启；AI 写入复用相同保护 |
-| MySQL | MariaDB Connector/J 3.5.10 / LGPL-2.1-or-later | 库、表/视图、字段、主键分页、SELECT | 未开放 | 每操作服务器只读事务；无符号 BIGINT 用精确 Decimal |
-| MariaDB | 同上，独立服务器验收 | 同上 | 未开放 | 不以复用驱动推断兼容 |
-| PostgreSQL | pgjdbc 42.7.14 / BSD-2-Clause | Schema、表/视图、字段、主键分页、SELECT | 未开放 | 一连接一库；参数化系统目录绕开 Android 缺少的 closeOnCompletion |
-| SQLite | Android 系统 SQLiteDatabase | 文件副本、表/视图、字段、主键分页、SELECT | 未开放 | 64 MiB、一致性非 WAL 副本、OPEN_READONLY |
-| Redis | 自有 RESP2/TLS（Apache-2.0） | SCAN、类型、TTL、六类键预览 | 未开放 | 单节点、严格响应预算、只读 ACL |
-| Valkey | 同上，独立服务器验收 | 同上 | 未开放 | 不以协议复用推断兼容 |
-| MongoDB | MongoDB Java Driver 5.6.5 / Apache-2.0 | 集合、受限 JSON 筛选、文档游标分页、canonical Extended JSON | 未开放 | 单地址直连、SCRAM-SHA-256、authSource 独立；超限文档明确未展开 |
+| 引擎 | 驱动 | 浏览 | 单对象写入边界 |
+|---|---|---|---|
+| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.2 | 库、Schema、表、视图、分页、SELECT | 主键与完整原行 / rowversion 校验；双击草稿、确认提交；受限整表删除另需表名确认 |
+| MySQL | MariaDB Connector/J 3.5.10 | 库、表、视图、分页、SELECT | InnoDB、主键、可见触发器状态、完整原行；参数化短事务；二进制浮点参数 |
+| MariaDB | 同上，单独验收 | 同上 | 同上；不以兼容协议代替独立验证 |
+| PostgreSQL | pgjdbc 42.7.14 | Schema、表、视图、分页、SELECT | 主键、完整原行及元数据校验；短事务；复杂类型仍有只读限制 |
+| SQLite | Android SQLiteDatabase | 一致性私有副本、表、视图、分页、SELECT | 只改应用内副本；主键、完整原行；整数、文本、浮点；不自动写回原文件 |
+| Redis | 自有 RESP2/TLS | SCAN、六类键、TTL、有界预览 | 完整 UTF-8 字符串；WATCH / MULTI / EXEC；保留现有 TTL；不重试 |
+| Valkey | 同上，单独验收 | 同上 | 同上；其它集合类型当前仍只读 |
+| MongoDB | Java Driver 5.6.5 | 集合、受限筛选、游标、Extended JSON | 有界完整文档；不可改 _id；按完整原文及各 BSON 类型原子校验，二进制排序规则；需 MongoDB 5.0+ 的表达式能力 |
+| Elasticsearch | 平台 HTTPS | 索引、映射、DSL、分页 | 单文档新增、替换、删除；if_seq_no / if_primary_term 乐观锁 |
+| OpenSearch | 同上，单独验收 | 同上 | 同上；无 bulk、脚本或索引管理 |
 
-| Elasticsearch | 自有平台 HTTPS / 严格 JSON（Apache-2.0） | 索引、映射、受限 DSL、100 条分页 | 未开放 | Basic、指定索引范围、前 1000 条，单响应 2 MiB |
-| OpenSearch | 同上，独立服务器验收 | 同上 | 未开放 | 不以 REST 接口相似推断兼容 |
-
-V0.7.1 的完整引擎矩阵见 `docs/evidence/v071/summary.json`；V0.8.0 重做应用工作流，具体重跑范围见 TEST_REPORT 与 `docs/evidence/v080/summary.json`。历史设备结果不冒充本轮结果；正式 Release 和真机仍是独立门禁。
+所有修改都先预览再确认；确认令牌只用一次，断网后结果未知时不重放。只读账号仍由服务器拒绝写入。任意 SELECT 结果不推断为可写表；无主键、视图、触发器、字段超限和未完整加载的行仍受保护。Oracle、Db2、ClickHouse 等仅在规划中，不能声称已连接。
 
 所有网络连接默认校验证书链与主机身份；SQL Server、PostgreSQL 通过严格 TrustManager，MySQL/MariaDB 通过 StrictTlsPlugin 的平台链校验与共享 SAN 匹配器。支持连接专用公共 CA；默认拒绝 CN-only。V0.7.1 新增显式服务器指纹模式，要求叶证书 SHA-256 相同且有效，以此替代链/SAN；没有信任全部或明文回退。MySQL/MariaDB/PostgreSQL 连接预算 15 秒，PostgreSQL 总登录预算 30 秒，socket 15 秒、工作台语句 10 秒。
 
@@ -31,7 +30,7 @@ V0.7.1 的完整引擎矩阵见 `docs/evidence/v071/summary.json`；V0.8.0 重�
 - MariaDB 11.8.9：`mariadb@sha256:6422478cb8e159f080fb1d8ccf65101e26fe51385787fde7d16c3b165a331f15`
 - PostgreSQL 18.3：`postgres@sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db`
 
-JVM 使用 Temurin 21.0.8+9；设备是 Android 8/API26 与 Android 11/API30 AOSP x86_64 软件模拟器。真机、arm64、云认证、其它服务器版本尚无验证。Release/R8 仍失败，不将 Debug 验收冒充混淆发行兼容。
+JVM 使用 Temurin 21.0.8+9；本轮设备验收使用 Android 8/API26 AOSP x86_64 软件模拟器；Android 11/API30 本轮尚无通过证据。真机、arm64、云认证、其它服务器版本尚无验证。Release/R8 仍失败，不将 Debug 验收冒充混淆发行兼容。
 
 其它引擎见 DATABASE_SCOPE，全部仍为规划项目。下一批优先 ClickHouse；Oracle、Db2、国产及兼容协议数据库逐项接入，不能将协议相似推断为已支持。
 
@@ -46,15 +45,3 @@ V0.8.1 没有变更驱动或协议；SQL 元数据导航与表收藏实际测试
 V0.9.0 SQL page 接口增加列窗口，所有 SQL 引擎复用相同的 64 列范围校验；SQL Server / SQLite 本轮实测最后一组字段，其它引擎以本轮测试报告为准，不沿用历史结果冒充新功能实测。AI 协议独立于数据库驱动，见 AI_ASSISTANT。
 
 V0.9.1 SQL Server 源码适配更新到 datasail.2：修复 DDC 调用 Android 缺少的 java.sql / java.time 转换方法，避免含日期字段的表查看失败并断连。用真实 SQL Server 合成日期表验证；未变更 TLS 或写入策略。AI 设置导航和已加载字段属性展示同步完善。其它网络引擎未重跑；当前设备范围与实际结果见 TEST_REPORT。
-
-## V0.10.0 编辑变化
-
-SQL Server 日期读取仍使用 datasail.2 驱动；会话层增加 date/time/datetime/smalldatetime/datetime2/datetimeoffset 的 ISO 文本绑定与精确并发比较，避免 Android JDBC 日期转换缺失 API。生产标记连接默认只读，经用户明确确认可开启本次编辑，切库/断开复位。其它引擎仍只读。当前实际设备和服务器证据以 TEST_REPORT 为准；未访问业务服务器或新增全引擎写入声明。
-
-V0.11.0 增加 SQL 五引擎表筛选/排序。SQL Server 及 MySQL/MariaDB/PostgreSQL 的本轮 JVM 实连结果独立保存在 `docs/evidence/v0110/`；Android 范围以 TEST_REPORT 为准。没有复跑的旧引擎证据不计入本轮。
-
-V0.12.0 不新增引擎或开放写权限。MySQL/MariaDB 无符号整型筛选使用元数据 TYPE_NAME 与精确 Decimal 参数，PostgreSQL NUMERIC 对照验证；SQL Server 类型菜单限制不支持的值比较/排序。实际证据见本轮 TEST_REPORT。
-
-V0.12.1：SQL Server 新增 float/real 安全单条写入及原值并发比较；其它引擎写入能力不变。本轮回归集中 SQL Server、AI 与升级，未重跑其它数据库完整矩阵。
-
-V0.12.2：SQL Server MAX/宽 varchar 声明不再阻止完整行编辑；原值比较使用合法类型长度、DATALENGTH 与字节，单字段读取上限为 4000，页总预算保持。实际 SQL Server 与 Android 测试见 TEST_REPORT；其它引擎未扩大写入范围。

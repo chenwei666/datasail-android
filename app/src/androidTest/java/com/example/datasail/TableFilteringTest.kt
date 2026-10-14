@@ -76,7 +76,8 @@ class TableFilteringTest {
         assertEquals(DbValue.Integer(204), model.state.value.result!!.rows.single()[0])
         compose.onNodeWithText("清除条件").performScrollTo().performClick()
         compose.waitUntil(10000) { !model.state.value.busy && model.state.value.result?.rows?.size == 100 }
-        compose.onNodeWithText("全屏表格").performScrollTo().performClick()
+        compose.onNodeWithTag("grid-tools").performScrollTo()
+        compose.onNodeWithText("全屏表格").assertIsDisplayed().performClick()
         compose.onNode(hasText("下一页") and hasAnyAncestor(isDialog())).performClick()
         compose.waitUntil(10000) { !model.state.value.busy && model.state.value.result?.offset == 100 }
         compose.onNodeWithText("退出全屏").assertIsDisplayed()

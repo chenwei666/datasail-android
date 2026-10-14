@@ -60,8 +60,8 @@ if [[ "${DATASAIL_SQLSERVER_AUTOCERT:-0}" == 1 ]]; then
  android_count=2; task=sqlServerAutoCertificateTest; suite=SQL_SERVER_AUTOCERT; android_class=com.example.datasail.CertificateTrustUiTest
 fi
 ./gradlew ":core:$task" --console=plain
-mkdir -p "docs/evidence/v0122/$suite"
-cp core/build/test-results/"$task"/TEST-*.xml "docs/evidence/v0122/$suite/"
+mkdir -p "docs/evidence/v0130/$suite"
+cp core/build/test-results/"$task"/TEST-*.xml "docs/evidence/v0130/$suite/"
 
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
@@ -74,6 +74,6 @@ if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb shell am instrument -w -e class "$android_class" com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  adb shell run-as com.example.datasail rm -f files/fixture.properties files/fixture-ca.pem
  rg -q "OK \($android_count tests?\)" "$fixture/android-result.txt"
- cp "$fixture/android-result.txt" "docs/evidence/v0122/$suite/android-${ANDROID_SERIAL}.txt"
- if [[ "$suite" == SQL_SERVER && ( ",$android_class," == *",com.example.datasail.SpreadsheetSqlServerUiTest,"* || "$android_class" == *SpreadsheetSqlServerUiTest#tabCompletionCellCommitNullAndReadonlyQuery* ) ]]; then adb exec-out run-as com.example.datasail cat files/v081-grid.png > "docs/evidence/v0122/$suite/grid-${ANDROID_SERIAL}.png"; fi
+ cp "$fixture/android-result.txt" "docs/evidence/v0130/$suite/android-${ANDROID_SERIAL}.txt"
+ if [[ "$suite" == SQL_SERVER && ( ",$android_class," == *",com.example.datasail.SpreadsheetSqlServerUiTest,"* || "$android_class" == *SpreadsheetSqlServerUiTest#tabCompletionCellCommitNullAndReadonlyQuery* ) ]]; then adb exec-out run-as com.example.datasail cat files/v081-grid.png > "docs/evidence/v0130/$suite/grid-${ANDROID_SERIAL}.png"; fi
 fi

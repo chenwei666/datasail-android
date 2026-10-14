@@ -30,7 +30,7 @@ class Handler(BaseHTTPRequestHandler):
         body = json.loads(raw)
         if 'tools' in body: self.reply({},400); return
         answer = '下面是只读查询草稿：\n```sql\nSELECT id, name FROM ai_fixture\n```\n请核对字段和权限。'
-        if 'You have no database access in this chat' in raw:
+        if 'You have no database access in this chat' in raw or '你好，我叫小舟' in raw:
             if self.path.startswith('/gemini'):
                 messages = [{'role':'assistant' if m['role']=='model' else m['role'], 'content':m['parts'][0]['text']} for m in body['contents']]
             else:
@@ -39,8 +39,10 @@ class Handler(BaseHTTPRequestHandler):
             if messages == [{'role':'user','content':'你好，我叫小舟'}]: answer = '你好，小舟'
             elif messages == [{'role':'user','content':'你好，我叫小舟'}, {'role':'assistant','content':'你好，小舟'}, {'role':'user','content':'我叫什么？'}]: answer = '你叫小舟，已收到上一轮对话'
             else: self.reply({},400); return
-        if 'You translate a user' in raw:
+        if 'You translate a user' in raw or 'You are a conversational database assistant' in raw:
             answer = json.dumps({'action':'READ','filters':[{'column':'id','operator':'EQ','value':'2'}],'sorts':[],'values':{}})
+        if '这个表是什么表' in raw:
+            answer = json.dumps({'answer':'这是 ai_fixture 表，包含 id 和 name；仅凭结构无法确定业务用途。'})
         if self.path.startswith('/anthropic'):
             self.reply({'stop_reason':'end_turn','content':[{'type':'text','text':answer}]})
         elif self.path.startswith('/gemini'):

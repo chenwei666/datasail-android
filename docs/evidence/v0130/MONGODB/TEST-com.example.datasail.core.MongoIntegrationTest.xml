@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.MongoIntegrationTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-14T12:31:12.059Z" hostname="b6e64093f9ae" time="142.139">
+  <properties/>
+  <testcase name="readsAndBounds" classname="com.example.datasail.core.MongoIntegrationTest" time="71.76"/>
+  <testcase name="deadlinesAndCancellation" classname="com.example.datasail.core.MongoIntegrationTest" time="40.184"/>
+  <testcase name="singleObjectWritesAndConflicts" classname="com.example.datasail.core.MongoIntegrationTest" time="0.102"/>
+  <testcase name="strictIdentityAndAuthentication" classname="com.example.datasail.core.MongoIntegrationTest" time="30.092"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Oct 14, 2026 12:31:12 PM com.mongodb.internal.diagnostics.logging.Loggers shouldUseSLF4J
+WARNING: SLF4J not found on the classpath.  Logging is disabled for the 'org.mongodb.driver' component
+]]></system-err>
+</testsuite>

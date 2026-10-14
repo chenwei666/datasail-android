@@ -45,7 +45,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: DataSail-V0.12.2-build-${{ github.run_number }}
+          name: DataSail-V0.13.0-build-${{ github.run_number }}
           if-no-files-found: error
           path: |
             app/build/outputs/apk/
@@ -57,7 +57,7 @@ jobs:
             docs/evidence/v060/*/TEST-*.xml
             docs/evidence/v090/*/TEST-*.xml
             docs/evidence/v0100/*/TEST-*.xml
-            docs/evidence/v0122/*/TEST-*.xml
+            docs/evidence/v0130/*/TEST-*.xml
             sqlserver-android/build/test-results/
   release-r8-gate:
     # Deliberately opt-in and failing until driver Android API gaps are resolved.

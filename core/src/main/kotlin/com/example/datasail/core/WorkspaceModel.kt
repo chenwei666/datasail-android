@@ -17,7 +17,7 @@ data class ColumnDef(val name: String, val jdbcType: Int, val typeName: String, 
             Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.DECIMAL, Types.NUMERIC, Types.BIT, Types.BOOLEAN, Types.REAL, Types.FLOAT, Types.DOUBLE, Types.DATE, Types.TIME, Types.TIMESTAMP, -155)
     }
 }
-data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val hasTriggers: Boolean, val readOnlyOverride: String? = null) {
+data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val hasTriggers: Boolean, val readOnlyOverride: String? = null, val identityToken: String = "") {
     val keys get() = columns.filter { it.primaryKeyOrder > 0 }.sortedBy { it.primaryKeyOrder }
     val version get() = columns.firstOrNull { it.rowVersion }
     val readOnlyReason: String? get() = when {
@@ -36,11 +36,11 @@ data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val ha
 data class ResultColumn(val name: String, val typeName: String, val jdbcType: Int)
 data class ResultPage(val columns: List<ResultColumn>, val rows: List<List<DbValue>>, val hasMore: Boolean,
     val offset: Int = 0, val tableSchema: TableSchema? = null, val stableOrder: Boolean = false, val columnOffset: Int = 0, val totalColumns: Int = columns.size, val view: TableView = TableView())
-enum class MutationKind(val label: String) { INSERT("新增"), UPDATE("修改"), DELETE("删除") }
+enum class MutationKind(val label: String) { INSERT("新增"), UPDATE("修改"), DELETE("删除"), DROP_TABLE("删除整张表") }
 data class CellInput(val text: String = "", val isNull: Boolean = false)
 data class ChangePreview(val column: String, val before: String?, val after: String?)
 data class MutationPreview(val token: String, val kind: MutationKind, val target: String, val sql: String,
-    val changes: List<ChangePreview>, val keyDescription: String, val expiresAtMillis: Long)
+    val changes: List<ChangePreview>, val keyDescription: String, val expiresAtMillis: Long, val requiredConfirmation: String? = null)
 enum class MutationStatus { COMMITTED, CONFLICT, ROLLED_BACK, UNKNOWN }
 data class MutationResult(val status: MutationStatus, val message: String)
 class WorkspaceRejected(val explanation: String) : IllegalArgumentException(explanation)

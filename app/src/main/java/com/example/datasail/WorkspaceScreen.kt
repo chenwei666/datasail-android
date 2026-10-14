@@ -77,7 +77,7 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel, ai: 
                 "收藏" -> QueryLibrary(model, state) { page = "工作台" }
                 else -> SettingsScreen(model, ai, { page = "AI 设置" }) {
                     Text("应用标识：com.example.datasail · 构建：${BuildConfig.BUILD_TYPE}")
-                    Text("当前十种引擎；除 SQL Server 外只读。AI 支持配置外部文本模型服务。")
+                    Text("当前十种引擎，按类型提供受限的单条增删改查；不支持的对象会说明原因。AI 配置及加密记忆保存在本机。")
                     DatabaseSupport()
                     val probeState by probe.state.collectAsStateWithLifecycle()
                     ProbeForm(probe, probeState)
@@ -89,14 +89,20 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel, ai: 
         title = { Text("导出当前结果页？") }, text = { Text("$target\n仅导出当前已加载的 ${result.rows.size} 行。UTF-8 CSV，不是整表备份。NULL 写作 \\N，文字中的反斜杠前缀转义；可能被电子表格当成公式的文字前加单引号。选择保存位置时连接会断开。") },
         confirmButton = { TextButton(onClick = { exportSnapshot = result; exportPreview = null; exporter.launch("DataSail-page.csv") }) { Text("选择保存位置") } },
         dismissButton = { TextButton(onClick = { exportPreview = null }) { Text("取消") } }) }
-    state.preview?.let { preview -> AlertDialog(onDismissRequest = { if (!state.busy) model.discardPreview() },
-        title = { Text("确认${preview.kind.label} 1 行") },
+    state.preview?.let { preview ->
+        var confirmation by remember(preview.token) { mutableStateOf("") }
+        AlertDialog(onDismissRequest = { if (!state.busy) model.discardPreview() },
+        title = { Text(if (preview.kind == MutationKind.DROP_TABLE) "删除整张表？" else "确认${preview.kind.label} 1 个对象") },
         text = { Column(Modifier.heightIn(max = 450.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(preview.target); Text("定位：${preview.keyDescription}")
-            Text("确认 2 分钟内有效；提交前再检查元数据及原行。事务仅在提交时开启。")
+            preview.requiredConfirmation?.let { name ->
+                Text("将永久删除结构及全部记录。不是清空筛选结果；应用不提供撤销。请输入 $name 确认。", color = MaterialTheme.colorScheme.error)
+                OutlinedTextField(confirmation, { confirmation = it }, label = { Text("完整表名") }, modifier = Modifier.testTag("drop-table-confirmation"))
+            }
+            Text("确认 2 分钟内有效；提交前再检查原值或版本；不会自动重试写入。")
             preview.changes.forEach { Text("${it.column}\n原值：${it.before ?: "（无）"}\n新值：${it.after ?: "（删除）"}") }
-            Text("参数化 SQL：\n${preview.sql}")
-        } }, confirmButton = { Button(enabled = !state.busy, onClick = { model.confirm(preview.token) }) { Text("确认提交") } },
+            Text("执行预览：\n${preview.sql}")
+        } }, confirmButton = { Button(enabled = !state.busy && (preview.requiredConfirmation == null || confirmation == preview.requiredConfirmation), onClick = { model.confirm(preview.token) }) { Text("确认提交") } },
         dismissButton = { TextButton(onClick = model::discardPreview) { Text("取消") } }) }
 }
 
@@ -173,7 +179,7 @@ private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiS
                 TextButton(enabled = !state.busy, onClick = { savingQuery = true; queryName = "" }) { Text("收藏查询") }
                 TextButton(onClick = { history = true }) { Text("查询历史") }
             }
-            Text("单条只读查询；写入请使用数据页的编辑模式。", style = MaterialTheme.typography.bodySmall)
+            Text("单条只读查询；写入可在数据页双击单元格或使用行操作。", style = MaterialTheme.typography.bodySmall)
         }
         if (tab == 2) {
             val structure = state.selectedSchema
@@ -184,8 +190,6 @@ private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiS
                     Text(schema?.table?.label ?: "查询结果", style = MaterialTheme.typography.titleMedium)
                     Text("${if (result.rows.isEmpty()) 0 else result.offset + 1}–${result.offset + result.rows.size} 行 · ${result.totalColumns} 列", style = MaterialTheme.typography.bodySmall)
                 }
-                if (schema != null) TextButton(enabled = !state.busy && state.kind == DatabaseKind.SQL_SERVER && (state.writable || tableEditingBlockReason(result, state) == null), modifier = Modifier.testTag("allow-session-write"),
-                    onClick = { if (state.writable) model.writable(false) else allowWrite = true }) { Text(if (state.writable) "退出编辑" else "开启编辑") }
                 Box { TextButton(onClick = { more = true }) { Text("更多 ▾") }
                     DropdownMenu(more, { more = false }) {
                         if (schema != null) {
@@ -240,12 +244,16 @@ private fun TableActionBar(model: WorkspaceViewModel, state: WorkspaceUiState, r
         TextButton(enabled = !state.busy && result.offset > 0, onClick = { model.page(schema.table, (result.offset - 100).coerceAtLeast(0), result.columnOffset) }) { Text("上一页") }
         TextButton(enabled = !state.busy, onClick = { model.page(schema.table, result.offset, result.columnOffset) }) { Text("刷新") }
         TextButton(enabled = !state.busy && result.hasMore && result.stableOrder && result.offset + result.rows.size <= 1_000_000, onClick = { model.page(schema.table, result.offset + result.rows.size, result.columnOffset) }) { Text("下一页") }
-        if (state.kind == DatabaseKind.SQL_SERVER) TextButton(enabled = !state.busy && (state.writable || tableEditingBlockReason(result, state) == null), onClick = toggleEditing) { Text(if (state.writable) "结束编辑" else "编辑模式") }
-        if (state.writable) {
-            val canEdit = schema.readOnlyReason == null && !state.busy && !state.resultStale
-            TextButton(enabled = canEdit, onClick = { edit(MutationKind.INSERT) }) { Text("新增") }
-            TextButton(enabled = canEdit && selected != null, onClick = { edit(MutationKind.UPDATE) }) { Text("修改选中行") }
-            TextButton(enabled = canEdit && selected != null, onClick = { model.preview(MutationKind.DELETE, selected, emptyMap()) }) { Text("删除选中行") }
+        var menu by remember { mutableStateOf(false) }
+        val canEdit = tableEditingBlockReason(result, state) == null && !state.busy && !state.resultStale
+        TextButton(enabled = canEdit, onClick = { edit(MutationKind.INSERT) }) { Text("新增") }
+        Box {
+            TextButton(enabled = !state.busy, onClick = { menu = true }) { Text("行操作 ▾") }
+            DropdownMenu(menu, { menu = false }) {
+                DropdownMenuItem(text = { Text("修改选中行") }, enabled = canEdit && selected != null, onClick = { menu = false; edit(MutationKind.UPDATE) })
+                DropdownMenuItem(text = { Text("删除选中行") }, enabled = canEdit && selected != null, onClick = { menu = false; model.preview(MutationKind.DELETE, selected, emptyMap()) })
+                DropdownMenuItem(text = { Text(if (state.writable) "结束编辑" else "编辑模式") }, enabled = canEdit || state.writable, onClick = { menu = false; toggleEditing() })
+            }
         }
     }
 }

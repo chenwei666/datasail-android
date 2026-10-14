@@ -99,12 +99,14 @@ class TablePresentationTest {
         assertEquals(listOf("c128", "c129"), model.state.value.result!!.columns.map { it.name })
         compose.onNodeWithText("下一组字段").assertIsNotEnabled()
         compose.runOnIdle { compose.activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
-        compose.onNodeWithText("全屏表格").performScrollTo().performClick()
+        compose.onNodeWithTag("grid-tools").performScrollTo()
+        compose.onNodeWithText("全屏表格").assertIsDisplayed().performClick()
+        compose.waitUntil(10000) { runCatching { compose.onNodeWithText("退出全屏").assertIsDisplayed() }.isSuccess }
         compose.onNodeWithText("退出全屏").assertIsDisplayed()
         compose.onAllNodesWithText("换行").onLast().performClick()
         compose.onAllNodesWithTag("cell-0-1").onLast().performScrollTo().performTouchInput { click() }
         compose.mainClock.advanceTimeBy(600)
-        compose.onNodeWithText("整行详情").performScrollTo().performClick()
+        compose.onNode(hasText("整行详情") and hasAnyAncestor(isDialog())).performScrollTo().performClick()
         compose.onAllNodesWithText("0007 完整已加载值 中文换行").onLast().assertIsDisplayed()
         compose.onNodeWithText("关闭").performClick()
         if (android.os.Build.VERSION.SDK_INT >= 28) compose.onNodeWithText("退出全屏").onParent().onParent().captureToImage().asAndroidBitmap().let { bitmap -> File(context.filesDir,"table-v091.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG,100,it) } }

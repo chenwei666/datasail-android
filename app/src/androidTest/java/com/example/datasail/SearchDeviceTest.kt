@@ -21,6 +21,7 @@ class SearchDeviceTest {
             trustStore = TrustStoreSpec(trust.path)), config.getProperty("password"), config.getProperty("faultPort").toInt()).block() }
         finally { trust.delete() }
     }
+    @Test fun singleObjectWritesAndConflicts() = fixture { writes() }
     @Test fun readsAndBoundsOnArt() = fixture { reads() }
     @Test fun identityAndAuthOnArt() = fixture { identityAndAuth() }
     @Test fun deadlinesAndCancellationOnArt() = fixture { transportBoundsAndCancellation() }

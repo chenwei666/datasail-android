@@ -18,8 +18,9 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 /** Device-local AES-GCM ciphertext only; credentials never enter connection metadata or backup. */
-internal class PasswordVault(context: Context, private val namespace: String) {
+internal class PasswordVault(context: Context, private val namespace: String, private val maxChars: Int = 4096) {
     constructor(context: Context) : this(context, "passwords-v1")
+    init { require(maxChars in 1..131072) }
     private val directory = File(context.noBackupFilesDir, namespace)
     private val alias = if (namespace == "passwords-v1") "DataSail.passwords.v1" else "DataSail.$namespace"
     companion object {
@@ -47,7 +48,7 @@ internal class PasswordVault(context: Context, private val namespace: String) {
     }
     fun save(connection: SavedConnection, password: CharArray) = saveBound(connection.id, binding(connection), password)
     fun saveBound(id: String, aad: ByteArray, password: CharArray) = synchronized(lock) {
-        require(password.isNotEmpty() && password.size <= 4096)
+        require(password.isNotEmpty() && password.size <= maxChars)
         check(directory.isDirectory || directory.mkdirs())
         val encoded = StandardCharsets.UTF_8.encode(CharBuffer.wrap(password))
         val plain = ByteArray(encoded.remaining()).also { encoded.get(it) }
@@ -65,7 +66,7 @@ internal class PasswordVault(context: Context, private val namespace: String) {
     fun loadBound(id: String, aad: ByteArray): CharArray? = synchronized(lock) {
         val target = file(id)
         if (!target.baseFile.exists() && !File(target.baseFile.path + ".bak").exists()) return@synchronized null
-        val bytes = target.openRead().use { require(it.channel.size() in 61..20000); it.readBytes() }
+        val bytes = target.openRead().use { require(it.channel.size() in 61..(maxChars.toLong() * 4 + 64)); it.readBytes() }
         require(bytes[0] == 1.toByte())
         if (!MessageDigest.isEqual(bytes.copyOfRange(1, 33), MessageDigest.getInstance("SHA-256").digest(aad))) return@synchronized null
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -80,6 +81,10 @@ internal class PasswordVault(context: Context, private val namespace: String) {
     fun clear() = synchronized(lock) {
         directory.listFiles()?.forEach { check(it.delete()) }
         KeyStore.getInstance("AndroidKeyStore").apply { load(null); if (containsAlias(alias)) deleteEntry(alias) }
+    }
+    fun trimTo(maxEntries: Int) = synchronized(lock) {
+        require(maxEntries > 0)
+        directory.listFiles().orEmpty().filter { it.name.endsWith(".bin") }.sortedByDescending { it.lastModified() }.drop(maxEntries).forEach { AtomicFile(it).delete() }
     }
     fun count(): Int = synchronized(lock) { directory.listFiles()?.count { it.name.endsWith(".bin") } ?: 0 }
 }

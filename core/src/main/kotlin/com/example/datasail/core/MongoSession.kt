@@ -16,7 +16,7 @@ import javax.net.ssl.SSLContext
 /** Immutable display values: canonical Extended JSON preserves BSON types; no mutation capability. */
 data class DocumentPreview(val json: String?, val unavailable: String? = null)
 data class DocumentPage(val collection: String, val filter: String, val documents: List<DocumentPreview>, val hasMore: Boolean, val page: Int)
-interface DocumentSession : AutoCloseable {
+interface DocumentSession : AutoCloseable, RecordWrites {
     fun collections(): List<String>
     fun find(collection: String, filter: String): DocumentPage
     fun next(): DocumentPage
@@ -73,6 +73,9 @@ class MongoSession(private val profile: ConnectionProfile) : DocumentSession {
     private var collection = ""
     private var filter = "{}"
     private var page = 0
+    private var latest: DocumentPage? = null
+    private data class Plan(val preview: MutationPreview, val draft: RecordDraft, val old: BsonDocument?, val replacement: BsonDocument?)
+    private var pending: Plan? = null
     init { require(profile.kind == DatabaseKind.MONGODB) }
     fun login(credentials: Credentials) = bounded(30) {
         // The driver otherwise logs server addresses and exception text via its JUL fallback.
@@ -113,6 +116,7 @@ class MongoSession(private val profile: ConnectionProfile) : DocumentSession {
         knownCollections = names.toSet(); names.sorted()
     }
     override fun find(collection: String, filter: String): DocumentPage {
+        pending = null; latest = null
         val parsed = DocumentFilter.parse(filter)
         if (collection !in knownCollections) throw WorkspaceRejected("请从已读取的集合列表选择")
         return bounded {
@@ -138,7 +142,43 @@ class MongoSession(private val profile: ConnectionProfile) : DocumentSession {
         }
         val more = c.hasNext()
         if (!more) { c.close(); cursor = null }
-        return DocumentPage(collection, filter, result, more, ++page)
+        return DocumentPage(collection, filter, result, more, ++page).also { latest = it; pending = null }
+    }
+    override fun discardRecord() { pending = null }
+    override fun previewRecord(draft: RecordDraft): MutationPreview {
+        pending = null; requireRecord(draft)
+        if (draft.namespace !in knownCollections) throw WorkspaceRejected("请从当前库选择集合")
+        val old = if (draft.kind == MutationKind.INSERT) null else {
+            if (latest?.collection != draft.namespace || latest?.documents?.none { it.json != null && it.json == draft.original } != false) throw WorkspaceRejected("请重新读取完整文档")
+            MongoWrites.document(draft.original!!).also { MongoWrites.predicate(it) }
+        }
+        val replacement = if (draft.kind == MutationKind.DELETE) null else MongoWrites.document(draft.replacement).also {
+            if (old != null && it["_id"] != old["_id"]) throw WorkspaceRejected("不能修改或删除 _id")
+            if (old == null && !it.containsKey("_id")) it["_id"] = BsonObjectId()
+        }
+        val display = draft.copy(replacement = replacement?.toJson(jsonSettings).orEmpty())
+        return recordPreview(display, "MongoDB / ${profile.database} / ${draft.namespace}", "${draft.kind.label}单文档；按 _id、完整原文和 BSON 类型进行原子校验")
+            .also { pending = Plan(it, display, old, replacement) }
+    }
+    override fun confirmRecord(token: String): MutationResult {
+        val plan = pending ?: throw WorkspaceRejected("确认已失效")
+        pending = null; requireToken(plan.preview, token)
+        val collation = com.mongodb.client.model.Collation.builder().locale("simple").build()
+        return try { bounded {
+            cursor?.close(); cursor = null
+            val target = database().getCollection(plan.draft.namespace, BsonDocument::class.java).withWriteConcern(WriteConcern.ACKNOWLEDGED)
+            val affected = when (plan.draft.kind) {
+                MutationKind.INSERT -> { target.insertOne(plan.replacement!!); 1L }
+                MutationKind.UPDATE -> target.replaceOne(MongoWrites.predicate(plan.old!!), plan.replacement!!, com.mongodb.client.model.ReplaceOptions().collation(collation)).matchedCount
+                MutationKind.DELETE -> target.deleteOne(MongoWrites.predicate(plan.old!!), com.mongodb.client.model.DeleteOptions().collation(collation)).deletedCount
+                else -> throw WorkspaceRejected("不支持此操作")
+            }
+            latest = null
+            if (affected == 1L) MutationResult(MutationStatus.COMMITTED, "单文档原子变更已提交，请刷新；不支持跨文档撤销")
+            else MutationResult(MutationStatus.CONFLICT, "原文档已变化或不存在，未写入；请重新查询")
+        } } catch (_: MongoWriteException) {
+            MutationResult(MutationStatus.ROLLED_BACK, "服务器拒绝写入，请检查重复 _id、校验规则及权限")
+        } catch (_: Exception) { close(); MutationResult(MutationStatus.UNKNOWN, "执行结果未知，请重新连接核对；不会自动重试") }
     }
     private fun database() = (client ?: throw WorkspaceRejected("请先连接数据库")).getDatabase(profile.database).withTimeout(10, TimeUnit.SECONDS)
     private fun <T> bounded(seconds: Long = 12, block: () -> T): T {

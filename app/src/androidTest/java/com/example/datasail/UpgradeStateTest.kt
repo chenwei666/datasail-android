@@ -8,10 +8,13 @@ import org.junit.Test
 class UpgradeStateSeedTest {
     @Test fun seedPreviousVersionPasswordAndSettings() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("0.12.1", context.packageManager.getPackageInfo(context.packageName, 0).versionName)
+        assertEquals("0.12.2", context.packageManager.getPackageInfo(context.packageName, 0).versionName)
         val ai = AiProfile(id = "upgrade-ai", name = "升级 AI", endpoint = "https://example.com/v1", model = "fixture-model")
         AiStore(context).save(AiPreferences(true, ai.id, listOf(ai)))
-        PasswordVault(context, "ai-keys-v1").saveBound(ai.id, ai.binding, "synthetic-ai-upgrade-only".toCharArray())
+        // This test runs inside the immutable V0.12.2 APK: call its actual two-argument constructor.
+        val previousVault = PasswordVault::class.java.getDeclaredConstructor(android.content.Context::class.java, String::class.java)
+            .newInstance(context, "ai-keys-v1")
+        previousVault.saveBound(ai.id, ai.binding, "synthetic-ai-upgrade-only".toCharArray())
         val connection = ConnectionStore(context).load().single { it.id == "upgrade-fixture" }
         val secret = "synthetic-upgrade-only".toCharArray()
         try { PasswordVault(context).save(connection, secret) } finally { secret.fill('\u0000') }
@@ -22,7 +25,7 @@ class UpgradeStateSeedTest {
 class UpgradeStateVerifyTest {
     @Test fun passwordAndSettingsSurviveInPlaceUpgrade() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("0.12.2", context.packageManager.getPackageInfo(context.packageName, 0).versionName)
+        assertEquals("0.13.0", context.packageManager.getPackageInfo(context.packageName, 0).versionName)
         val connection = ConnectionStore(context).load().single { it.id == "upgrade-fixture" }
         val secret = PasswordVault(context).load(connection)
         try { assertArrayEquals("synthetic-upgrade-only".toCharArray(), secret) } finally { secret?.fill('\u0000') }

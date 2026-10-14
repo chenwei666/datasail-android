@@ -1,0 +1,23 @@
+versions/V0.12.2/apk/DataSail-V0.12.2-debug.apk: 1 file pushed, 0 skipped. 11.5 MB/s (24282084 bytes in 2.017s)
+Performing Push Install
+Success
+    versionCode=20 minSdk=26 targetSdk=36
+    versionName=0.12.2
+Exact com.example.datasail.test APK already installed.
+
+com.example.datasail.UpgradeStateSeedTest:
+Error in seedPreviousVersionPasswordAndSettings(com.example.datasail.UpgradeStateSeedTest):
+java.lang.NoSuchMethodError: No direct method <init>(Landroid/content/Context;Ljava/lang/String;IILkotlin/jvm/internal/DefaultConstructorMarker;)V in class Lcom/example/datasail/PasswordVault; or its super classes (declaration of 'com.example.datasail.PasswordVault' appears in /data/app/com.example.datasail-WdY06DD0tMdKkvL69whZrA==/base.apk:classes6.dex)
+	at com.example.datasail.UpgradeStateSeedTest.seedPreviousVersionPasswordAndSettings(UpgradeStateTest.kt:14)
+
+
+Time: 0.198
+There was 1 failure:
+1) seedPreviousVersionPasswordAndSettings(com.example.datasail.UpgradeStateSeedTest)
+java.lang.NoSuchMethodError: No direct method <init>(Landroid/content/Context;Ljava/lang/String;IILkotlin/jvm/internal/DefaultConstructorMarker;)V in class Lcom/example/datasail/PasswordVault; or its super classes (declaration of 'com.example.datasail.PasswordVault' appears in /data/app/com.example.datasail-WdY06DD0tMdKkvL69whZrA==/base.apk:classes6.dex)
+	at com.example.datasail.UpgradeStateSeedTest.seedPreviousVersionPasswordAndSettings(UpgradeStateTest.kt:14)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+

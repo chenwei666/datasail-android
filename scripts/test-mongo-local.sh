@@ -35,6 +35,7 @@ const password = require('fs').readFileSync('/fixture/password','utf8');
 const admin = db.getSiblingDB('admin');
 admin.createUser({user:'controller',pwd:password,roles:['root'],mechanisms:['SCRAM-SHA-256']});
 admin.auth('controller',password);
+admin.createUser({user:'writer',pwd:password,roles:[{role:'readWrite',db:'synthetic'}],mechanisms:['SCRAM-SHA-256']});
 admin.createUser({user:'reader',pwd:password,roles:[{role:'read',db:'synthetic'}],mechanisms:['SCRAM-SHA-256']});
 const target = db.getSiblingDB('synthetic');
 for (let i=0; i<205; i++) target.documents.insertOne({_id: i===7 ? ObjectId('0123456789abcdef01234567') : new ObjectId(), name:String(i).padStart(4,'0'), long:NumberLong('9007199254740993'), decimal:NumberDecimal('1.2300'), date:new Date('2025-01-01T00:00:00Z'), binary:BinData(0,'AP8='), empty:'', nullable:null, nested:{value:[true,1,'text']}});
@@ -55,7 +56,7 @@ docker exec --user 0 "$container" mongosh --quiet --host localhost --tls --tlsCA
 keytool -importcert -noprompt -alias fixture-ca -file "$fixture/server/ca.pem" -keystore "$fixture/trust.p12" -storepass changeit >/dev/null 2>&1
 export DATASAIL_TEST_CONFIG="$fixture/database.properties"
 export DATASAIL_TEST_TRUSTSTORE="$fixture/trust.p12"
-evidence="docs/evidence/v071/MONGODB"
+evidence="docs/evidence/v0130/MONGODB"
 mkdir -p "$evidence"
 if [[ "${DATASAIL_SKIP_JVM:-0}" != 1 ]]; then
  ./gradlew :core:mongoTest --console=plain
@@ -76,7 +77,7 @@ if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb shell run-as com.example.datasail sh -c "'cat > files/mongo-fixture.properties'" < "$fixture/database.properties"
  adb shell run-as com.example.datasail sh -c "'cat > files/mongo-ca.pem'" < "$fixture/server/ca.pem"
  adb reverse "tcp:$port" "tcp:$port"
- classes=com.example.datasail.MongoDeviceTest,com.example.datasail.MongoUiTest; expected=4
+ classes=com.example.datasail.MongoDeviceTest,com.example.datasail.MongoUiTest; expected=5
  if [[ "${DATASAIL_MONGO_UI_ONLY:-0}" == 1 ]]; then classes=com.example.datasail.MongoUiTest; expected=1; fi
  adb shell am instrument -w -e class "$classes" com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  cp "$fixture/android-result.txt" "$evidence/android-${ANDROID_SERIAL}.txt"
