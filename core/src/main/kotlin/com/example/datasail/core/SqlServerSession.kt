@@ -100,14 +100,14 @@ class SqlServerSession(private val connection: Connection, override val profile:
         val sql = if (schema.keys.isEmpty()) "SELECT TOP (101) $columns FROM ${table.qualified}${compiled.where}$order"
             else "SELECT $columns FROM ${table.qualified}${compiled.where}$order OFFSET ? ROWS FETCH NEXT 101 ROWS ONLY"
         val params = compiled.parameters + if (schema.keys.isEmpty()) emptyList() else listOf(offset)
-        val result = query(sql, params, 101) { JdbcResultReader.read(it, offset, schema, exactFloating = true) }.copy(columnOffset = columnOffset, totalColumns = schema.columns.size, view = view)
+        val result = query(sql, params, 101) { JdbcResultReader.read(it, offset, schema, exactFloating = true, textLimit = 4000) }.copy(columnOffset = columnOffset, totalColumns = schema.columns.size, view = view)
         currentPage = result
         return result
     }
     override fun select(sql: String): ResultPage {
         invalidate()
         val checked = ReadQueryPolicy.validate(sql)
-        return query(checked, limit = 101) { JdbcResultReader.read(it, 0, null, exactFloating = true) }.also { currentPage = it }
+        return query(checked, limit = 101) { JdbcResultReader.read(it, 0, null, exactFloating = true, textLimit = 4000) }.also { currentPage = it }
     }
     override fun preview(kind: MutationKind, rowIndex: Int?, inputs: Map<String, CellInput>): MutationPreview {
         pending = null
@@ -139,8 +139,11 @@ class SqlServerSession(private val connection: Connection, override val profile:
             val value = original[schema.columns.indexOf(col)]
             if (value == DbValue.Null) "${SqlNames.quote(col.name)} IS NULL"
             else if (col.jdbcType in setOf(Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR)) {
-                // SQL string equality can ignore case and trailing spaces. Compare original bytes instead.
-                "CONVERT(varbinary(max),${SqlNames.quote(col.name)})=CONVERT(varbinary(max),CONVERT(${col.typeName}(${col.size}),${bind(col, value)}))"
+                // Preserve case, trailing spaces/zero bytes and fixed-width padding, including MAX.
+                val field = SqlNames.quote(col.name)
+                val sqlType = SqlServerText.sqlType(col)
+                "(DATALENGTH($field)=DATALENGTH(CONVERT($sqlType,${bind(col, value)})) AND " +
+                    "CONVERT(varbinary(max),$field)=CONVERT(varbinary(max),CONVERT($sqlType,${bind(col, value)})))"
             } else if (col.jdbcType in SqlServerTemporal.types || col.jdbcType in SqlServerFloating.types) {
                 "CONVERT(varbinary(max),${SqlNames.quote(col.name)})=CONVERT(varbinary(max),${bind(col, value)})"
             } else "${SqlNames.quote(col.name)}=${bind(col, value)}"

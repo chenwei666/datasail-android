@@ -1,0 +1,44 @@
+{
+  "version": "0.12.2",
+  "versionCode": 20,
+  "finalApkSha256": "4ae5cdd40b72366fc44005ba522ceebb5b735d0770d6513e33b81c2faed56a96",
+  "androidTestApkSha256": "8768f5faa8baecdcb1a05a53331a731b45341e758c54f8975091586f2dab002b",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest"
+  ],
+  "jvmTests": {
+    "core-unit": 94,
+    "app-unit": 17,
+    "driver-profile": 14,
+    "sqlserver": 23
+  },
+  "androidTests": {
+    "upgrade-api26.txt": 5,
+    "SQL_SERVER/android-emulator-5556.txt": 5
+  },
+  "previousVersionUpgradeSeedTests": {
+    "api26": 1
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "SQL Server nvarchar(max), varchar(max), varchar(8000) metadata permits editing fully loaded rows without rowversion. Typed MAX binary/length comparisons retain original-row concurrency, including NULL/empty, case, trailing spaces/zero, and last-character conflicts. 4000 UTF-16 unit read/write boundary; actual over-budget rows reject UPDATE/DELETE while other complete rows remain editable. API26 actual SQL Server/ART contract and ordinary/fullscreen touch editing plus V0.12.1 in-place upgrade.",
+  "recoveries": [
+    "Regression added before the production fix reproduced the exact whole-table read-only reason on real SQL Server (23 tests, 1 expected failure); final reports pass.",
+    "A detached emulator launcher exited and left a stale PID lock; confirmed it was dead, removed that lock and started a foreground managed emulator. A duplicate synthetic upgrade launch was stopped and the upgrade was restarted once from its documented baseline; only completed final evidence is counted."
+  ],
+  "unverified": [
+    "API30 current artifact: not rerun this patch; previous V0.12.1 emulator OS/service failures remain documented in its immutable report",
+    "physical/arm64",
+    "user dbo.iclock_transaction and other business databases",
+    "other engine writes or full engine regression matrix",
+    "AI network end-to-end this patch and live AI vendor accounts",
+    "Release/R8 and protected production signing",
+    "independent archived-source rebuild",
+    "fresh cloud restore",
+    "full DBeaver functionality"
+  ]
+}

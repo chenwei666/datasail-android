@@ -1,14 +1,20 @@
-# V0.12.1 实际测试报告
+# V0.12.2 实际测试报告
 
-日期：2026-10-14。版本 0.12.1 / versionCode 19；包名与签名保持连续。交付 Debug APK，Release/R8 驱动适配未完成。
+日期：2026-10-14。版本 0.12.2 / versionCode 20；包名与签名保持连续。交付 Debug APK，Release/R8 驱动适配未完成。
 
-## 修复与功能
+## 问题与修复
 
-- 用户确认“编辑模式”会变为“结束编辑”，因此不是权限按钮没有生效。原实现把无 rowversion、含 float/real 字段的整表设为只读。现为 SQL Server 增加可往返浮点读取、类型限定参数、原值字节并发比较；拒绝溢出、下溢、非有限值及超输入精度，不禁用原有事务/主键/触发器保护。
-- `SqlServerFloating.kt`、`JdbcResultReader.kt`、`SqlServerSession.kt`、`WorkspaceModel.kt` 及共享真实服务器合约覆盖无 rowversion 表的新增、修改、删除、NULL、相邻浮点值冲突和时间字段。
-- `ResultGrid.kt`、`WorkspaceScreen.kt` 在全屏/普通表顶部展示只读原因；列出不支持字段。新增全屏真实点击开启编辑、双击修改提交、打开整行/新增表单的回归。
-- `AiChatScreen.kt`、`AiScreen.kt`、`AiViewModel.kt`、`AiClient.kt` 增加默认普通聊天、连续追问、取消、清空和配置隔离。最多保留 8 轮完整问答，发送内容不超过 24000 字符；仅内存存储，不自动携带数据库信息。
-- SQL 草稿和当前表操作仍是独立入口，保留上下文预览与写入确认。三个 AI 文本协议保持各自消息角色；合成 HTTPS 服务检查上一轮实际到达和不附带表/数据。
+用户 V0.12.1 截图明确显示 `gps_location (nvarchar)` 因“没有行版本号，暂不能安全比较”导致整表只读。此前浮点字段修复未覆盖 MAX 文本声明：`TableSchema` 把声明长度超过 4000 等同于数据未完整加载，SQL Server 的 MAX 元数据为 Int.MAX_VALUE，因此即使字段为 NULL 也锁住整表。
+
+先增加真实 SQL Server 回归用例，在旧实现上得到同样的只读原因（23 项中 1 项失败），证据位于 `evidence/v0122/diagnostics/before-fix.*`。随后修复：
+
+- `WorkspaceModel.kt` 按类型判断表能力，实际行完整性继续由提交入口逐行检查；不再用字段声明容量锁住整表。
+- `SqlServerText.kt` / `SqlServerSession.kt` 使用白名单类型与合法的 `nvarchar(max)` / `varchar(max)` 转换，不产生 `nvarchar(2147483647)`；使用 DATALENGTH 和字节比较完整原值，继续保留事务、主键、触发器和异常影响行数保护。
+- `JdbcResultReader.kt` 对 SQL Server 使用每字段 4000 个 UTF-16 单元读取上限，与原输入上限一致，保留每页 262144 字符预算；其它 JDBC 引擎默认读取范围不变。真正超限仍标记未加载，不截断后参与更新。
+- `ResultGrid.kt` 在选中不可编辑行时列出未完整加载字段名。
+- `SqlServerLargeTextContract.kt` 在 JVM 与 Android 上共用，覆盖 NULL/空串、大小写、尾空格/尾零、Unicode、4000 边界、末尾字符并发变化、4001 超限拒绝、其它完整行可改及新增/删除。真实普通/全屏 UI 夹具增加 `gps_location nvarchar(max)`。
+
+无需修改业务表结构或新增 rowversion。未访问用户服务器；仍不支持无稳定主键、启用触发器、复杂类型和实际未完整加载行的直接修改。
 
 ## 实际命令
 
@@ -17,36 +23,33 @@ export DATASAIL_TOOLS_DIR=/workspace/toolchains
 source scripts/env.sh
 ./gradlew :core:test :app:testDebugUnitTest :sqlserver-android:test :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
 bash scripts/test-sqlserver-local.sh
-# API26 完整执行；API30 尝试但因系统服务故障在旧包安装阶段中断
-# 初始卸载仅用于放置旧版本，之后通过 install -r 覆盖升级
-ANDROID_SERIAL=<serial> bash scripts/test-android-upgrade.sh --reset-synthetic-emulator
-# API26：驱动、普通/全屏编辑、完整工作台交互、AI 设置导航
-ANDROID_SERIAL=emulator-5556 DATASAIL_ANDROID_TESTS=1 DATASAIL_SQLSERVER_ANDROID_COUNT=9 \
- DATASAIL_SQLSERVER_ANDROID_CLASSES='com.example.datasail.SqlServerDeviceTest,com.example.datasail.SpreadsheetSqlServerUiTest,com.example.datasail.WorkbenchInteractionTest,com.example.datasail.AiNavigationTest' \
+# 新增尾零并发断言后重新构建测试 APK，下面的 SQL Server 脚本重跑最终合约
+./gradlew :app:assembleDebugAndroidTest --console=plain
+ANDROID_SERIAL=emulator-5556 bash scripts/test-android-upgrade.sh --reset-synthetic-emulator
+ANDROID_SERIAL=emulator-5556 DATASAIL_ANDROID_TESTS=1 DATASAIL_SQLSERVER_ANDROID_COUNT=5 \
+ DATASAIL_SQLSERVER_ANDROID_CLASSES='com.example.datasail.SqlServerDeviceTest,com.example.datasail.SpreadsheetSqlServerUiTest,com.example.datasail.WorkbenchInteractionTest#fullscreenShowsTableRestrictionWithoutSelectingACell' \
  bash scripts/test-sqlserver-local.sh
-# API30 以下为环境恢复后的复现命令，本轮未执行到此阶段
-ANDROID_SERIAL=emulator-5554 DATASAIL_ANDROID_TESTS=1 DATASAIL_SQLSERVER_ANDROID_COUNT=6 \
- DATASAIL_SQLSERVER_ANDROID_CLASSES='com.example.datasail.SqlServerDeviceTest,com.example.datasail.SpreadsheetSqlServerUiTest,com.example.datasail.WorkbenchInteractionTest#fullscreenShowsTableRestrictionWithoutSelectingACell,com.example.datasail.AiNavigationTest' \
- bash scripts/test-sqlserver-local.sh
-ANDROID_SERIAL=emulator-5556 bash scripts/test-ai-android.sh
 ./gradlew :app:assembleRelease --console=plain
 ```
 
+升级脚本只在可销毁模拟器上清理合成数据，以安装旧版并准备夹具；真正升级为 `adb install -r`，不是卸载后把新装当升级。检查原连接、证书信任、加密数据库密码、收藏、设置和 AI 配置密钥。模拟器启动时脱离会话的启动进程退出留下 PID 锁，确认原进程已结束后清理并重新启动；重复发起的升级启动器被终止，最终从旧版重新完整执行一次，未计入中断尝试。
+
 ## 结果
 
-JVM：92 个 core、17 个 app、14 个驱动配置、22 个实际 SQL Server 集成测试通过，共 145 个。Lint 与 Debug/测试 APK 构建通过。Release 尝试退出 1，仍有 193 个缺失类；未批量添加 dontwarn，未生成或交付 Release APK。
+最终 JVM 报告：core 94、app 17、驱动配置 14、实际 SQL Server 集成 23，共 148 项，失败/错误/跳过均为 0。Gradle 允许复用未改动任务的有效缓存，具体执行/UP-TO-DATE 状态保留在构建日志；没有把缓存任务称为全部重新执行。Lint 无 issue，Debug 与测试 APK 构建通过。
 
-Android 8/API26：5 项覆盖升级检查、9 项 SQL Server / 工作台 / 导航检查、5 项合成 HTTPS AI / 真实页面检查全部通过，共 19 项；另有旧版升级准备 1 项。`docs/evidence/v0121/summary.json` 与 `devices.json` 绑定最终 APK 校验值，诊断运行不计入最终验收。
+Android 8/API26 x86_64 软件模拟器：5 项 V0.12.1 覆盖升级检查、5 项实际 SQL Server/普通及全屏编辑/只读原因检查，共 10 项最终 APK 检查通过；另有 1 项旧版状态准备检查，不计入最终 APK 的 10 项。全屏用实际触摸开启生产连接编辑，双击单元格，确认提交后从真实服务器读取核对；普通页同时覆盖 NULL 与查询结果只读。实际安装 APK SHA-256 与本地交付 APK 一致，见 `evidence/v0122/devices.json` / `summary.json`。
 
-Android 11/API30：本轮环境阻塞，未完成应用验收。第一次软件冷启动出现 System UI ANR，随后系统服务重启，安装旧 V0.12.0 APK 失败（Broken pipe）。等待服务恢复后输入仍不能稳定响应；重启模拟器，使用 SwiftShader 软件渲染与 3072 MB 内存，再次启动仍停留在“Phone is starting”，输入命令超时。已保留系统日志与截图，没有删除/跳过应用断言来制造通过；没有将历史版本 API30 结果计入本版。
+Release 构建退出 1，仍报告 193 个缺失类，未新增批量 dontwarn；没有 Release APK。原包名与 Debug 签名保持，归档脚本额外核对上一版签名。
 
+## 验证边界
 
-## 诊断过程与限制
+- 仅本机隔离 SQL Server 2022 CU16 Developer、临时 TLS CA 和合成数据；未连接用户 dbo.iclock_transaction 或其它业务库，未验证业务账号权限和实际所有字段。
+- Android 11/API30 当前包未重跑。上一轮 V0.12.1 模拟器系统服务及启动故障记录保留在不可变旧版报告，不能把旧版尝试或历史通过当作当前验证。真机、arm64、生产大表性能未验证。
+- 其它引擎完整实连矩阵、AI 网络端到端和真实供应商账号本轮未重跑；常规单元检查仍包含原有逻辑。未增加其它引擎写入。
+- 大字段完整编辑器未实现；实际超过单字段/整页读取预算的行继续禁止修改或删除。表锁短事务可能阻塞其它写入，分页不是一致性快照。
+- Release/R8、正式身份签名、独立归档源码重建与全新云环境恢复未完成，不宣称正式无缺陷发行或完整 DBeaver 功能。
 
-初始全屏测试错误关闭对象选择框导致找不到表，修正为显式重新打开浏览器；保留失败日志。修正后的测试在旧 V0.12.0 的可编辑 rowversion 表上通过，未把弹窗遮挡猜测当作已确认缺陷。用户后续确认与源码共同指向字段限制。首次编译发现跨模块属性不能智能转换，已用可空访问修复。首次 Android 合并回归还发现新增浮点测试遗留可写会话状态影响后续日期测试，以及只读原因断言误用完整文本匹配；已明确重置测试会话并使用子串断言，未删除原有检查，保留失败记录后重跑。
+产物：`app/build/outputs/apk/debug/app-debug.apk`、`versions/V0.12.2/apk/DataSail-V0.12.2-debug.apk`、`versions/V0.12.2.zip`。归档 manifest 记录源码提交、签名、摘要与实际测试证据；归档时 `published=false`，GitHub 发布后另存发布回执，历史档案不改写。
 
-本轮没有访问用户的 dbo.iclock_transaction；模拟表包含主键、时间、float/real 和 NULL，但不能保证用户完整表结构不存在其它限制。界面会显示剩余原因。没有真机/arm64、真实 AI 供应商账号/地区/计费、其它引擎完整矩阵、Release、归档源码独立重建或新云环境恢复测试。不承诺零缺陷，未开放任意 AI SQL 执行、批量写入或其它引擎写入。
-
-## 交付与下一步
-
-`versions/V0.12.1/` 与 `versions/V0.12.1.zip` 包含明确提交的源码、APK、报告、manifest 和逐文件校验；应用 APK 为 `versions/V0.12.1/apk/DataSail-V0.12.1-debug.apk`。下一步先恢复 Android 11 验证环境补跑本报告列出的升级与回归，再处理 Release 驱动适配及真机验收。
+下一项最小任务：在用户相同表的授权副本或真机复核本次编辑流程，并继续处理 Android 11 验收与 Release/R8 门禁。

@@ -37,7 +37,7 @@ class SpreadsheetSqlServerUiTest {
             connection = SavedConnection(name = "表格实连夹具", production = true, host = "localhost", port = config.getProperty("port"), database = "datasail_v020", username = "sa", ca = ca)
             raw().use { c -> c.createStatement().use { s ->
                 s.execute("DROP TABLE IF EXISTS dbo.ui_grid_v081")
-                s.execute("CREATE TABLE dbo.ui_grid_v081(id int PRIMARY KEY, code nvarchar(64) NULL, amount decimal(24,8) NULL, longitude float NULL, latitude real NULL)")
+                s.execute("CREATE TABLE dbo.ui_grid_v081(id int PRIMARY KEY, code nvarchar(64) NULL, amount decimal(24,8) NULL, longitude float NULL, latitude real NULL, gps_location nvarchar(max) NULL)")
                 s.execute("INSERT dbo.ui_grid_v081(id,code,amount,longitude,latitude) VALUES(1,N'0007',1234567890123456.12345678,113.12345678901234,22.12345)")
                 com.example.datasail.fixture.SqlServerTemporalContract.createTable(c)
             } }

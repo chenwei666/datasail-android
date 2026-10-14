@@ -27,7 +27,9 @@ data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val ha
         hasTriggers -> "存在启用的 DML 触发器，本版禁止图形编辑以避免未知副作用"
         columns.size > 64 -> "列数超过本版安全编辑范围"
         keys.any { it.jdbcType !in ColumnDef.EDITABLE_TYPES } -> "主键类型尚未支持编辑定位"
-        version == null && columns.any { it.jdbcType !in ColumnDef.EDITABLE_TYPES || it.size > 4000 } -> "没有行版本号，以下字段暂不能安全比较：" + columns.filter { it.jdbcType !in ColumnDef.EDITABLE_TYPES || it.size > 4000 }.take(4).joinToString { "${it.name} (${it.typeName})" }
+        // Declared capacity (including MAX) says nothing about whether a row was fully loaded.
+        // Mutation preview separately rejects any row containing an unavailable value.
+        version == null && columns.any { it.jdbcType !in ColumnDef.EDITABLE_TYPES } -> "没有行版本号，以下字段暂不能安全比较：" + columns.filter { it.jdbcType !in ColumnDef.EDITABLE_TYPES }.take(4).joinToString { "${it.name} (${it.typeName})" }
         else -> null
     }
 }

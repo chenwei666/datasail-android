@@ -4,7 +4,8 @@ import java.sql.ResultSet
 import java.sql.Types
 
 internal object JdbcResultReader {
-    fun read(rows: ResultSet, offset: Int, schema: TableSchema?, exactFloating: Boolean = false): ResultPage {
+    fun read(rows: ResultSet, offset: Int, schema: TableSchema?, exactFloating: Boolean = false, textLimit: Int = 2048): ResultPage {
+        require(textLimit in 1..4000)
         val meta = rows.metaData
         val columnCount = minOf(meta.columnCount, 64)
         val columns = (1..columnCount).map { ResultColumn(meta.getColumnLabel(it), meta.getColumnTypeName(it), meta.getColumnType(it)) }
@@ -53,7 +54,7 @@ internal object JdbcResultReader {
                     } ?: DbValue.Null
                     Types.OTHER, Types.JAVA_OBJECT, Types.SQLXML, Types.ARRAY, Types.STRUCT -> DbValue.Unavailable("类型 ${column.typeName} 未加载")
                     else -> rows.getCharacterStream(index + 1)?.use { reader ->
-                        val limit = minOf(2048, remainingChars.coerceAtLeast(0))
+                        val limit = minOf(textLimit, remainingChars.coerceAtLeast(0))
                         val buffer = CharArray(limit + 1); var count = 0
                         while (count < buffer.size) { val n = reader.read(buffer, count, buffer.size - count); if (n < 0) break; count += n }
                         remainingChars -= count

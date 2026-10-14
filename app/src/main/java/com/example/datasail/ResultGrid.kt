@@ -146,7 +146,7 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
                 TextButton(onClick = { editing = false }) { Text("取消修改") }
             }
             Text("先预览或取消当前修改，再选择其它单元格。", style = MaterialTheme.typography.bodySmall)
-        } else if (!editable(row, column)) Text(tableEditingBlockReason(page, state) ?: if (!state.writable) "请先点击「编辑模式」或「开启编辑」并确认" else if (page.rows[row].any { it is DbValue.Unavailable }) "当前行有未完整加载的字段，不能安全编辑" else "此列只读（主键、自增或不支持的类型）", style = MaterialTheme.typography.bodySmall)
+        } else if (!editable(row, column)) Text(tableEditingBlockReason(page, state) ?: if (!state.writable) "请先点击「编辑模式」或「开启编辑」并确认" else if (page.rows[row].any { it is DbValue.Unavailable }) "当前行只读，以下字段未完整加载：" + page.columns.indices.filter { page.rows[row][it] is DbValue.Unavailable }.joinToString { page.columns[it].name } else "此列只读（主键、自增或不支持的类型）", style = MaterialTheme.typography.bodySmall)
     }
     Surface(modifier = Modifier.testTag("result-grid").pointerInput(state.connectionKey, page.tableSchema?.table) {
         awaitEachGesture {
