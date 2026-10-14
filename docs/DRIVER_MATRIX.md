@@ -1,4 +1,4 @@
-# V0.12.0 驱动与能力矩阵
+# V0.12.1 驱动与能力矩阵
 
 当前实际实现十种连接类型；下表区分功能实现与测试证据。完整验收命令和系统范围见 TEST_REPORT。
 
@@ -54,3 +54,5 @@ SQL Server 日期读取仍使用 datasail.2 驱动；会话层增加 date/time/d
 V0.11.0 增加 SQL 五引擎表筛选/排序。SQL Server 及 MySQL/MariaDB/PostgreSQL 的本轮 JVM 实连结果独立保存在 `docs/evidence/v0110/`；Android 范围以 TEST_REPORT 为准。没有复跑的旧引擎证据不计入本轮。
 
 V0.12.0 不新增引擎或开放写权限。MySQL/MariaDB 无符号整型筛选使用元数据 TYPE_NAME 与精确 Decimal 参数，PostgreSQL NUMERIC 对照验证；SQL Server 类型菜单限制不支持的值比较/排序。实际证据见本轮 TEST_REPORT。
+
+V0.12.1：SQL Server 新增 float/real 安全单条写入及原值并发比较；其它引擎写入能力不变。本轮回归集中 SQL Server、AI 与升级，未重跑其它数据库完整矩阵。

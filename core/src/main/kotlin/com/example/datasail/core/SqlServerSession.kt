@@ -100,14 +100,14 @@ class SqlServerSession(private val connection: Connection, override val profile:
         val sql = if (schema.keys.isEmpty()) "SELECT TOP (101) $columns FROM ${table.qualified}${compiled.where}$order"
             else "SELECT $columns FROM ${table.qualified}${compiled.where}$order OFFSET ? ROWS FETCH NEXT 101 ROWS ONLY"
         val params = compiled.parameters + if (schema.keys.isEmpty()) emptyList() else listOf(offset)
-        val result = query(sql, params, 101) { JdbcResultReader.read(it, offset, schema) }.copy(columnOffset = columnOffset, totalColumns = schema.columns.size, view = view)
+        val result = query(sql, params, 101) { JdbcResultReader.read(it, offset, schema, exactFloating = true) }.copy(columnOffset = columnOffset, totalColumns = schema.columns.size, view = view)
         currentPage = result
         return result
     }
     override fun select(sql: String): ResultPage {
         invalidate()
         val checked = ReadQueryPolicy.validate(sql)
-        return query(checked, limit = 101) { JdbcResultReader.read(it, 0, null) }.also { currentPage = it }
+        return query(checked, limit = 101) { JdbcResultReader.read(it, 0, null, exactFloating = true) }.also { currentPage = it }
     }
     override fun preview(kind: MutationKind, rowIndex: Int?, inputs: Map<String, CellInput>): MutationPreview {
         pending = null
@@ -133,7 +133,7 @@ class SqlServerSession(private val connection: Connection, override val profile:
         if (kind == MutationKind.INSERT && schema.columns.any { !it.identity && !it.generated && !it.rowVersion && !it.nullable && !it.hasDefault && it !in changes })
             throw WorkspaceRejected("请填写所有无默认值的必填字段")
         val parameters = mutableListOf<Param>()
-        fun bind(col: ColumnDef, value: DbValue): String { parameters += Param(col, value); return if (col.jdbcType in SqlServerTemporal.types) "CONVERT(${SqlServerTemporal.sqlType(col)},?,126)" else "?" }
+        fun bind(col: ColumnDef, value: DbValue): String { parameters += Param(col, value); return when (col.jdbcType) { in SqlServerTemporal.types -> "CONVERT(${SqlServerTemporal.sqlType(col)},?,126)"; in SqlServerFloating.types -> "CONVERT(${SqlServerFloating.sqlType(col)},?)"; else -> "?" } }
         val whereColumns = if (schema.version != null) (schema.keys + schema.version!!).distinct() else schema.columns
         val where = if (original == null) "" else whereColumns.joinToString(" AND ") { col ->
             val value = original[schema.columns.indexOf(col)]
@@ -141,7 +141,7 @@ class SqlServerSession(private val connection: Connection, override val profile:
             else if (col.jdbcType in setOf(Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR)) {
                 // SQL string equality can ignore case and trailing spaces. Compare original bytes instead.
                 "CONVERT(varbinary(max),${SqlNames.quote(col.name)})=CONVERT(varbinary(max),CONVERT(${col.typeName}(${col.size}),${bind(col, value)}))"
-            } else if (col.jdbcType in SqlServerTemporal.types) {
+            } else if (col.jdbcType in SqlServerTemporal.types || col.jdbcType in SqlServerFloating.types) {
                 "CONVERT(varbinary(max),${SqlNames.quote(col.name)})=CONVERT(varbinary(max),${bind(col, value)})"
             } else "${SqlNames.quote(col.name)}=${bind(col, value)}"
         }
@@ -234,6 +234,10 @@ class SqlServerSession(private val connection: Connection, override val profile:
             is DbValue.Decimal -> statement.setBigDecimal(index, value.value)
             is DbValue.Bool -> statement.setBoolean(index, value.value)
             is DbValue.Temporal -> statement.setString(index, SqlServerTemporal.parse(parameter.column, value.value).value)
+            is DbValue.Approximate -> {
+                val parsed = SqlServerFloating.parse(parameter.column, value.value)
+                if (SqlServerFloating.single(parameter.column)) statement.setFloat(index, parsed.value.toFloat()) else statement.setDouble(index, parsed.value.toDouble())
+            }
             is DbValue.Binary -> statement.setBytes(index, value.copyBytes())
             else -> throw WorkspaceRejected("该类型不能安全绑定写入")
         }

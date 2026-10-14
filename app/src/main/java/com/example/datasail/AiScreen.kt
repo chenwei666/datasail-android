@@ -36,9 +36,14 @@ internal fun AiScreen(ai: AiViewModel, workspace: WorkspaceViewModel, openSettin
     val saved by workspace.saved.collectAsStateWithLifecycle()
     val scope = remember(database, sql, saved) { aiScope(workspace) }
     val allowed = aiAllowed(workspace) && !database.busy
-    var operate by remember { mutableStateOf(false) }
-    Row { FilterChip(operate, { operate = true }, label = { Text("操作当前表") }); Spacer(Modifier.width(8.dp)); FilterChip(!operate, { operate = false }, label = { Text("问答 / SQL 草稿") }) }
-    if (operate) { AiTableScreen(ai, workspace, openSettings, openEditor); return }
+    var mode by remember { mutableStateOf("聊天") }
+    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        listOf("聊天", "问答 / SQL 草稿", "操作当前表").forEach { item ->
+            FilterChip(mode == item, { ai.cancel(); mode = item }, label = { Text(item) })
+        }
+    }
+    if (mode == "聊天") { AiChatScreen(ai, workspace, openSettings); return }
+    if (mode == "操作当前表") { AiTableScreen(ai, workspace, openSettings, openEditor); return }
     var prompt by remember { mutableStateOf("") }
     var structure by remember(scope) { mutableStateOf(false) }
     var includeSql by remember(scope) { mutableStateOf(false) }

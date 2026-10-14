@@ -1,0 +1,49 @@
+{
+  "version": "0.12.1",
+  "versionCode": 19,
+  "finalApkSha256": "3c22699e83479f8670f6ec0a7d13d1fe269eecdcb5c43e9a78535b570351dd9c",
+  "androidTestApkSha256": "9fa260efa087db770c612b87e144af2aee9157e2a9e176c2fa60f2d26c16451e",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest"
+  ],
+  "jvmTests": {
+    "core-unit": 92,
+    "app-unit": 17,
+    "driver-profile": 14,
+    "sqlserver": 22
+  },
+  "androidTests": {
+    "upgrade-api26.txt": 5,
+    "ai-emulator-5556.txt": 5,
+    "SQL_SERVER/android-emulator-5556.txt": 9
+  },
+  "previousVersionUpgradeSeedTests": {
+    "api26": 1
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "SQL Server float/real editing without rowversion, typed binary optimistic concurrency including adjacent float and NULL conflicts, full-screen touch editing and forms, visible read-only reasons. Direct process-local chat with complete bounded history, provider/model isolation, user/assistant roles in OpenAI and Claude and user/model in Gemini; synthetic HTTPS actual conversation tests. API26 upgrade from V0.12.0, actual SQL Server driver and GUI plus AI tests. API30 attempted but blocked by emulator OS startup and system-service failure before app tests.",
+  "recoveries": [
+    "Initial fullscreen regression setup closed the object picker before selecting a table; test now explicitly reopens it. Corrected baseline V0.12.0 rowversion table passed, so modal layering was not treated as the root cause.",
+    "First combined Android run exposed test isolation (floating contract left writes enabled before temporal read-only checks) and exact-versus-substring status assertion; reset test session and corrected matcher without removing assertions.",
+    "First compile caught cross-module Kotlin smart cast in read-only status helper; replaced with nullable property access."
+  ],
+  "unverified": [
+    "API30 current artifact: emulator environment blocked before application tests",
+    "physical/arm64",
+    "user dbo.iclock_transaction and other business databases",
+    "live AI vendor accounts, regions and billing",
+    "other engine writes or full engine regression matrix",
+    "Release/R8 and protected production signing",
+    "independent archived-source rebuild",
+    "fresh cloud restore",
+    "full DBeaver functionality"
+  ],
+  "blockedEnvironments": {
+    "api30": "First cold start: System UI ANR and system-service death, old APK install failed with Broken pipe. Second startup with software renderer and 3072 MB RAM remained on Phone is starting and input timed out. No API30 application test was counted as passing."
+  }
+}

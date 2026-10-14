@@ -1,0 +1,9 @@
+{
+  "emulator-5556": {
+    "api": 26,
+    "abi": "x86_64",
+    "fingerprint": "Android/sdk_phone_x86_64/generic_x86_64:8.0.0/OSR1.180418.004/4931640:userdebug/test-keys",
+    "installedApkSha256": "3c22699e83479f8670f6ec0a7d13d1fe269eecdcb5c43e9a78535b570351dd9c",
+    "device": "AOSP x86_64 software emulator; not physical device"
+  }
+}

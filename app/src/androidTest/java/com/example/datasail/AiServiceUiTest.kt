@@ -50,6 +50,40 @@ class AiServiceUiTest {
     }
     private val compose = createAndroidComposeRule<MainActivity>()
     @get:Rule val rules: RuleChain = RuleChain.outerRule(fixture).around(compose)
+    @Test fun directChatKeepsHistoryAndClearsOnProfileChange() {
+        lateinit var ai: AiViewModel; lateinit var workspace: WorkspaceViewModel
+        compose.runOnIdle {
+            ai = ViewModelProvider(compose.activity)[AiViewModel::class.java]
+            workspace = ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java]
+            ai.createClient = ::transport
+        }
+        compose.waitUntil(10000) { ai.state.value.ready }
+        compose.runOnIdle { ai.save(profile.copy(model = "fixture-model"), charArrayOf()) }
+        compose.waitUntil(10000) { !ai.state.value.busy }
+        compose.onNodeWithText("AI 助手").performClick()
+        compose.onNodeWithTag("ai-chat-input").performScrollTo().performTextInput("你好，我叫小舟")
+        compose.onNodeWithText("发送").performScrollTo().performClick()
+        compose.onNodeWithTag("ai-preview").assertDoesNotExist()
+        compose.waitUntil(20000) { !ai.state.value.busy && ai.state.value.chat.size == 1 }
+        assertEquals("你好，小舟", ai.state.value.chat.single().answer)
+        compose.onNodeWithTag("ai-chat-input").performScrollTo().performTextInput("我叫什么？")
+        compose.onNodeWithText("发送").performScrollTo().performClick()
+        compose.waitUntil(20000) { !ai.state.value.busy && ai.state.value.chat.size == 2 }
+        assertEquals("你叫小舟，已收到上一轮对话", ai.state.value.chat.last().answer)
+        assertFalse(workspace.state.value.connected)
+        assertNull(workspace.state.value.result)
+        compose.runOnIdle { compose.activity.window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE) }
+        compose.onNodeWithTag("chat-answer-1").performScrollTo().assertIsDisplayed()
+        compose.onRoot().captureToImage().asAndroidBitmap().let { image -> File(context.filesDir, "ai-chat-v0121.png").outputStream().use { image.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) } }
+        compose.runOnIdle { ai.save(profile.copy(model = "fixture-second"), charArrayOf()) }
+        compose.waitUntil(10000) { !ai.state.value.busy }
+        assertTrue(ai.state.value.chat.isEmpty())
+        compose.onNodeWithTag("ai-chat-input").performScrollTo().performTextInput("你好，我叫小舟")
+        compose.onNodeWithText("发送").performScrollTo().performClick()
+        compose.waitUntil(20000) { !ai.state.value.busy && ai.state.value.chat.size == 1 }
+        compose.onNodeWithText("清空对话").performScrollTo().performClick()
+        compose.runOnIdle { assertTrue(ai.state.value.chat.isEmpty()) }
+    }
     @Test fun modelDiscoveryPreviewAndDraftNeverRunSqlOrSendRows() {
         lateinit var ai: AiViewModel; lateinit var workspace: WorkspaceViewModel
         compose.runOnIdle { ai = ViewModelProvider(compose.activity)[AiViewModel::class.java]; workspace = ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java]; ai.createClient = ::transport }
@@ -78,6 +112,7 @@ class AiServiceUiTest {
         compose.onNodeWithText("打开 AI 助手").performScrollTo().performClick()
         compose.onNodeWithTag("ai-endpoint").assertDoesNotExist()
         compose.onNodeWithTag("ai-model").assertDoesNotExist()
+        compose.onNodeWithText("问答 / SQL 草稿").performScrollTo().performClick()
         compose.onNodeWithTag("ai-prompt").performScrollTo().performTextInput("请生成只读查询")
         compose.onNodeWithTag("ai-include-structure").performScrollTo().performClick()
         compose.onNodeWithText("预览发送内容").performScrollTo().performClick()
@@ -101,6 +136,7 @@ class AiServiceUiTest {
         }
         compose.waitUntil(10000) { workspace.saved.value.single().allowExternalAi == false }
         compose.onNodeWithText("AI 助手").performClick()
+        compose.onNodeWithText("问答 / SQL 草稿").performScrollTo().performClick()
         compose.onNodeWithText("此连接禁止外部 AI。可在连接配置中显式允许，重新连接后生效。").assertExists()
         compose.onNodeWithText("预览发送内容").performScrollTo().assertIsNotEnabled()
     }
@@ -168,6 +204,8 @@ class AiServiceUiTest {
         AiProtocol.entries.zip(listOf("openai", "anthropic", "gemini")).forEach { (protocol, path) ->
             transport(AiService(protocol, "https://localhost:18743/$path"), "synthetic-ai-only".toCharArray()).use { client ->
                 assertTrue(client.models().names.isNotEmpty()); assertTrue(client.ask("fixture-model", "synthetic question").contains("SELECT id")); assertEquals(TableAction.READ, client.plan("fixture-model", "synthetic table action").action)
+                assertEquals("你好，小舟", client.converse("fixture-model", emptyList(), "你好，我叫小舟"))
+                assertEquals("你叫小舟，已收到上一轮对话", client.converse("fixture-model", listOf(AiChatTurn("你好，我叫小舟", "你好，小舟")), "我叫什么？"))
             }
         }
         transport(AiService(AiProtocol.OPENAI, "https://127.0.0.1:18743/openai"), "synthetic-ai-only".toCharArray()).use { client -> assertThrows(AiFailure::class.java) { client.models() } }

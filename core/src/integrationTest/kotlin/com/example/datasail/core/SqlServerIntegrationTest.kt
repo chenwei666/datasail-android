@@ -7,6 +7,14 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class SqlServerIntegrationTest {
+    @Test fun floatingCoordinatesWithoutRowVersionAllowEditsAndDetectBitChanges() {
+        connect().use { connection ->
+            com.example.datasail.fixture.SqlServerFloatingContract.createTable(connection)
+            try { SqlServerSession(connection, profile()).use { session ->
+                com.example.datasail.fixture.SqlServerFloatingContract.verify(session) { sql -> connect().use { c -> c.createStatement().use { it.executeUpdate(sql) } } }
+            } } finally { connect().use { it.createStatement().use { s -> s.execute("DROP TABLE IF EXISTS dbo.ui_floating_v0121") } } }
+        }
+    }
     @Test fun temporalValuesPreservePrecisionWithoutDesktopOnlyApis() {
         connect().use { connection ->
             com.example.datasail.fixture.SqlServerTemporalContract.createTable(connection)

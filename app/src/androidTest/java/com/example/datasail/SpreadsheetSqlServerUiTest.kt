@@ -37,8 +37,8 @@ class SpreadsheetSqlServerUiTest {
             connection = SavedConnection(name = "表格实连夹具", production = true, host = "localhost", port = config.getProperty("port"), database = "datasail_v020", username = "sa", ca = ca)
             raw().use { c -> c.createStatement().use { s ->
                 s.execute("DROP TABLE IF EXISTS dbo.ui_grid_v081")
-                s.execute("CREATE TABLE dbo.ui_grid_v081(id int PRIMARY KEY, code nvarchar(64) NULL, amount decimal(24,8) NULL, version rowversion)")
-                s.execute("INSERT dbo.ui_grid_v081(id,code,amount) VALUES(1,N'0007',1234567890123456.12345678)")
+                s.execute("CREATE TABLE dbo.ui_grid_v081(id int PRIMARY KEY, code nvarchar(64) NULL, amount decimal(24,8) NULL, longitude float NULL, latitude real NULL)")
+                s.execute("INSERT dbo.ui_grid_v081(id,code,amount,longitude,latitude) VALUES(1,N'0007',1234567890123456.12345678,113.12345678901234,22.12345)")
                 com.example.datasail.fixture.SqlServerTemporalContract.createTable(c)
             } }
             store.save(listOf(connection))
@@ -67,6 +67,47 @@ class SpreadsheetSqlServerUiTest {
             compose.runOnIdle { androidx.core.view.ViewCompat.getRootWindowInsets(compose.activity.window.decorView)
                 ?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) != true }
         }
+    }
+    @Test fun fullscreenCanEnableEditingAndOpenRowForms() {
+        compose.onNodeWithText("打开连接").performScrollTo().performClick()
+        compose.onNodeWithText("密码").performScrollTo().performTextInput(config.getProperty("password"))
+        compose.onNodeWithTag("connection-authorization").performScrollTo().performClick()
+        compose.onNodeWithText("连接数据库").performScrollTo().performClick()
+        lateinit var model: WorkspaceViewModel
+        compose.runOnIdle { model = ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java] }
+        compose.waitUntil(45000) { !model.state.value.busy && model.state.value.connected }
+        compose.onNodeWithText("关闭", substring = false).performClick()
+        compose.onNodeWithText("浏览表 / 视图（", substring = true).performClick()
+        compose.onNodeWithText("筛选表 / 视图").performTextReplacement("ui_grid_v081")
+        compose.onNodeWithTag("object-ui_grid_v081").performScrollTo().performClick()
+        compose.waitUntil(15000) { !model.state.value.busy && model.state.value.result != null }
+        assertFalse(model.state.value.writable)
+        compose.onNodeWithText("全屏表格").performScrollTo().performClick()
+        compose.onNode(hasText("编辑模式") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
+        compose.onNodeWithText("开启生产库编辑？").assertIsDisplayed()
+        compose.onNodeWithText("确认开启编辑").performTouchInput { click() }
+        compose.waitUntil(10000) { !model.state.value.busy && model.state.value.writable }
+        compose.onNodeWithText("退出全屏").assertIsDisplayed()
+        compose.onNode(hasTestTag("cell-0-1") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { doubleClick() }
+        compose.onNodeWithTag("cell-editor").performScrollTo().assertIsDisplayed().performTextReplacement("fullscreen edited")
+        compose.onNodeWithText("预览单元格修改").performScrollTo().performClick()
+        compose.waitUntil(10000) { model.state.value.preview != null }
+        assertEquals("0007", value())
+        compose.onNodeWithText("确认提交").performTouchInput { click() }
+        compose.waitUntil(15000) { !model.state.value.busy && model.state.value.preview == null }
+        assertEquals("fullscreen edited", value())
+        compose.onNode(hasTestTag("cell-0-1") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
+        compose.mainClock.advanceTimeBy(600)
+        compose.onNode(hasText("修改选中行") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
+        compose.onNodeWithText("修改记录 · dbo.ui_grid_v081").assertIsDisplayed()
+        compose.onNodeWithText("取消", substring = false).performTouchInput { click() }
+        compose.onNode(hasText("新增", substring = false) and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
+        compose.onNodeWithText("新增记录 · dbo.ui_grid_v081").assertIsDisplayed()
+        compose.onNodeWithText("取消", substring = false).performTouchInput { click() }
+        compose.onNode(hasText("结束编辑") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
+        compose.waitUntil(10000) { !model.state.value.busy && !model.state.value.writable }
+        compose.onNodeWithText("退出全屏").performClick()
+        assertEquals("fullscreen edited", value())
     }
     @Test fun tabCompletionCellCommitNullAndReadonlyQuery() {
         compose.onNodeWithText("打开连接").performScrollTo().performClick()

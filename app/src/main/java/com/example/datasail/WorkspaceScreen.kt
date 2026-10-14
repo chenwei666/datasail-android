@@ -184,7 +184,7 @@ private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiS
                     Text(schema?.table?.label ?: "查询结果", style = MaterialTheme.typography.titleMedium)
                     Text("${if (result.rows.isEmpty()) 0 else result.offset + 1}–${result.offset + result.rows.size} 行 · ${result.totalColumns} 列", style = MaterialTheme.typography.bodySmall)
                 }
-                if (schema != null) TextButton(enabled = !state.busy && state.kind == DatabaseKind.SQL_SERVER, modifier = Modifier.testTag("allow-session-write"),
+                if (schema != null) TextButton(enabled = !state.busy && state.kind == DatabaseKind.SQL_SERVER && (state.writable || tableEditingBlockReason(result, state) == null), modifier = Modifier.testTag("allow-session-write"),
                     onClick = { if (state.writable) model.writable(false) else allowWrite = true }) { Text(if (state.writable) "退出编辑" else "开启编辑") }
                 Box { TextButton(onClick = { more = true }) { Text("更多 ▾") }
                     DropdownMenu(more, { more = false }) {
@@ -196,10 +196,7 @@ private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiS
                     }
                 }
             }
-            if (schema != null && tab == 0) {
-                val reason = schema.readOnlyReason
-                Text(reason ?: if (state.writable) "编辑模式 · 双击字段修改，预览后提交" else "当前只读 · 点击开启编辑后双击字段", style = MaterialTheme.typography.bodySmall, color = if (reason != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            if (schema != null && tab == 0) TableEditingStatus(result, state)
             if (result.totalColumns > result.columns.size) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 Text("字段 ${result.columnOffset + 1}–${result.columnOffset + result.columns.size} / ${result.totalColumns}", Modifier.weight(1f))
                 if (schema != null) {
@@ -243,7 +240,7 @@ private fun TableActionBar(model: WorkspaceViewModel, state: WorkspaceUiState, r
         TextButton(enabled = !state.busy && result.offset > 0, onClick = { model.page(schema.table, (result.offset - 100).coerceAtLeast(0), result.columnOffset) }) { Text("上一页") }
         TextButton(enabled = !state.busy, onClick = { model.page(schema.table, result.offset, result.columnOffset) }) { Text("刷新") }
         TextButton(enabled = !state.busy && result.hasMore && result.stableOrder && result.offset + result.rows.size <= 1_000_000, onClick = { model.page(schema.table, result.offset + result.rows.size, result.columnOffset) }) { Text("下一页") }
-        if (state.kind == DatabaseKind.SQL_SERVER) TextButton(enabled = !state.busy, onClick = toggleEditing) { Text(if (state.writable) "结束编辑" else "编辑模式") }
+        if (state.kind == DatabaseKind.SQL_SERVER) TextButton(enabled = !state.busy && (state.writable || tableEditingBlockReason(result, state) == null), onClick = toggleEditing) { Text(if (state.writable) "结束编辑" else "编辑模式") }
         if (state.writable) {
             val canEdit = schema.readOnlyReason == null && !state.busy && !state.resultStale
             TextButton(enabled = canEdit, onClick = { edit(MutationKind.INSERT) }) { Text("新增") }

@@ -20,6 +20,15 @@ import java.sql.Types
 @OptIn(ExperimentalTestApi::class)
 class WorkbenchInteractionTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
+    @Test fun fullscreenShowsTableRestrictionWithoutSelectingACell() {
+        val schema = TableSchema(TableRef("db", "dbo", "records", 1, false), listOf(ColumnDef("code", Types.NVARCHAR, "nvarchar", true, 20, 0, false, false)), false)
+        val page = ResultPage(listOf(ResultColumn("code", "nvarchar", Types.NVARCHAR)), listOf(listOf(DbValue.Text("0007"))), false, tableSchema = schema)
+        compose.runOnUiThread { compose.activity.setContent { MaterialTheme { Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            ResultGrid(page, WorkspaceUiState(connected = true, writable = true), AppSettings(), {}, { _, _ -> })
+        } } } }
+        compose.onNodeWithText("全屏表格").performScrollTo().performClick()
+        compose.onNode(hasTestTag("table-editing-status") and hasAnyAncestor(isDialog())).assertIsDisplayed().assertTextContains("没有主键", substring = true)
+    }
     @Test fun pickerSearchesHundredsWithoutGrowingThePage() {
         var chosen = ""
         compose.runOnUiThread { compose.activity.setContent { MaterialTheme {

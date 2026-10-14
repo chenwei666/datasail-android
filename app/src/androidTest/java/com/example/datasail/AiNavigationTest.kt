@@ -23,7 +23,7 @@ class AiNavigationTest {
         compose.onNodeWithTag("ai-key").assertDoesNotExist()
         compose.onNodeWithTag("ai-endpoint").assertDoesNotExist()
         compose.onNodeWithTag("ai-enabled").assertDoesNotExist()
-        compose.onNodeWithText("预览发送内容").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithText("发送").performScrollTo().assertIsNotEnabled()
         compose.onNodeWithText("前往 AI 设置").performScrollTo().performClick()
         compose.onNodeWithTag("ai-endpoint").performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag("ai-key").assertExists()

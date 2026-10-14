@@ -45,7 +45,10 @@ class SqlServerDeviceTest {
                     }
                 } finally { xml.free() }
                 com.example.datasail.fixture.SqlServerTemporalContract.createTable(raw)
+                com.example.datasail.fixture.SqlServerFloatingContract.createTable(raw)
                 SqlServerSession(raw, profile()).use { session ->
+                com.example.datasail.fixture.SqlServerFloatingContract.verify(session) { sql -> connection().use { other -> other.createStatement().use { it.executeUpdate(sql) } } }
+                session.setWritable(false) // The floating contract enabled writes; temporal contract verifies the read-only entry.
                 com.example.datasail.fixture.SqlServerTemporalContract.verify(session)
                 com.example.datasail.fixture.SqlServerTemporalContract.verifyEditing(session) { sql -> connection().use { other -> other.createStatement().use { it.executeUpdate(sql) } } }
                 val table = session.tables("dbo").single { it.name == "records" }

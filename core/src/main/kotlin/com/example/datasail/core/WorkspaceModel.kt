@@ -14,7 +14,7 @@ data class ColumnDef(val name: String, val jdbcType: Int, val typeName: String, 
     val editable get() = !identity && !generated && !rowVersion && jdbcType in EDITABLE_TYPES
     companion object {
         val EDITABLE_TYPES = setOf(Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR,
-            Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.DECIMAL, Types.NUMERIC, Types.BIT, Types.BOOLEAN, Types.DATE, Types.TIME, Types.TIMESTAMP, -155)
+            Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.DECIMAL, Types.NUMERIC, Types.BIT, Types.BOOLEAN, Types.REAL, Types.FLOAT, Types.DOUBLE, Types.DATE, Types.TIME, Types.TIMESTAMP, -155)
     }
 }
 data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val hasTriggers: Boolean, val readOnlyOverride: String? = null) {
@@ -27,7 +27,7 @@ data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val ha
         hasTriggers -> "存在启用的 DML 触发器，本版禁止图形编辑以避免未知副作用"
         columns.size > 64 -> "列数超过本版安全编辑范围"
         keys.any { it.jdbcType !in ColumnDef.EDITABLE_TYPES } -> "主键类型尚未支持编辑定位"
-        version == null && columns.any { it.jdbcType !in ColumnDef.EDITABLE_TYPES || it.size > 4000 } -> "无 rowversion 且包含不能精确比较的列，保持只读"
+        version == null && columns.any { it.jdbcType !in ColumnDef.EDITABLE_TYPES || it.size > 4000 } -> "没有行版本号，以下字段暂不能安全比较：" + columns.filter { it.jdbcType !in ColumnDef.EDITABLE_TYPES || it.size > 4000 }.take(4).joinToString { "${it.name} (${it.typeName})" }
         else -> null
     }
 }
@@ -74,6 +74,7 @@ object Values {
                     if (input.text.length > minOf(column.size, 4000)) throw WorkspaceRejected("${column.name} 超过字段长度或本版 4000 字符限制")
                     DbValue.Text(input.text)
                 }
+                Types.REAL, Types.FLOAT, Types.DOUBLE -> SqlServerFloating.parse(column, input.text)
                 Types.DATE, Types.TIME, Types.TIMESTAMP, -155 -> SqlServerTemporal.parse(column, input.text)
                 Types.BIT, Types.BOOLEAN -> when (input.text.lowercase()) {
                     "true", "1" -> DbValue.Bool(true)

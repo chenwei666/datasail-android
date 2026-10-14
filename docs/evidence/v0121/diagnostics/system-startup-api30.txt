@@ -1,0 +1,19 @@
+--------- beginning of crash
+10-14 10:06:17.260  1900  1984 E AndroidRuntime: FATAL EXCEPTION: RoleControllerService
+10-14 10:06:17.260  1900  1984 E AndroidRuntime: Process: com.android.permissioncontroller, PID: 1900
+10-14 10:06:17.260  1900  1984 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-14 10:06:17.272  1936  1994 E AndroidRuntime: FATAL EXCEPTION: Worker-1
+10-14 10:06:17.272  1936  1994 E AndroidRuntime: Process: android.process.acore, PID: 1936
+10-14 10:06:17.272  1936  1994 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-14 10:06:17.294  1787  1787 E AndroidRuntime: FATAL EXCEPTION: main
+10-14 10:06:17.294  1787  1787 E AndroidRuntime: Process: com.android.bluetooth, PID: 1787
+10-14 10:06:17.294  1787  1787 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-14 10:06:17.299  1936  1993 E AndroidRuntime: FATAL EXCEPTION: Worker-1
+10-14 10:06:17.299  1936  1993 E AndroidRuntime: Process: android.process.acore, PID: 1936
+10-14 10:06:17.299  1936  1993 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-14 10:06:17.307   754   754 E AndroidRuntime: FATAL EXCEPTION: main
+10-14 10:06:17.307   754   754 E AndroidRuntime: Process: com.android.systemui, PID: 754
+10-14 10:06:17.307   754   754 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-14 10:06:17.515  1955  1955 E AndroidRuntime: FATAL EXCEPTION: main
+10-14 10:06:17.515  1955  1955 E AndroidRuntime: Process: com.android.phone, PID: 1955
+10-14 10:06:17.515  1955  1955 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause

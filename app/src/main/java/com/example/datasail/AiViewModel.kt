@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal data class AiUiState(val ready: Boolean = false, val busy: Boolean = false, val preferences: AiPreferences = AiPreferences(),
-    val inlineSql: String = "", val inlineBinding: String = "", val models: List<String> = emptyList(), val modelsBinding: String = "", val answer: String = "", val answerScope: String = "",
+    val chat: List<AiChatTurn> = emptyList(), val chatProfile: AiProfile? = null, val inlineSql: String = "", val inlineBinding: String = "", val models: List<String> = emptyList(), val modelsBinding: String = "", val answer: String = "", val answerScope: String = "",
     val message: String = "配置服务后即可使用；数据库功能无需启用 AI。")
 internal class AiViewModel(application: Application) : AndroidViewModel(application) {
     private val store = AiStore(application)
@@ -40,7 +40,7 @@ internal class AiViewModel(application: Application) : AndroidViewModel(applicat
                     store.save(next)
                     if (key.isNotEmpty()) vault.saveBound(profile.id, profile.binding, key)
                 }
-                mutable.value = mutable.value.copy(preferences = next, models = emptyList(), answer = "", message = "服务已保存；空密钥保留同地址原密钥，修改地址后需重新填写")
+                mutable.value = mutable.value.copy(preferences = next, chat = emptyList(), chatProfile = null, models = emptyList(), answer = "", message = "服务已保存；空密钥保留同地址原密钥，修改地址后需重新填写")
             } catch (_: Exception) {
                 val persisted = withContext(Dispatchers.IO) { runCatching { store.load() }.getOrNull() }
                 mutable.value = mutable.value.copy(preferences = persisted ?: mutable.value.preferences, ready = persisted != null, message = "服务或密钥保存失败，请检查 HTTPS 基础地址并重新填写密钥")
@@ -52,7 +52,7 @@ internal class AiViewModel(application: Application) : AndroidViewModel(applicat
         if (!state.value.ready || state.value.busy) return
         mutable.value = mutable.value.copy(busy = true)
         viewModelScope.launch {
-            try { withContext(Dispatchers.IO) { store.save(value) }; mutable.value = mutable.value.copy(preferences = value, models = emptyList(), answer = "", message = "AI 设置已保存") }
+            try { withContext(Dispatchers.IO) { store.save(value) }; mutable.value = mutable.value.copy(preferences = value, chat = emptyList(), chatProfile = null, models = emptyList(), answer = "", message = "AI 设置已保存") }
             catch (_: Exception) { mutable.value = mutable.value.copy(message = "AI 设置保存失败") }
             finally { mutable.value = mutable.value.copy(busy = false) }
         }
@@ -71,6 +71,23 @@ internal class AiViewModel(application: Application) : AndroidViewModel(applicat
         { mutable.value = mutable.value.copy(models = result.names, modelsBinding = profile.service.binding,
             message = "取得 ${result.names.size} 个模型${if (result.limited) "（达到分页上限，可手填其它 ID）" else ""}；是否可调用取决于账号权限") }
     }
+    fun chat(workspace: WorkspaceViewModel, text: String) {
+        if (!aiAllowed(workspace) || workspace.state.value.busy || text.isBlank() || text.length > 12000) return
+        val initial = state.value
+        val scope = aiScope(workspace)
+        val history = if (initial.chatProfile == initial.preferences.active) initial.chat else emptyList()
+        request { profile, transport ->
+            val context = AiConversation.context(history, text)
+            val answer = transport.converse(profile.model, context, text);
+            {
+                if (aiAllowed(workspace) && aiScope(workspace) == scope && state.value.preferences.active == profile) {
+                    mutable.value = mutable.value.copy(chat = (context + AiChatTurn(text, answer)).takeLast(8), chatProfile = profile,
+                        message = "回答已收到；未读取或修改数据库。")
+                } else mutable.value = mutable.value.copy(message = "连接或权限已变化，已丢弃回答")
+            }
+        }
+    }
+    fun clearChat() { cancel(); mutable.value = mutable.value.copy(chat = emptyList(), chatProfile = null, message = "对话已清空") }
     fun askApproved(workspace: WorkspaceViewModel, approval: AiApproval) {
         if (workspace.state.value.busy || !aiAllowed(workspace) || aiScope(workspace) != approval.scope) return
         ask(approval.profile, approval.scope, approval.text)
@@ -105,7 +122,7 @@ internal class AiViewModel(application: Application) : AndroidViewModel(applicat
             try {
                 val next = state.value.preferences.copy(activeId = "", profiles = state.value.preferences.profiles.filterNot { it.id == profile.id })
                 withContext(Dispatchers.IO) { store.save(next); vault.delete(profile.id) }
-                mutable.value = mutable.value.copy(preferences = next, models = emptyList(), answer = "", message = "服务已删除")
+                mutable.value = mutable.value.copy(preferences = next, chat = emptyList(), chatProfile = null, models = emptyList(), answer = "", message = "服务已删除")
             } catch (_: Exception) { mutable.value = mutable.value.copy(message = "删除服务失败，请重新打开配置检查") }
             finally { mutable.value = mutable.value.copy(busy = false) }
         }

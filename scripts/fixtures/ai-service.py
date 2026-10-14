@@ -30,6 +30,15 @@ class Handler(BaseHTTPRequestHandler):
         body = json.loads(raw)
         if 'tools' in body: self.reply({},400); return
         answer = '下面是只读查询草稿：\n```sql\nSELECT id, name FROM ai_fixture\n```\n请核对字段和权限。'
+        if 'You have no database access in this chat' in raw:
+            if self.path.startswith('/gemini'):
+                messages = [{'role':'assistant' if m['role']=='model' else m['role'], 'content':m['parts'][0]['text']} for m in body['contents']]
+            else:
+                messages = body['messages'][1:] if self.path.startswith('/openai') else body['messages']
+            if any(x in raw for x in ['ai_fixture', '数据库方言', 'ROW_MUST_NOT_LEAK']): self.reply({},400); return
+            if messages == [{'role':'user','content':'你好，我叫小舟'}]: answer = '你好，小舟'
+            elif messages == [{'role':'user','content':'你好，我叫小舟'}, {'role':'assistant','content':'你好，小舟'}, {'role':'user','content':'我叫什么？'}]: answer = '你叫小舟，已收到上一轮对话'
+            else: self.reply({},400); return
         if 'You translate a user' in raw:
             answer = json.dumps({'action':'READ','filters':[{'column':'id','operator':'EQ','value':'2'}],'sorts':[],'values':{}})
         if self.path.startswith('/anthropic'):

@@ -4,7 +4,7 @@ import java.sql.ResultSet
 import java.sql.Types
 
 internal object JdbcResultReader {
-    fun read(rows: ResultSet, offset: Int, schema: TableSchema?): ResultPage {
+    fun read(rows: ResultSet, offset: Int, schema: TableSchema?, exactFloating: Boolean = false): ResultPage {
         val meta = rows.metaData
         val columnCount = minOf(meta.columnCount, 64)
         val columns = (1..columnCount).map { ResultColumn(meta.getColumnLabel(it), meta.getColumnTypeName(it), meta.getColumnType(it)) }
@@ -39,7 +39,13 @@ internal object JdbcResultReader {
                     Types.BIT, Types.BOOLEAN -> if (column.jdbcType == Types.BIT && meta.getPrecision(index + 1) > 1) DbValue.Unavailable("多位 BIT 未加载") else rows.getBoolean(index + 1).let { if (rows.wasNull()) DbValue.Null else DbValue.Bool(it) }
                     Types.DATE, Types.TIME, Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE, -155 ->
                         rows.getString(index + 1)?.let(DbValue::Temporal) ?: DbValue.Null
-                    Types.FLOAT, Types.REAL, Types.DOUBLE -> rows.getString(index + 1)?.let(DbValue::Approximate) ?: DbValue.Null
+                    Types.FLOAT, Types.REAL, Types.DOUBLE -> if (!exactFloating) rows.getString(index + 1)?.let(DbValue::Approximate) ?: DbValue.Null
+                    else {
+                        val single = column.jdbcType == Types.REAL
+                        val number = if (single) rows.getFloat(index + 1).toDouble() else rows.getDouble(index + 1)
+                        if (rows.wasNull()) DbValue.Null else if (!number.isFinite()) DbValue.Unavailable("非有限浮点值不能安全编辑")
+                        else DbValue.Approximate(if (single) number.toFloat().toString() else number.toString())
+                    }
                     Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY -> rows.getBinaryStream(index + 1)?.use { stream ->
                         val buffer = ByteArray(257); var count = 0
                         while (count < buffer.size) { val n = stream.read(buffer, count, buffer.size - count); if (n < 0) break; count += n }
