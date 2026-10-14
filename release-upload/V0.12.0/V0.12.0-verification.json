@@ -1,0 +1,13 @@
+{
+  "version": "0.12.0",
+  "versionCode": 18,
+  "gitSha": "e59d8f482c456c56e856f691371d9ef2caef52da",
+  "verifiedFiles": 1447,
+  "zipCrcVerified": true,
+  "zipSha256": "6c8c38db141ee7180d4e77fc2256994d72e8618c989539dc5062b6cefb9fdb54",
+  "unchangedPriorArchives": 17,
+  "signingUnchanged": true,
+  "debugApkSha256": "0e14bc6882235af1e116069f8887e7a6f4d49e42671bfc218ba381ddd023c0ae",
+  "independentArchivedSourceBuild": false,
+  "published": false
+}
