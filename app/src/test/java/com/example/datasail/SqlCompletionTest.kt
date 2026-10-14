@@ -26,6 +26,16 @@ class SqlCompletionTest {
         assertEquals("\"orders\"", candidates("ord", kind = DatabaseKind.POSTGRESQL).single { it.label == "orders" }.insert)
         assertFalse(candidates("t.or").any { it.label == "ORDER BY" })
     }
+    @Test fun clauseAndWhitespaceOfferContextWithoutDeletingClause() {
+        for (sql in listOf("SELECT * FROM orders WHERE", "SELECT * FROM orders WHERE ")) {
+            val item = candidates(sql).first { it.label == "order_id" }
+            val result = SqlCompletion.apply(sql, item).first
+            assertEquals("SELECT * FROM orders WHERE [order_id]", result)
+        }
+        assertEquals(listOf("orders", "order]detail"), candidates("SELECT * FROM ").map { it.label })
+        assertEquals(listOf("order_id", "amount"), candidates("SELECT * FROM orders WHERE t.").map { it.label })
+        assertEquals(emptyList<SqlSuggestion>(), candidates("SELECT * FROM orders -- WHERE "))
+    }
     @Test fun gridKeepsTextLeadingZeroAndColumnAddresses() {
         assertEquals("0007", spreadsheetText(DbValue.Text("0007")))
         assertEquals("", spreadsheetText(DbValue.Text("")))

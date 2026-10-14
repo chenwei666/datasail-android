@@ -49,7 +49,7 @@ internal fun SettingsScreen(model: WorkspaceViewModel, ai: AiViewModel, openAi: 
     }
     SettingsGroup("连接与密码") {
         SettingsSwitch("新连接默认为生产环境", settings.defaultProduction) { model.updateSettings(settings.copy(defaultProduction = it)) }
-        Text("生产连接始终只读。默认值只影响新建连接。", style = MaterialTheme.typography.bodySmall)
+        Text("连接默认只读；SQL Server 可明确开启本次编辑。此默认值只影响新连接的环境标识。", style = MaterialTheme.typography.bodySmall)
         Text("已保存密码：$count 个连接")
         Text("密码仅存于此设备的加密存储，不进入连接配置、备份或导出；系统密钥丢失时需重新输入。", style = MaterialTheme.typography.bodySmall)
         OutlinedButton(onClick = { clearPasswords = true }) { Text("清除全部保存的密码") }
@@ -57,7 +57,7 @@ internal fun SettingsScreen(model: WorkspaceViewModel, ai: AiViewModel, openAi: 
     }
     SettingsGroup("关于数舟") {
         Text("DataSail ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
-        Text("本地直连数据库 · 当前为实验性 Debug 版本")
+        Text("本地直连数据库 · AI 辅助查询与编辑")
         TextButton(onClick = { resetSettings = true }) { Text("恢复默认设置") }
         TextButton(onClick = { showDiagnostics = !showDiagnostics }) { Text(if (showDiagnostics) "收起开发诊断" else "开发诊断与数据库支持") }
         if (showDiagnostics) diagnostics()

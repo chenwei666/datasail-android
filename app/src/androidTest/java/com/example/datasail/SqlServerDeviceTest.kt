@@ -44,8 +44,10 @@ class SqlServerDeviceTest {
                         }
                     }
                 } finally { xml.free() }
+                com.example.datasail.fixture.SqlServerTemporalContract.createTable(raw)
                 SqlServerSession(raw, profile()).use { session ->
                 com.example.datasail.fixture.SqlServerTemporalContract.verify(session)
+                com.example.datasail.fixture.SqlServerTemporalContract.verifyEditing(session) { sql -> connection().use { other -> other.createStatement().use { it.executeUpdate(sql) } } }
                 val table = session.tables("dbo").single { it.name == "records" }
                 val page = session.page(table)
                 assertTrue(page.rows.isNotEmpty())

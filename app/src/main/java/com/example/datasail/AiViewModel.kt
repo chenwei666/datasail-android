@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal data class AiUiState(val ready: Boolean = false, val busy: Boolean = false, val preferences: AiPreferences = AiPreferences(),
-    val models: List<String> = emptyList(), val modelsBinding: String = "", val answer: String = "", val answerScope: String = "",
+    val inlineSql: String = "", val inlineBinding: String = "", val models: List<String> = emptyList(), val modelsBinding: String = "", val answer: String = "", val answerScope: String = "",
     val message: String = "配置服务后即可使用；数据库功能无需启用 AI。")
 internal class AiViewModel(application: Application) : AndroidViewModel(application) {
     private val store = AiStore(application)
@@ -75,6 +75,17 @@ internal class AiViewModel(application: Application) : AndroidViewModel(applicat
         if (workspace.state.value.busy || !aiAllowed(workspace) || aiScope(workspace) != approval.scope) return
         ask(approval.profile, approval.scope, approval.text)
     }
+    fun completeSql(workspace: WorkspaceViewModel, binding: String, text: String) {
+        if (!aiAllowed(workspace) || workspace.state.value.busy) return
+        if (text.length > 24000) { mutable.value = mutable.value.copy(message = "SQL 与表结构超过发送上限，请缩短 SQL 或关闭结构附加"); return }
+        request { profile, transport ->
+            val result = transport.ask(profile.model, text).trim()
+            val sql = AiDraft.extract(result) ?: result
+            if (sql.length !in 1..16000) throw AiFailure("AI 建议超过编辑器上限或为空，未截断载入")
+            return@request { mutable.value = mutable.value.copy(inlineSql = sql, inlineBinding = binding, message = "AI 建议已就绪，未执行") }
+        }
+    }
+    fun clearCompletion() { cancel(); mutable.value = mutable.value.copy(inlineSql = "", inlineBinding = "") }
     fun remove(profile: AiProfile) {
         if (!state.value.ready || state.value.busy) return
         mutable.value = mutable.value.copy(busy = true)
@@ -99,7 +110,7 @@ internal class AiViewModel(application: Application) : AndroidViewModel(applicat
         val profile = initial.preferences.active ?: return
         if (!initial.ready || initial.busy || !initial.preferences.enabled) return
         cancellation = AtomicBoolean(false); val cancelled = cancellation
-        mutable.value = initial.copy(busy = true, answer = "", message = "正在请求 ${profile.name}…")
+        mutable.value = initial.copy(busy = true, answer = "", inlineSql = "", inlineBinding = "", message = "正在请求 ${profile.name}…")
         viewModelScope.launch {
             try {
                 val complete = withContext(Dispatchers.IO) {

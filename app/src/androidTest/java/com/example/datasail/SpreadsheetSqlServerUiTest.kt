@@ -34,7 +34,7 @@ class SpreadsheetSqlServerUiTest {
             originalFavorites = TableFavoriteStore(context).load(); TableFavoriteStore(context).save(emptyList())
             config = Properties().apply { File(context.filesDir, "fixture.properties").inputStream().use(::load) }
             val ca = store.importCa(Uri.fromFile(File(context.filesDir, "fixture-ca.pem")))
-            connection = SavedConnection(name = "表格实连夹具", host = "localhost", port = config.getProperty("port"), database = "datasail_v020", username = "sa", ca = ca)
+            connection = SavedConnection(name = "表格实连夹具", production = true, host = "localhost", port = config.getProperty("port"), database = "datasail_v020", username = "sa", ca = ca)
             raw().use { c -> c.createStatement().use { s ->
                 s.execute("DROP TABLE IF EXISTS dbo.ui_grid_v081")
                 s.execute("CREATE TABLE dbo.ui_grid_v081(id int PRIMARY KEY, code nvarchar(64) NULL, amount decimal(24,8) NULL, version rowversion)")
@@ -58,6 +58,16 @@ class SpreadsheetSqlServerUiTest {
         compose.mainClock.advanceTimeBy(600)
         compose.waitUntil(5000) { compose.onAllNodesWithText("编辑单元格").fetchSemanticsNodes().isNotEmpty() }
     }
+    private fun finishCellInput() {
+        compose.runOnIdle {
+            (context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager)
+                .hideSoftInputFromWindow(compose.activity.window.decorView.windowToken, 0)
+        }
+        compose.waitUntil(5000) {
+            compose.runOnIdle { androidx.core.view.ViewCompat.getRootWindowInsets(compose.activity.window.decorView)
+                ?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) != true }
+        }
+    }
     @Test fun tabCompletionCellCommitNullAndReadonlyQuery() {
         compose.onNodeWithText("打开连接").performScrollTo().performClick()
         compose.onNodeWithText("密码").performScrollTo().performTextInput(config.getProperty("password"))
@@ -74,53 +84,59 @@ class SpreadsheetSqlServerUiTest {
         compose.onNodeWithText("连接并进入工作台").performScrollTo().performClick()
         compose.waitUntil(45000) { !model.state.value.busy }
         assertTrue(model.state.value.message, model.state.value.connected)
-        compose.onNodeWithText("SQL 编辑器").performScrollTo().performClick()
+        compose.onNodeWithText("关闭", substring = false).performClick()
+        compose.onNodeWithText("SQL 编辑器").performClick()
         compose.onNodeWithText("单条 SELECT 查询").performScrollTo().performTextReplacement("SEL")
         compose.onNodeWithText("单条 SELECT 查询").performKeyInput { pressKey(Key.Tab) }
         compose.onNodeWithText("单条 SELECT 查询").assertTextContains("SELECT")
-        compose.onNodeWithText("数据浏览").performScrollTo().performClick()
+        compose.onNodeWithText("数据").assertIsDisplayed().performClick()
         // Regression: no ViewModel calls to load metadata or open the first table.
         assertEquals("dbo", model.state.value.schema)
-        compose.onNodeWithTag("catalog-picker").performScrollTo().performClick()
+        compose.onNodeWithTag("catalog-picker").performClick()
         compose.onNodeWithText("master", substring = false).performClick()
         compose.waitUntil(20000) { !model.state.value.busy && model.state.value.catalog == "master" }
         assertNull(model.state.value.result)
-        compose.onNodeWithTag("catalog-picker").performScrollTo().performClick()
+        compose.onNodeWithTag("catalog-picker").performClick()
         compose.onNodeWithText("datasail_v020", substring = false).performClick()
         compose.waitUntil(20000) { !model.state.value.busy && model.state.value.tables.any { it.name == "ui_grid_v081" } }
-        compose.onNodeWithTag("schema-picker").performScrollTo().performClick()
+        compose.onNodeWithTag("schema-picker").performClick()
         compose.onNodeWithText("sys", substring = false).performClick()
         compose.waitUntil(20000) { !model.state.value.busy && model.state.value.schema == "sys" }
         assertTrue(model.state.value.tables.isEmpty())
-        compose.onNodeWithTag("schema-picker").performScrollTo().performClick()
+        compose.onNodeWithTag("schema-picker").performClick()
         compose.onNodeWithText("dbo", substring = false).performClick()
         compose.waitUntil(20000) { !model.state.value.busy && model.state.value.tables.any { it.name == "ui_grid_v081" } }
         val table = model.state.value.tables.single { it.name == "ui_grid_v081" }
         // User regression: listing succeeds, then viewing a table with a date used to disconnect.
-        compose.onNodeWithText("筛选表 / 视图").performScrollTo().performTextReplacement("ui_temporal_v091")
-        compose.onNodeWithTag("object-list").performScrollTo()
+        compose.onNodeWithText("浏览表 / 视图（", substring = true).performClick()
+        compose.onNodeWithText("筛选表 / 视图").performTextReplacement("ui_temporal_v091")
+        compose.onNodeWithTag("object-list").assertIsDisplayed()
         compose.onNodeWithTag("object-ui_temporal_v091").performClick()
         compose.waitUntil(20000) { !model.state.value.busy }
         assertTrue(model.state.value.message, model.state.value.connected)
         com.example.datasail.fixture.SqlServerTemporalContract.verifyPage(requireNotNull(model.state.value.result))
         compose.onNodeWithTag("result-grid").performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag("cell-0-1").performScrollTo().assertTextContains("2024-02-29")
-        compose.onNodeWithText("浏览表 / 视图（", substring = true).performScrollTo().performClick()
-        compose.onNodeWithText("筛选表 / 视图").performScrollTo().performTextReplacement("ui_grid_v081")
-        compose.onNodeWithTag("object-list").performScrollTo()
+        compose.onNodeWithText("浏览表 / 视图（", substring = true).assertIsDisplayed().performClick()
+        compose.onNodeWithText("筛选表 / 视图").assertIsDisplayed().performTextReplacement("ui_grid_v081")
+        compose.onNodeWithTag("object-list").assertIsDisplayed()
         compose.onNodeWithTag("object-ui_grid_v081").performClick()
-        compose.waitUntil(20000) { !model.state.value.busy && model.state.value.result != null }
-        compose.onNodeWithText("收藏此表").performScrollTo().performClick()
+        compose.waitUntil(20000) { !model.state.value.busy && model.state.value.result?.tableSchema?.table?.name == "ui_grid_v081" }
+        compose.onNodeWithText("更多 ▾").performScrollTo().assertIsDisplayed().performClick()
+        compose.onNodeWithText("收藏此表").performClick()
         compose.waitUntil(10000) { TableFavoriteStore(context).load().size == 1 }
-        compose.onNodeWithTag("catalog-picker").performScrollTo().performClick()
+        compose.onNodeWithTag("catalog-picker").performClick()
         compose.onNodeWithText("master", substring = false).performClick()
         compose.waitUntil(20000) { !model.state.value.busy && model.state.value.catalog == "master" }
         compose.onNodeWithText("收藏").performClick()
         compose.onNodeWithText("打开收藏表").performScrollTo().performClick()
         compose.waitUntil(20000) { !model.state.value.busy && model.state.value.result?.tableSchema?.table?.name == "ui_grid_v081" }
         assertEquals("datasail_v020", model.state.value.catalog)
+        compose.waitUntil(10000) { compose.onAllNodesWithTag("object-list").fetchSemanticsNodes().isEmpty() }
         assertFalse(model.state.value.writable)
         compose.onNodeWithTag("allow-session-write").performScrollTo().performClick()
+        compose.onNodeWithText("开启生产库编辑？").assertIsDisplayed()
+        compose.onNodeWithText("确认开启编辑").performClick()
         compose.waitUntil(10000) { model.state.value.writable && !model.state.value.busy }
         selectCell()
         // Only synthetic fixture data is visible; production retains FLAG_SECURE.
@@ -132,6 +148,7 @@ class SpreadsheetSqlServerUiTest {
         compose.onNodeWithText("编辑单元格").performScrollTo().performClick()
         compose.onNodeWithTag("result-grid").performScrollTo()
         compose.onNodeWithTag("cell-editor").performScrollTo().assertIsDisplayed().performTextReplacement("0009")
+        finishCellInput()
         compose.onNodeWithText("预览单元格修改").performScrollTo().performClick()
         compose.waitUntil(10000) { model.state.value.preview != null }
         assertEquals("0007", value())
@@ -143,9 +160,20 @@ class SpreadsheetSqlServerUiTest {
         compose.waitUntil(10000) { !model.state.value.busy && model.state.value.result != null }
         selectCell()
         compose.onNodeWithText("编辑单元格").performScrollTo().performClick()
-        compose.onNodeWithTag("cell-null").performScrollTo().performClick()
-        compose.onNodeWithText("预览单元格修改").performScrollTo().performClick()
-        compose.waitUntil(10000) { model.state.value.preview != null }
+        compose.onNodeWithTag("cell-null").performScrollTo().assertIsDisplayed().performClick()
+        compose.onNodeWithTag("cell-null").assertIsOn()
+        compose.onNodeWithText("待提交值：NULL").assertExists()
+        // NULL removes the focused cell editor; wait for the keyboard resize before clicking the moving button.
+        finishCellInput()
+        compose.onNodeWithText("预览单元格修改").performScrollTo().assertIsDisplayed().performClick()
+        try {
+            compose.waitUntil(10000) { compose.onAllNodesWithText("确认提交").fetchSemanticsNodes().isNotEmpty() }
+        } catch (error: Throwable) {
+            android.util.Log.e("DataSailEditPreview", model.state.value.message)
+            compose.onRoot().printToLog("DataSailEditPreview")
+            throw error
+        }
+        assertNotNull(model.state.value.preview)
         compose.onNodeWithText("确认提交").performClick()
         compose.waitUntil(10000) { !model.state.value.busy && model.state.value.preview == null }
         assertNull(value())

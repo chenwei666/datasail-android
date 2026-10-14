@@ -1,0 +1,51 @@
+{
+  "version": "0.10.0",
+  "versionCode": 16,
+  "finalApkSha256": "003bcb2d7682a2fe69324fb46040534550b983f9fe83d6c57b4b652b384f66fc",
+  "androidTestApkSha256": "f320899f07b6b6a58685690b0e7b4524b8b341abfc40b23891e6e2693a369ad8",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest"
+  ],
+  "jvmTests": {
+    "core-unit": 74,
+    "app-unit": 14,
+    "driver-profile": 14,
+    "sqlserver": 18
+  },
+  "androidTests": {
+    "upgrade-api26.txt": 5,
+    "mobile-api26.txt": 7,
+    "ai-emulator-5556.txt": 3,
+    "SQL_SERVER/android-emulator-5556.txt": 3,
+    "upgrade-api30.txt": 5,
+    "mobile-api30.txt": 6,
+    "wide-filter-api30.txt": 1,
+    "ai-emulator-5554.txt": 3,
+    "SQL_SERVER/android-emulator-5554.txt": 3
+  },
+  "androidRecovery": {
+    "mobile-api30.txt": "Six checks passed in initial seven-test batch; failed TablePresentationTest was retained in diagnostics and rerun with explicit keyboard dismissal and selected-state synchronization. Full wide-table assertions passed in wide-filter-api30.txt on the same main APK. API26 passed the original full assertions before test-only synchronization."
+  },
+  "sqlServerUiRecovery": "API30 initial NULL preview click timed out while the keyboard resized the viewport. Test now verifies the NULL checkbox/text, waits for keyboard dismissal and actual preview dialog; full SQL Server suite rerun on unchanged main APK. Initial failure retained in diagnostics.",
+  "previousVersionUpgradeSeedTests": {
+    "api26": 1,
+    "api30": 1
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "Fixed workspace tabs, bounded searchable database selection, 65-200 percent pinch zoom/reset, WHERE/FROM context and Tab suggestions/selection protection, opt-in debounced AI suggestions with no auto execution, SQL Server exact temporal writes and stale offset conflict detection, explicit production-labeled session editing, favorite overlay and table/page scroll reset fixes. Current artifact exercised on API26/API30 with V0.9.1 in-place upgrade, isolated SQL Server and synthetic HTTPS AI.",
+  "unverified": [
+    "physical/arm64",
+    "user business database and other SQL Server versions",
+    "live AI vendor accounts and billing",
+    "other database engine writes",
+    "other database engines not rerun this version",
+    "full DBeaver functionality",
+    "Release/R8 and protected production signing",
+    "fresh cloud restore"
+  ]
+}

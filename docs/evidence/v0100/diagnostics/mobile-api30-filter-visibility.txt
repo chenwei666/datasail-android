@@ -1,0 +1,19 @@
+
+com.example.datasail.TablePresentationTest:
+Error in all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest):
+java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '130. c129' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:55)
+
+
+Time: 78.022
+There was 1 failure:
+1) all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest)
+java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '130. c129' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:55)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+

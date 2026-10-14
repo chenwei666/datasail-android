@@ -1,0 +1,33 @@
+
+com.example.datasail.SettingsUiTest:.
+com.example.datasail.TablePresentationTest:
+Error in all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest):
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '没有匹配字段' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists(SemanticsNodeInteraction.kt:125)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists$default(SemanticsNodeInteraction.kt:124)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:58)
+
+com.example.datasail.AiNavigationTest:.
+com.example.datasail.MobileWorkflowTest:.
+com.example.datasail.WorkbenchInteractionTest:...
+
+Time: 282.747
+There was 1 failure:
+1) all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest)
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '没有匹配字段' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists(SemanticsNodeInteraction.kt:125)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists$default(SemanticsNodeInteraction.kt:124)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:58)
+
+FAILURES!!!
+Tests run: 7,  Failures: 1
+
+

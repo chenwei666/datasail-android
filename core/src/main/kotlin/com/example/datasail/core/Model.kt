@@ -13,7 +13,7 @@ enum class DatabaseKind(val label: String, val defaultPort: Int) {
     val isKeyValue: Boolean get() = this == REDIS || this == VALKEY
 }
 enum class TlsPolicy { VERIFY_IDENTITY }
-enum class ConnectionEnvironment(val label: String) { TEST("测试"), PRODUCTION("生产（本版只读）") }
+enum class ConnectionEnvironment(val label: String) { TEST("常规"), PRODUCTION("生产") }
 class TrustStoreSpec(val path: String, val type: String = "PKCS12") {
     override fun toString() = "TrustStoreSpec([LOCAL CA])"
 }

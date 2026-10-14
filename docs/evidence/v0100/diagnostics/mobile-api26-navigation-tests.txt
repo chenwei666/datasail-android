@@ -1,0 +1,49 @@
+
+com.example.datasail.SettingsUiTest:.
+com.example.datasail.TablePresentationTest:
+Error in all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest):
+java.lang.AssertionError: Semantic Node has no parent layout with a Scroll SemanticsAction
+	at androidx.compose.ui.test.ActionsKt.scrollToNode(Actions.kt:97)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:82)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:48)
+
+com.example.datasail.AiNavigationTest:.
+com.example.datasail.MobileWorkflowTest:
+Error in savedConnectionOpensWorkbenchAndFavoriteLoadsWithoutExecuting(com.example.datasail.MobileWorkflowTest):
+java.lang.AssertionError: Semantic Node has no parent layout with a Scroll SemanticsAction
+	at androidx.compose.ui.test.ActionsKt.scrollToNode(Actions.kt:97)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:82)
+	at com.example.datasail.MobileWorkflowTest.savedConnectionOpensWorkbenchAndFavoriteLoadsWithoutExecuting(MobileWorkflowTest.kt:45)
+
+com.example.datasail.WorkbenchInteractionTest:
+Error in pickerSearchesHundredsWithoutGrowingThePage(com.example.datasail.WorkbenchInteractionTest):
+java.lang.AssertionError: Failed to perform checkIsDisplayed check: Expected at most 1 node but found 2 nodes that satisfy (Text + InputText + EditableText contains 'catalog_500' (ignoreCase: false))
+	at androidx.compose.ui.test.AndroidAssertions_androidKt.checkIsDisplayed(AndroidAssertions.android.kt:35)
+	at androidx.compose.ui.test.AssertionsKt.isDisplayed(Assertions.kt:351)
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:33)
+	at com.example.datasail.WorkbenchInteractionTest.pickerSearchesHundredsWithoutGrowingThePage(WorkbenchInteractionTest.kt:30)
+..
+
+Time: 101.198
+There were 3 failures:
+1) all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest)
+java.lang.AssertionError: Semantic Node has no parent layout with a Scroll SemanticsAction
+	at androidx.compose.ui.test.ActionsKt.scrollToNode(Actions.kt:97)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:82)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:48)
+2) savedConnectionOpensWorkbenchAndFavoriteLoadsWithoutExecuting(com.example.datasail.MobileWorkflowTest)
+java.lang.AssertionError: Semantic Node has no parent layout with a Scroll SemanticsAction
+	at androidx.compose.ui.test.ActionsKt.scrollToNode(Actions.kt:97)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:82)
+	at com.example.datasail.MobileWorkflowTest.savedConnectionOpensWorkbenchAndFavoriteLoadsWithoutExecuting(MobileWorkflowTest.kt:45)
+3) pickerSearchesHundredsWithoutGrowingThePage(com.example.datasail.WorkbenchInteractionTest)
+java.lang.AssertionError: Failed to perform checkIsDisplayed check: Expected at most 1 node but found 2 nodes that satisfy (Text + InputText + EditableText contains 'catalog_500' (ignoreCase: false))
+	at androidx.compose.ui.test.AndroidAssertions_androidKt.checkIsDisplayed(AndroidAssertions.android.kt:35)
+	at androidx.compose.ui.test.AssertionsKt.isDisplayed(Assertions.kt:351)
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:33)
+	at com.example.datasail.WorkbenchInteractionTest.pickerSearchesHundredsWithoutGrowingThePage(WorkbenchInteractionTest.kt:30)
+
+FAILURES!!!
+Tests run: 7,  Failures: 3
+
+

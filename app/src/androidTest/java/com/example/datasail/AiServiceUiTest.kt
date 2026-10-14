@@ -56,7 +56,7 @@ class AiServiceUiTest {
         compose.waitUntil(10000) { ai.state.value.ready }
         compose.onNodeWithText("连接并进入工作台").performScrollTo().performClick()
         compose.waitUntil(15000) { !workspace.state.value.busy && workspace.state.value.tables.isNotEmpty() }
-        compose.onNodeWithTag("object-list").performScrollTo(); compose.onNodeWithTag("object-ai_fixture").performClick()
+        compose.onNodeWithTag("object-list").assertIsDisplayed(); compose.onNodeWithTag("object-ai_fixture").performClick()
         compose.waitUntil(10000) { workspace.state.value.result != null }
         val originalSql = workspace.draftSql.value
         compose.onNodeWithText("AI 助手").performClick()
@@ -103,6 +103,41 @@ class AiServiceUiTest {
         compose.onNodeWithText("AI 助手").performClick()
         compose.onNodeWithText("此连接禁止外部 AI。可在连接配置中显式允许，重新连接后生效。").assertExists()
         compose.onNodeWithText("预览发送内容").performScrollTo().assertIsNotEnabled()
+    }
+    @Test fun realtimeSuggestionsRequireConsentAndNeverExecuteOrReuseAfterLeaving() {
+        lateinit var ai: AiViewModel; lateinit var workspace: WorkspaceViewModel
+        var requests = 0
+        compose.runOnIdle {
+            ai = ViewModelProvider(compose.activity)[AiViewModel::class.java]
+            workspace = ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java]
+            ai.createClient = { service, key -> requests++; transport(service, key) }
+        }
+        compose.waitUntil(10000) { ai.state.value.ready }
+        compose.runOnIdle { ai.save(profile.copy(model = "fixture-model"), charArrayOf()) }
+        compose.waitUntil(10000) { !ai.state.value.busy }
+        compose.onNodeWithText("连接并进入工作台").performScrollTo().performClick()
+        compose.waitUntil(15000) { compose.onAllNodesWithTag("object-ai_fixture").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("object-ai_fixture").performClick()
+        compose.waitUntil(10000) { compose.onAllNodesWithTag("result-grid").fetchSemanticsNodes().isNotEmpty() }
+        val original = workspace.state.value.result
+        compose.onNodeWithText("SQL 编辑器").performClick()
+        compose.onNodeWithTag("sql-editor").performScrollTo().performTextReplacement("SELECT id FROM ai_fixture WHERE")
+        compose.runOnIdle { assertEquals(0, requests) }
+        compose.onNodeWithText("AI 实时建议：关").performScrollTo().performClick()
+        compose.onNodeWithText("开启本次编辑的实时 AI 建议？").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(0, requests) }
+        compose.onNodeWithText("确认范围并开启").performClick()
+        compose.waitUntil(20000) { compose.onAllNodesWithText("接受 AI 建议").fetchSemanticsNodes().isNotEmpty() }
+        assertTrue(requests > 0)
+        assertEquals("SELECT id FROM ai_fixture WHERE", workspace.draftSql.value)
+        assertEquals(original, workspace.state.value.result)
+        compose.onNodeWithText("接受 AI 建议").performScrollTo().performClick()
+        compose.onNodeWithTag("sql-editor").assertTextContains("SELECT id, name FROM ai_fixture")
+        assertEquals(original, workspace.state.value.result)
+        compose.onNodeWithText("数据", substring = false).performClick()
+        compose.onNodeWithText("SQL 编辑器").performClick()
+        compose.onNodeWithText("AI 实时建议：关").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("接受 AI 建议").assertDoesNotExist()
     }
     @Test fun androidTlsAndAllThreeProtocolContracts() {
         AiProtocol.entries.zip(listOf("openai", "anthropic", "gemini")).forEach { (protocol, path) ->

@@ -1,0 +1,209 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 11 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:processIntegrationTestResources NO-SOURCE
+> Task :core:compileIntegrationTestKotlin
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:sqlServerTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+SqlServerIntegrationTest > lostCommitAcknowledgementIsUnknownAndNeverReplayed PASSED
+
+SqlServerIntegrationTest > collationAndTrailingSpaceChangesAreConflictsWithoutRowversion PASSED
+
+SqlServerIntegrationTest > wideTableLastWindowIsVisibleAndCannotBeEdited PASSED
+
+SqlServerIntegrationTest > partialOperationFailureReportsActualCatalogAndReadOnlyState PASSED
+
+SqlServerIntegrationTest > wrongHostnameAndUntrustedCaRejected PASSED
+
+SqlServerIntegrationTest > temporalValuesPreservePrecisionWithoutDesktopOnlyApis PASSED
+
+SqlServerIntegrationTest > bufferedResponseIsRejectedByDriverBudget PASSED
+
+SqlServerIntegrationTest > textBudgetPagingDoesNotSkipRecordsAndTemporalValuesRemainReadOnly PASSED
+
+SqlServerIntegrationTest > productionSessionStartsReadonlyAndOnlyExplicitEnableAllowsWriteMode PASSED
+
+SqlServerIntegrationTest > boundedPagingAndUnsafeObjectsReadOnly PASSED
+
+SqlServerIntegrationTest > abnormalAffectedCountRollsBackActualWrite PASSED
+
+SqlServerIntegrationTest > wrongPasswordRejectsWithoutRetry PASSED
+
+SqlServerIntegrationTest > changedTriggerBlocksOldApproval PASSED
+
+SqlServerIntegrationTest > browseTypesAndSafeWrites PASSED
+
+SqlServerIntegrationTest > queryAndSwitchInvalidateApprovalAndQueryIsReadOnly PASSED
+
+SqlServerIntegrationTest > failedCatalogAcknowledgementClosesAmbiguousSession PASSED
+
+SqlServerIntegrationTest > probeTypesTimeoutAndCancellation PASSED
+
+SqlServerIntegrationTest > conflictDoesNotOverwriteConcurrentUpdate PASSED
+
+BUILD SUCCESSFUL in 8s
+8 actionable tasks: 3 executed, 5 up-to-date
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 11 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:compileDebugKotlin UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+
+> Task :sasl-android:verifyUpstream
+Apache Harmony SASL API sources and notices match pinned upstream bytes.
+
+> Task :sasl-android:compileJava UP-TO-DATE
+> Task :sasl-android:processResources UP-TO-DATE
+> Task :sasl-android:classes UP-TO-DATE
+> Task :sasl-android:jar UP-TO-DATE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:dexBuilderDebug UP-TO-DATE
+> Task :app:mergeProjectDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeDebugNativeLibs UP-TO-DATE
+> Task :app:stripDebugDebugSymbols UP-TO-DATE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :app:packageDebug UP-TO-DATE
+> Task :app:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleDebug UP-TO-DATE
+> Task :app:bundleDebugClassesToCompileJar UP-TO-DATE
+> Task :app:preDebugAndroidTestBuild SKIPPED
+> Task :app:processDebugAndroidTestManifest UP-TO-DATE
+> Task :app:generateDebugAndroidTestBuildConfig UP-TO-DATE
+> Task :app:checkDebugAndroidTestAarMetadata UP-TO-DATE
+> Task :app:processDebugAndroidTestNavigationResources UP-TO-DATE
+> Task :app:compileDebugAndroidTestNavigationResources UP-TO-DATE
+> Task :app:generateDebugAndroidTestResValues UP-TO-DATE
+> Task :app:mapDebugAndroidTestSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugAndroidTestResources UP-TO-DATE
+> Task :app:mergeDebugAndroidTestResources UP-TO-DATE
+> Task :app:processDebugAndroidTestResources UP-TO-DATE
+> Task :app:compileDebugAndroidTestKotlin UP-TO-DATE
+> Task :app:javaPreCompileDebugAndroidTest UP-TO-DATE
+> Task :app:compileDebugAndroidTestJavaWithJavac UP-TO-DATE
+> Task :app:mergeDebugAndroidTestShaders UP-TO-DATE
+> Task :app:compileDebugAndroidTestShaders NO-SOURCE
+> Task :app:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :app:mergeDebugAndroidTestAssets UP-TO-DATE
+> Task :app:compressDebugAndroidTestAssets UP-TO-DATE
+> Task :app:processDebugAndroidTestJavaRes UP-TO-DATE
+> Task :app:mergeDebugAndroidTestJavaResource UP-TO-DATE
+> Task :app:checkDebugAndroidTestDuplicateClasses UP-TO-DATE
+> Task :app:desugarDebugAndroidTestFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexDebugAndroidTest UP-TO-DATE
+> Task :app:mergeLibDexDebugAndroidTest UP-TO-DATE
+> Task :app:dexBuilderDebugAndroidTest UP-TO-DATE
+> Task :app:mergeProjectDexDebugAndroidTest UP-TO-DATE
+> Task :app:mergeDebugAndroidTestJniLibFolders UP-TO-DATE
+> Task :app:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebugAndroidTest UP-TO-DATE
+> Task :app:writeDebugAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :app:packageDebugAndroidTest UP-TO-DATE
+> Task :app:createDebugAndroidTestApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleDebugAndroidTest UP-TO-DATE
+
+BUILD SUCCESSFUL in 1s
+79 actionable tasks: 2 executed, 77 up-to-date
+app/build/outputs/apk/debug/app-debug.apk: 1 file pushed, 0 skipped. 65.0 MB/s (24344039 bytes in 0.357s)
+Performing Push Install
+Success
+app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk: 1 file pushed, 0 skipped. 2309.3 MB/s (1303233 bytes in 0.001s)
+Performing Push Install
+Success
+
+com.example.datasail.SqlServerDeviceTest:..
+com.example.datasail.SpreadsheetSqlServerUiTest:
+Error in tabCompletionCellCommitNullAndReadonlyQuery(com.example.datasail.SpreadsheetSqlServerUiTest):
+java.lang.AssertionError: Failed to inject touch input.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '收藏此表' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performTouchInput(Actions.kt:402)
+	at androidx.compose.ui.test.AndroidActions.performClickImpl(Actions.android.kt:23)
+	at androidx.compose.ui.test.ActionsKt.performClick(Actions.kt:60)
+	at com.example.datasail.SpreadsheetSqlServerUiTest.tabCompletionCellCommitNullAndReadonlyQuery(SpreadsheetSqlServerUiTest.kt:116)
+
+
+Time: 110.382
+There was 1 failure:
+1) tabCompletionCellCommitNullAndReadonlyQuery(com.example.datasail.SpreadsheetSqlServerUiTest)
+java.lang.AssertionError: Failed to inject touch input.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '收藏此表' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performTouchInput(Actions.kt:402)
+	at androidx.compose.ui.test.AndroidActions.performClickImpl(Actions.android.kt:23)
+	at androidx.compose.ui.test.ActionsKt.performClick(Actions.kt:60)
+	at com.example.datasail.SpreadsheetSqlServerUiTest.tabCompletionCellCommitNullAndReadonlyQuery(SpreadsheetSqlServerUiTest.kt:116)
+
+FAILURES!!!
+Tests run: 3,  Failures: 1
+
+

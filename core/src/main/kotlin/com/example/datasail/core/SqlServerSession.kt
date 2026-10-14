@@ -43,7 +43,6 @@ class SqlServerSession(private val connection: Connection, override val profile:
         }
     }
     override fun setWritable(enabled: Boolean) {
-        if (enabled && profile.environment != ConnectionEnvironment.TEST) throw WorkspaceRejected("生产连接在 V0.2.0 中保持只读")
         pending = null
         writable = enabled
     }
@@ -125,13 +124,15 @@ class SqlServerSession(private val connection: Connection, override val profile:
             if (kind != MutationKind.INSERT && col.primaryKeyOrder > 0) throw WorkspaceRejected("本版不修改主键")
             val parsed = Values.parse(col, input)
             val old = original?.get(schema.columns.indexOf(col))
-            if (kind == MutationKind.INSERT || parsed != old) changes[col] = parsed
+            val unchanged = if (parsed is DbValue.Temporal && old is DbValue.Temporal)
+                parsed == SqlServerTemporal.parse(col, old.value) else parsed == old
+            if (kind == MutationKind.INSERT || !unchanged) changes[col] = parsed
         }
         if (kind != MutationKind.DELETE && changes.isEmpty()) throw WorkspaceRejected("没有可提交的变更")
         if (kind == MutationKind.INSERT && schema.columns.any { !it.identity && !it.generated && !it.rowVersion && !it.nullable && !it.hasDefault && it !in changes })
             throw WorkspaceRejected("请填写所有无默认值的必填字段")
         val parameters = mutableListOf<Param>()
-        fun bind(col: ColumnDef, value: DbValue): String { parameters += Param(col, value); return "?" }
+        fun bind(col: ColumnDef, value: DbValue): String { parameters += Param(col, value); return if (col.jdbcType in SqlServerTemporal.types) "CONVERT(${SqlServerTemporal.sqlType(col)},?,126)" else "?" }
         val whereColumns = if (schema.version != null) (schema.keys + schema.version!!).distinct() else schema.columns
         val where = if (original == null) "" else whereColumns.joinToString(" AND ") { col ->
             val value = original[schema.columns.indexOf(col)]
@@ -139,6 +140,8 @@ class SqlServerSession(private val connection: Connection, override val profile:
             else if (col.jdbcType in setOf(Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR)) {
                 // SQL string equality can ignore case and trailing spaces. Compare original bytes instead.
                 "CONVERT(varbinary(max),${SqlNames.quote(col.name)})=CONVERT(varbinary(max),CONVERT(${col.typeName}(${col.size}),${bind(col, value)}))"
+            } else if (col.jdbcType in SqlServerTemporal.types) {
+                "CONVERT(varbinary(max),${SqlNames.quote(col.name)})=CONVERT(varbinary(max),${bind(col, value)})"
             } else "${SqlNames.quote(col.name)}=${bind(col, value)}"
         }
         val predicateParams = parameters.toList(); parameters.clear()
@@ -229,6 +232,7 @@ class SqlServerSession(private val connection: Connection, override val profile:
             is DbValue.Integer -> statement.setLong(index, value.value)
             is DbValue.Decimal -> statement.setBigDecimal(index, value.value)
             is DbValue.Bool -> statement.setBoolean(index, value.value)
+            is DbValue.Temporal -> statement.setString(index, SqlServerTemporal.parse(parameter.column, value.value).value)
             is DbValue.Binary -> statement.setBytes(index, value.copyBytes())
             else -> throw WorkspaceRejected("该类型不能安全绑定写入")
         }

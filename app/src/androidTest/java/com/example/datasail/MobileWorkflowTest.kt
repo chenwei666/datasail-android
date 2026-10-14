@@ -42,18 +42,19 @@ class MobileWorkflowTest {
             compose.onNodeWithText("连接并进入工作台").performScrollTo().performClick()
             compose.waitUntil(10000) { compose.onAllNodesWithText("SQL 编辑器").fetchSemanticsNodes().isNotEmpty() }
             compose.waitUntil(10000) { compose.onAllNodesWithTag("object-mobile_fixture").fetchSemanticsNodes().isNotEmpty() }
-            compose.onNodeWithTag("object-list").performScrollTo()
+            compose.onNodeWithTag("object-list").assertIsDisplayed()
             compose.onNodeWithTag("object-mobile_fixture").performClick()
-            compose.waitUntil(10000) { compose.onAllNodesWithText("收藏此表").fetchSemanticsNodes().isNotEmpty() }
-            compose.onNodeWithText("收藏此表").performScrollTo().performClick()
+            compose.waitUntil(10000) { compose.onAllNodesWithText("更多 ▾").fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithText("更多 ▾").performClick()
+            compose.onNodeWithText("收藏此表").performClick()
             compose.waitUntil(5000) { TableFavoriteStore(context).load().size == 1 }
             compose.onNodeWithText("收藏").performClick()
             compose.onNodeWithText("打开收藏表").performScrollTo().performClick()
-            compose.waitUntil(10000) { compose.onAllNodesWithText("取消表收藏").fetchSemanticsNodes().isNotEmpty() }
-            compose.onNodeWithText("SQL 编辑器").performScrollTo().performClick()
+            compose.waitUntil(10000) { compose.onAllNodesWithText("更多 ▾").fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithText("SQL 编辑器").assertIsDisplayed().performClick()
             compose.onNodeWithText("单条 SELECT 查询").performScrollTo().performTextReplacement("SELECT id, name FROM mobile_fixture")
             compose.onNodeWithText("执行查询").performScrollTo().performClick()
-            compose.waitUntil(10000) { compose.onAllNodesWithText("导出当前页 CSV").fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(10000) { compose.onAllNodesWithText("查询结果", substring = false).fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("收藏查询").performScrollTo().performClick()
             compose.onNodeWithText("查询名称").performTextInput("移动查询")
             compose.onNodeWithText("保存收藏").performClick()
@@ -62,7 +63,8 @@ class MobileWorkflowTest {
             compose.onNodeWithText("收藏").performClick()
             compose.onNodeWithText("载入草稿").performScrollTo().performClick()
             compose.onNodeWithText("单条 SELECT 查询").performScrollTo().assertTextContains("SELECT id, name FROM mobile_fixture")
-            compose.onNodeWithText("导出当前页 CSV").performScrollTo().performClick()
+            compose.onNodeWithText("更多 ▾").performScrollTo().performClick()
+            compose.onNodeWithText("导出当前页 CSV").performClick()
             compose.onNodeWithText("导出当前结果页？").assertIsDisplayed()
             compose.onNodeWithText("取消").performClick()
     }

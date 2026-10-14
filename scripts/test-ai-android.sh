@@ -23,6 +23,6 @@ bash scripts/install-android-test-apks.sh
 adb shell run-as com.example.datasail mkdir -p files
 adb shell run-as com.example.datasail sh -c "'cat > files/ai-fixture-ca.crt'" < "$fixture/cert.pem"
 adb reverse tcp:18743 "tcp:$ai_host_port"
-mkdir -p docs/evidence/v091
-adb shell am instrument -w -e class com.example.datasail.AiServiceUiTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "docs/evidence/v091/ai-$ANDROID_SERIAL.txt"
-rg -q 'OK \(2 tests\)' "docs/evidence/v091/ai-$ANDROID_SERIAL.txt"
+mkdir -p docs/evidence/v0100
+adb shell am instrument -w -e class com.example.datasail.AiServiceUiTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "docs/evidence/v0100/ai-$ANDROID_SERIAL.txt"
+rg -q 'OK \(3 tests\)' "docs/evidence/v0100/ai-$ANDROID_SERIAL.txt"

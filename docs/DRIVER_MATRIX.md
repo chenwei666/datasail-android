@@ -46,3 +46,7 @@ V0.8.1 没有变更驱动或协议；SQL 元数据导航与表收藏实际测试
 V0.9.0 SQL page 接口增加列窗口，所有 SQL 引擎复用相同的 64 列范围校验；SQL Server / SQLite 本轮实测最后一组字段，其它引擎以本轮测试报告为准，不沿用历史结果冒充新功能实测。AI 协议独立于数据库驱动，见 AI_ASSISTANT。
 
 V0.9.1 SQL Server 源码适配更新到 datasail.2：修复 DDC 调用 Android 缺少的 java.sql / java.time 转换方法，避免含日期字段的表查看失败并断连。用真实 SQL Server 合成日期表验证；未变更 TLS 或写入策略。AI 设置导航和已加载字段属性展示同步完善。其它网络引擎未重跑；当前设备范围与实际结果见 TEST_REPORT。
+
+## V0.10.0 编辑变化
+
+SQL Server 日期读取仍使用 datasail.2 驱动；会话层增加 date/time/datetime/smalldatetime/datetime2/datetimeoffset 的 ISO 文本绑定与精确并发比较，避免 Android JDBC 日期转换缺失 API。生产标记连接默认只读，经用户明确确认可开启本次编辑，切库/断开复位。其它引擎仍只读。当前实际设备和服务器证据以 TEST_REPORT 为准；未访问业务服务器或新增全引擎写入声明。

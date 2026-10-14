@@ -58,7 +58,6 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
     var fingerprintChecked by remember { mutableStateOf(false) }
     LaunchedEffect(pendingCertificate) { fingerprintChecked = false }
     var discoveryHint by remember { mutableStateOf("") }
-    var databaseSearch by remember { mutableStateOf("") }
     var stage by remember { mutableStateOf("list") }
     var search by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("全部") }
@@ -92,7 +91,7 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
         uri?.let { model.importSqlite(it) { id -> if (target == (draft.id to draft.kind)) { draft = draft.copy(database = id); authorized = false } } }
     }
     fun edit(connection: SavedConnection) {
-        model.cancelDiscovery(); discoveryHint = ""; databaseSearch = ""; draft = connection; password = ""; rememberPassword = false
+        model.cancelDiscovery(); discoveryHint = ""; draft = connection; password = ""; rememberPassword = false
         authorized = false; advanced = false; stage = "form"
         val ticket = ++passwordRequest
         if (connection.kind != DatabaseKind.SQLITE) model.loadPassword(connection) { secret ->
@@ -126,7 +125,7 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                             Text(connection.kind.connectionCategory, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
-                    Text("${connection.kind.label} · ${if (connection.production) "生产 · 只读" else "测试"}")
+                    Text("${connection.kind.label} · ${if (connection.production) "生产" else "常规"}")
                     Text(if (connection.kind == DatabaseKind.SQLITE) "本机只读文件副本" else "${connection.host}:${connection.port} / ${connection.database}", style = MaterialTheme.typography.bodySmall)
                     Button(enabled = !state.busy, onClick = { dismissInput(); model.connectSaved(connection) { edit(connection) } }, modifier = Modifier.fillMaxWidth()) { Text("连接并进入工作台") }
                     Row {
@@ -186,8 +185,8 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                 TextButton(onClick = { passwordRequest++; password = ""; rememberPassword = false; model.forgetPassword(draft.id) }) { Text("忘记密码") }
             }
             Text("保存配置或连接时生效，密码由 Android Keystore 加密。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Row { Checkbox(draft.production, { change(draft.copy(production = it)) }); Text("生产环境（只读）") }
-            Row { Checkbox(draft.allowExternalAi, { change(draft.copy(allowExternalAi = it)) }); Text("允许此连接使用外部 AI（发送前逐次预览）") }
+            Row { Checkbox(draft.production, { change(draft.copy(production = it)) }); Text("生产环境（写入时再次确认）") }
+            Row { Checkbox(draft.allowExternalAi, { change(draft.copy(allowExternalAi = it)) }); Text("允许此连接使用外部 AI（需确认发送范围）") }
         }
         Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(authorized, { authorized = it; if (!it) model.cancelDiscovery() }, modifier = Modifier.testTag("connection-authorization")); Text("我已获准访问上述数据库") }
         if (draft.kind != DatabaseKind.SQLITE) {
@@ -224,7 +223,7 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(modifier = Modifier.weight(1f), enabled = draft.discoveryErrors(discoveryHint).isEmpty() && authorized && password.isNotEmpty() && !state.busy && !discovery.busy,
-                    onClick = { dismissInput(); databaseSearch = ""; model.discover(draft, discoveryHint, password.toCharArray()) }) {
+                    onClick = { dismissInput(); model.discover(draft, discoveryHint, password.toCharArray()) }) {
                     Text(if (discovery.busy) "扫描中…" else "连接服务器并扫描")
                 }
                 if (discovery.busy) TextButton(onClick = model::cancelDiscovery) { Text("取消扫描") }
@@ -238,14 +237,14 @@ internal fun Connections(model: WorkspaceViewModel, state: WorkspaceUiState) {
                 if (result.limited) Text("仅显示前 200 项，可手动填写未显示的目标。")
                 if (result.names.isEmpty()) Text("未发现可见目标；空列表不表示服务器没有数据库。")
                 else {
-                    ConnectionField("筛选扫描结果", databaseSearch, null) { databaseSearch = it }
-                    val matches = result.names.filter { it.contains(databaseSearch, ignoreCase = true) }
-                    if (matches.isEmpty()) Text("没有匹配的目标")
-                    matches.forEach { name ->
-                        val selectable = draft.canSelectDiscoveredDatabase(name)
-                        DatabaseTargetRow(name, draft.database == name, selectable && !state.busy && !discovery.busy, selectable) {
-                            draft = draft.copy(database = name)
-                        }
+                    var pickingDatabase by remember { mutableStateOf(false) }
+                    OutlinedButton(onClick = { pickingDatabase = true }, enabled = !state.busy && !discovery.busy,
+                        modifier = Modifier.fillMaxWidth().testTag("discovered-database-picker")) {
+                        Text(if (draft.database in result.names) "${draft.database} · 更换数据库 ▾" else "搜索并选择数据库（${result.names.size}） ▾")
+                    }
+                    if (pickingDatabase) SearchPicker("选择数据库", result.names, draft.database,
+                        dismiss = { pickingDatabase = false }, enabled = { draft.canSelectDiscoveredDatabase(it) }) {
+                        draft = draft.copy(database = it)
                     }
                 }
             }

@@ -1,0 +1,35 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 11 source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:processIntegrationTestResources NO-SOURCE
+
+> Task :core:compileIntegrationTestKotlin FAILED
+e: file:///workspace/datasail-android/core/src/integrationTest/kotlin/com/example/datasail/core/SqlServerIntegrationTest.kt:25:78 Unresolved reference 'copy'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:compileIntegrationTestKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1s
+7 actionable tasks: 2 executed, 5 up-to-date

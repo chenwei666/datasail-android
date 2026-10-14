@@ -46,10 +46,11 @@ class DiscoveryUiTest {
     }
     @Test fun scanSelectAndConnectWithoutKnowingDatabaseName() {
         val model = scan()
+        compose.onNodeWithTag("discovered-database-picker").performScrollTo().performClick()
         if (ConnectionStore(context).load().single().kind == DatabaseKind.POSTGRESQL) {
-            compose.onNodeWithText(" synthetic （暂不支持此名称）").performScrollTo().assertIsNotEnabled()
+            compose.onNodeWithText(" synthetic ").performScrollTo().assertIsNotEnabled()
         }
-        compose.onNodeWithText("筛选扫描结果").performScrollTo().performTextInput("synthetic")
+        compose.onNodeWithTag("picker-search").performTextInput("synthetic")
         compose.onNode(hasText("synthetic") and !hasSetTextAction()).performScrollTo().performClick()
         compose.onNodeWithText("数据库").assertTextContains("synthetic")
         compose.onNodeWithText("连接数据库").performScrollTo().assertIsEnabled().performClick()
@@ -60,7 +61,7 @@ class DiscoveryUiTest {
         val model = scan()
         compose.onNodeWithText("服务器 DNS / IPv4").performScrollTo().performTextReplacement("127.0.0.1")
         compose.runOnIdle { assertNull(model.discovery.value.result) }
-        compose.onNodeWithText("筛选扫描结果").assertDoesNotExist()
+        compose.onNodeWithTag("discovered-database-picker").assertDoesNotExist()
         compose.onNodeWithText("连接服务器并扫描").performScrollTo().assertIsNotEnabled()
         compose.onNodeWithText("密码").assert(SemanticsMatcher.expectValue(
             androidx.compose.ui.semantics.SemanticsProperties.EditableText, androidx.compose.ui.text.AnnotatedString("")))

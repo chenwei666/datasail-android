@@ -38,23 +38,47 @@ class TablePresentationTest {
     }
     private val compose = createAndroidComposeRule<MainActivity>()
     @get:Rule val rules: RuleChain = RuleChain.outerRule(fixture).around(compose)
+    private fun finishSearchInput() {
+        // Browse metadata after dismissing the soft keyboard, as on a phone in landscape.
+        compose.runOnIdle {
+            val view = compose.activity.window.decorView
+            (context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager)
+                .hideSoftInputFromWindow(view.windowToken, 0)
+        }
+        compose.waitUntil(5000) {
+            compose.runOnIdle { androidx.core.view.ViewCompat.getRootWindowInsets(compose.activity.window.decorView)
+                ?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) != true }
+        }
+    }
     @Test fun all130ColumnsAreReachableWithFullscreenAndRowDetails() {
+        compose.runOnUiThread { compose.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
+        compose.waitForIdle()
         lateinit var model: WorkspaceViewModel
         compose.runOnIdle { model = ViewModelProvider(compose.activity)[WorkspaceViewModel::class.java] }
         compose.onNodeWithText("连接并进入工作台").performScrollTo().performClick()
         compose.waitUntil(10000) { compose.onAllNodesWithTag("object-wide_table").fetchSemanticsNodes().isNotEmpty() }
-        compose.onNodeWithTag("object-list").performScrollTo(); compose.onNodeWithTag("object-wide_table").performClick()
+        compose.onNodeWithTag("object-list").assertIsDisplayed(); compose.onNodeWithTag("object-wide_table").performClick()
         // Semantics reads synchronize Compose; raw StateFlow polling can observe a pending UI callback.
-        compose.waitUntil(10000) { compose.onAllNodesWithText("查看表结构").fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(10000) { compose.onAllNodesWithTag("result-grid").fetchSemanticsNodes().isNotEmpty() }
         compose.runOnIdle { assertNotNull(model.state.value.result) }
-        compose.onNodeWithText("查看表结构").performScrollTo().performClick()
+        compose.onNodeWithText("表结构").performClick()
         compose.onNodeWithTag("structure-search").performScrollTo().performTextInput("c129")
+        finishSearchInput()
         compose.onNodeWithTag("structure-columns").performScrollTo()
         compose.onNodeWithText("130. c129").assertIsDisplayed()
         compose.onNodeWithText("显示 1 / 130 个字段").assertExists()
-        compose.onNodeWithText("仅主键").performScrollTo().performClick()
+        compose.onNodeWithText("仅主键").performScrollTo().assertIsDisplayed().performClick()
+        // Input and scroll callbacks can finish after Compose's first idle frame on a software API30 device.
+        try {
+            compose.waitUntil(10000) { compose.onAllNodes(hasText("仅主键") and isSelected()).fetchSemanticsNodes().isNotEmpty() }
+        } catch (error: Throwable) {
+            compose.onRoot().printToLog("DataSailWideFilter")
+            throw error
+        }
+        compose.onNodeWithText("仅主键").assertIsSelected()
         compose.onNodeWithText("没有匹配字段").assertExists()
         compose.onNodeWithTag("structure-search").performScrollTo().performTextReplacement("id")
+        finishSearchInput()
         compose.onNodeWithTag("structure-columns").performScrollTo()
         compose.onNodeWithText("1. id").assertIsDisplayed()
         compose.onNodeWithTag("copy-column-0").performScrollTo().performClick()
@@ -64,7 +88,7 @@ class TablePresentationTest {
         }
         compose.onNodeWithText("清除筛选").performScrollTo().performClick()
         compose.onNodeWithText("显示 130 / 130 个字段").assertExists()
-        compose.onNodeWithText("收起表结构").performScrollTo().performClick()
+        compose.onNodeWithText("数据").performClick()
         for (offset in listOf(64,128)) {
             compose.onNodeWithText("下一组字段").performScrollTo().performClick()
             compose.waitUntil(10000) {

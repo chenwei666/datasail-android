@@ -12,14 +12,26 @@ class SqlServerIntegrationTest {
             com.example.datasail.fixture.SqlServerTemporalContract.createTable(connection)
             try { SqlServerSession(connection, profile()).use { session ->
                 com.example.datasail.fixture.SqlServerTemporalContract.verify(session)
+                com.example.datasail.fixture.SqlServerTemporalContract.verifyEditing(session) { sql -> connect().use { c -> c.createStatement().use { it.executeUpdate(sql) } } }
                 com.example.datasail.fixture.SqlServerTemporalContract.verifyPage(session.page(session.tables("dbo").single { it.name == "ui_temporal_v091" }))
             } } finally { connect().use { it.createStatement().use { s -> s.execute("DROP TABLE IF EXISTS dbo.ui_temporal_v091") } } }
         }
     }
     private val config = Properties().apply { File(System.getProperty("datasail.sqlserver.config")).inputStream().use(::load) }
-    private fun profile(host: String = "localhost", trusted: Boolean = true) = ConnectionProfile(DatabaseKind.SQL_SERVER,
-        host, config.getProperty("port").toInt(), "master", "sa", trustStore = if (trusted) TrustStoreSpec(System.getProperty("datasail.sqlserver.trust")) else null)
+    private fun profile(host: String = "localhost", trusted: Boolean = true, environment: ConnectionEnvironment = ConnectionEnvironment.TEST) = ConnectionProfile(DatabaseKind.SQL_SERVER,
+        host, config.getProperty("port").toInt(), "master", "sa", environment = environment, trustStore = if (trusted) TrustStoreSpec(System.getProperty("datasail.sqlserver.trust")) else null)
     private fun connect(p: ConnectionProfile = profile()) = Credentials(config.getProperty("password").toCharArray()).use { JdbcConnector().connect(p, it) }
+    @Test fun productionSessionStartsReadonlyAndOnlyExplicitEnableAllowsWriteMode() {
+        connect().use { connection -> SqlServerSession(connection, profile(environment = ConnectionEnvironment.PRODUCTION)).use { session ->
+            assertFalse(session.writable)
+            session.setWritable(true)
+            assertTrue(session.writable)
+            session.switchCatalog("master")
+            assertFalse(session.writable)
+            session.close()
+            assertTrue(session.isClosed())
+        } }
+    }
     @Test fun bufferedResponseIsRejectedByDriverBudget() {
         connect().use { c -> c.createStatement().use { statement ->
             statement.queryTimeout = 10

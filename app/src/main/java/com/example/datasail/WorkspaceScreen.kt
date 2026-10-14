@@ -50,24 +50,32 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel, ai: 
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 Text("数舟", style = MaterialTheme.typography.titleLarge)
                 Text("DataSail · V${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (state.connected || state.busy) {
+                var sessionMenu by remember { mutableStateOf(false) }
+                Box { TextButton(onClick = { sessionMenu = true }) { Text("连接操作 ▾") }
+                    DropdownMenu(sessionMenu, { sessionMenu = false }) {
+                        DropdownMenuItem(text = { Text("取消 / 断开连接") }, onClick = { sessionMenu = false; model.disconnect() })
+                    }
+                }
             }
-            Text(if (state.connected || state.busy) "${state.target} / ${state.catalog} / ${state.schema} · ${if (state.production) "生产" else "测试"} · ${if (state.writable) "可写" else "只读"} · ${if (state.connected) "已连接" else "连接中"}" else "未连接 · 默认只读",
+            }
+            Text(if (state.connected || state.busy) "${state.target} / ${state.catalog} / ${state.schema} · ${if (state.production) "生产" else "常规"} · ${if (state.writable) "可写" else "只读"} · ${if (state.connected) "已连接" else "连接中"}" else "未连接 · 默认只读",
                 style = MaterialTheme.typography.labelMedium)
             if (state.message != "请选择已授权的数据库连接；默认只读。") Text(state.message, style = MaterialTheme.typography.bodySmall)
             if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-            if (state.connected || state.busy) TextButton(onClick = model::disconnect) { Text("取消 / 断开连接") }
+
         }
         HorizontalDivider()
-        Column(Modifier.weight(1f).widthIn(max = 960.dp).fillMaxWidth().align(androidx.compose.ui.Alignment.CenterHorizontally).verticalScroll(contentScroll).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.weight(1f).fillMaxWidth().then(if (page == "工作台") Modifier else Modifier.verticalScroll(contentScroll)).padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             when (page) {
                 "连接" -> Connections(model, state)
-                "工作台" -> Workbench(model, state) { exportPreview = state.target + " / " + state.catalog to it }
+                "工作台" -> Workbench(model, state, ai) { exportPreview = state.target + " / " + state.catalog to it }
                 "AI 助手" -> AiScreen(ai, model, { page = "AI 设置" }) { page = "工作台" }
                 "AI 设置" -> AiSettingsScreen(ai, { page = "设置" }, { page = "AI 助手" })
                 "收藏" -> QueryLibrary(model, state) { page = "工作台" }
                 else -> SettingsScreen(model, ai, { page = "AI 设置" }) {
-                    Text("开发占位包名：com.example.datasail\n首次发行前需确认正式身份与签名。")
-                    Text("当前十种引擎；除 SQL Server 测试会话外只读。AI 支持配置外部文本模型服务。")
+                    Text("应用标识：com.example.datasail · 构建：${BuildConfig.BUILD_TYPE}")
+                    Text("当前十种引擎；除 SQL Server 外只读。AI 支持配置外部文本模型服务。")
                     DatabaseSupport()
                     val probeState by probe.state.collectAsStateWithLifecycle()
                     ProbeForm(probe, probeState)
@@ -90,119 +98,130 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel, ai: 
         dismissButton = { TextButton(onClick = model::discardPreview) { Text("取消") } }) }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, export: (ResultPage) -> Unit) {
+private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, ai: AiViewModel, export: (ResultPage) -> Unit) {
     if (!state.connected) { Text("请在连接页选择数据库并连接，然后浏览表或执行查询。"); return }
-    if (state.kind.isSearch) { SearchWorkbench(model, state); return }
-    if (state.kind.isDocument) { DocumentWorkbench(model, state); return }
-    if (state.kind.isKeyValue) { KeyValueWorkbench(model, state); return }
-    var search by remember { mutableStateOf("") }
-    var showObjects by remember(state.catalog, state.schema) { mutableStateOf(state.result == null) }
-    var showEditor by remember { mutableStateOf(state.message.startsWith("已载入草稿")) }
+    if (state.kind.isSearch || state.kind.isDocument || state.kind.isKeyValue) {
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            when { state.kind.isSearch -> SearchWorkbench(model, state); state.kind.isDocument -> DocumentWorkbench(model, state); else -> KeyValueWorkbench(model, state) }
+        }; return
+    }
+    var tab by remember { mutableIntStateOf(if (state.message.startsWith("已载入草稿")) 1 else 0) }
+    LaunchedEffect(state.message) { if (state.message.startsWith("已载入草稿")) tab = 1 }
+    val paneScroll = remember(tab, state.result?.tableSchema?.table, state.result?.offset) { androidx.compose.foundation.ScrollState(0) }
+    val paneFocus = androidx.compose.ui.platform.LocalFocusManager.current
+    val paneKeyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    LaunchedEffect(tab) { paneFocus.clearFocus(); paneKeyboard?.hide() }
+    var picker by remember { mutableStateOf("") }
+    var showObjects by remember(state.connectionKey) { mutableStateOf(state.result == null && !state.message.startsWith("已载入草稿")) }
+    LaunchedEffect(state.result) { if (state.result != null) showObjects = false }
+    var search by remember(state.catalog, state.schema) { mutableStateOf("") }
+    var allowWrite by remember { mutableStateOf(false) }
+    var more by remember { mutableStateOf(false) }
+    var savingQuery by remember { mutableStateOf(false) }
+    var queryName by remember { mutableStateOf("") }
+    var selected by remember(state.result) { mutableStateOf<Int?>(null) }
+    var editing by remember(state.result) { mutableStateOf<MutationKind?>(null) }
     val favorites by model.favoriteTables.collectAsStateWithLifecycle()
     val sql by model.draftSql.collectAsStateWithLifecycle()
     val settings by model.settings.collectAsStateWithLifecycle()
-    var savingQuery by remember { mutableStateOf(false) }
-    var queryName by remember { mutableStateOf("") }
-    var showStructure by remember { mutableStateOf(false) }
-    var selected by remember(state.result) { mutableStateOf<Int?>(null) }
-    var editing by remember(state.result) { mutableStateOf<MutationKind?>(null) }
-    Text("数据库导航", style = MaterialTheme.typography.titleMedium)
-    Choice("数据库（${state.catalogs.size}）", state.catalogs, state.catalog, !state.busy, "catalog-picker", model::switchCatalog)
-    if (state.kind == DatabaseKind.POSTGRESQL) Text("PostgreSQL 当前连接只浏览此库；切换其它库请在连接页选择后连接。", style = MaterialTheme.typography.bodySmall)
-    Choice("Schema", state.schemas, state.schema, !state.busy, "schema-picker", model::tables)
-    TextButton(enabled = !state.busy, onClick = model::refreshNavigation) { Text("刷新数据库和对象") }
-    state.navigationIssues.forEach { Text(it, color = MaterialTheme.colorScheme.error) }
-    if (!state.busy && state.schemas.isEmpty()) Text("没有取得可见 Schema。请刷新，或检查账号的元数据权限；仍可使用 SQL 编辑器查询已知对象。")
-    OutlinedButton(onClick = { showObjects = !showObjects }) { Text(if (showObjects) "收起对象列表" else "浏览表 / 视图（${state.tables.size}）") }
-    if (showObjects) {
-    OutlinedTextField(search, { search = it }, label = { Text("筛选表 / 视图") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-    val matching = state.tables.filter { it.name.contains(search, ignoreCase = true) }
-    Text("表 / 视图 · ${matching.size}", style = MaterialTheme.typography.titleSmall)
-    if (state.busy && state.tables.isEmpty()) Text("正在加载数据库对象…")
-    else if (matching.isEmpty()) Text(if (search.isNotBlank()) "没有匹配对象，请修改筛选条件。" else "当前 Schema 没有可见表或视图。可切换上方数据库 / Schema，或检查对象权限。")
-    else LazyColumn(Modifier.fillMaxWidth().heightIn(max = 240.dp).testTag("object-list")) {
-        itemsIndexed(matching, key = { _, table -> table.name }) { _, table ->
-            TextButton(enabled = !state.busy, onClick = { model.page(table); showObjects = false }, modifier = Modifier.fillMaxWidth().testTag("object-${table.name}"),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)) {
-                Column(Modifier.weight(1f)) {
-                    Text(table.name, modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyLarge)
-                    Text("${if (table.view) "视图" else "表"} · ${table.schema}", modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodySmall)
+    val result = state.result
+    val schema = result?.tableSchema
+    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(onClick = { picker = "数据库" }, enabled = !state.busy, modifier = Modifier.testTag("catalog-picker")) { Text("${state.catalog} ▾") }
+        OutlinedButton(onClick = { picker = "Schema" }, enabled = !state.busy, modifier = Modifier.testTag("schema-picker")) { Text("${state.schema} ▾") }
+        OutlinedButton(onClick = { showObjects = true }, enabled = !state.busy) { Text("浏览表 / 视图（${state.tables.size}）") }
+    }
+    if (picker.isNotEmpty()) SearchPicker(picker, if (picker == "数据库") state.catalogs else state.schemas,
+        if (picker == "数据库") state.catalog else state.schema, { picker = "" }) {
+        if (picker == "数据库") model.switchCatalog(it) else model.tables(it)
+    }
+    if (showObjects) AlertDialog(onDismissRequest = { showObjects = false }, title = { Text("表与视图 · ${state.tables.size}") }, text = {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(search, { search = it }, label = { Text("筛选表 / 视图") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            state.navigationIssues.forEach { Text(it, color = MaterialTheme.colorScheme.error) }
+            val matching = state.tables.filter { it.name.contains(search, true) }
+            if (matching.isEmpty()) Text(if (state.busy) "正在加载数据库对象…" else "没有匹配对象，可切换数据库或 Schema、刷新对象。")
+            LazyColumn(Modifier.fillMaxWidth().heightIn(max = 320.dp).testTag("object-list")) {
+                itemsIndexed(matching, key = { _, t -> t.name }) { _, table ->
+                    TextButton(enabled = !state.busy, onClick = { model.page(table); showObjects = false; tab = 0 }, modifier = Modifier.fillMaxWidth().testTag("object-${table.name}")) {
+                        Column(Modifier.weight(1f)) { Text(table.name, Modifier.fillMaxWidth()); Text(if (table.view) "视图" else "表", Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodySmall) }
+                        Text("查看 ›")
+                    }
                 }
-                Text("查看 ›")
             }
         }
-    }
-    }
-    Row { Switch(state.writable, { model.writable(it) }, modifier = Modifier.testTag("allow-session-write"), enabled = !state.busy && !state.production && state.kind == DatabaseKind.SQL_SERVER); Text("允许本次测试会话写入（单行确认）") }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(selected = !showEditor, onClick = { showEditor = false }, label = { Text("数据浏览") })
-        FilterChip(selected = showEditor, onClick = { showEditor = true }, label = { Text("SQL 编辑器") })
-    }
-    if (showEditor) {
-    SqlEditor(sql, model::editSql, state, settings)
-    Text("查询结果只读，最多显示 100 行 / 64 列；不支持 CTE、变量、多语句和写 SQL。请使用最小权限账号。")
-    Button(enabled = !state.busy, onClick = { model.query(sql) }) { Text("执行查询") }
-    TextButton(enabled = !state.busy, onClick = { savingQuery = true; queryName = "" }) { Text("收藏查询") }
-    }
-    if (savingQuery) AlertDialog(onDismissRequest = { savingQuery = false }, title = { Text("收藏 SELECT 草稿") }, text = {
-        Column { Text("仅保存在本机。SQL 可能含业务内容，请确认没有密码或密钥。载入后需要手动执行。"); OutlinedTextField(queryName, { queryName = it }, label = { Text("查询名称") }, singleLine = true) }
-    }, confirmButton = { TextButton(enabled = queryName.isNotBlank() && queryName.length <= 80, onClick = { model.saveQuery(queryName); savingQuery = false }) { Text("保存收藏") } }, dismissButton = { TextButton(onClick = { savingQuery = false }) { Text("取消") } })
-    state.result?.let { result ->
-        OutlinedButton(enabled = !state.busy && PageCsv.canExport(result), onClick = { export(result) }) { Text("导出当前页 CSV") }
-        if (!PageCsv.canExport(result)) Text("本页含未完整加载字段，暂不能导出。")
-        Text("${result.tableSchema?.table?.label ?: "查询结果（只读）"} · 第 ${result.offset + 1} 行起 · ${result.rows.size} 行${if (result.hasMore) " · 还有结果" else ""}")
-        Text("单字段最多 2048 字符 / 二进制 256 字节；超限值标记未加载。")
-        if (result.rows.isEmpty()) Text("执行成功，没有记录。")
-        result.tableSchema?.let { schema ->
-            TextButton(onClick = { model.toggleTableFavorite(schema.table) }, enabled = !state.busy) {
-                Text(if (favorites.any { it.matches(state.connectionKey, schema.table) }) "取消表收藏" else "收藏此表")
+    }, confirmButton = { TextButton(onClick = { showObjects = false }) { Text("关闭") } }, dismissButton = { TextButton(enabled = !state.busy, onClick = model::refreshNavigation) { Text("刷新数据库和对象") } })
+    TabRow(selectedTabIndex = tab) { listOf("数据", "SQL 编辑器", "表结构").forEachIndexed { i, title -> Tab(selected = tab == i, onClick = { tab = i }, text = { Text(title) }) } }
+    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(paneScroll), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (tab == 1) {
+            SqlEditor(sql, model::editSql, state, settings, ai, model)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(enabled = !state.busy, onClick = { model.query(sql) }) { Text("执行查询") }
+                TextButton(enabled = !state.busy, onClick = { savingQuery = true; queryName = "" }) { Text("收藏查询") }
             }
-            Text(schema.readOnlyReason ?: "支持安全单行编辑；自增、计算列及主键修改禁用。")
-            TextButton(onClick = { showStructure = !showStructure }) { Text(if (showStructure) "收起表结构" else "查看表结构") }
-            if (showStructure) TableStructurePanel(schema)
+            Text("单条只读查询；写入请使用数据页的编辑模式。", style = MaterialTheme.typography.bodySmall)
         }
-        if (result.totalColumns > result.columns.size) {
-            Text("字段 ${result.columnOffset + 1}–${result.columnOffset + result.columns.size} / ${result.totalColumns}" + if (result.tableSchema != null) "；可切换字段组。" else "；查询列数超过显示上限。", style = MaterialTheme.typography.bodySmall)
-            result.tableSchema?.let { schema -> Row {
-                TextButton(enabled = !state.busy && result.columnOffset > 0, onClick = { model.page(schema.table, result.offset, result.columnOffset - 64) }) { Text("上一组字段") }
-                TextButton(enabled = !state.busy && result.columnOffset + 64 < result.totalColumns, onClick = { model.page(schema.table, result.offset, result.columnOffset + 64) }) { Text("下一组字段") }
-            } } ?: Text("查询仅展示前 64 列；请在 SELECT 中明确选择需要的字段。")
-        }
-        ResultGrid(result, state, settings, { selected = it }, { row, inputs ->
-            model.preview(MutationKind.UPDATE, row, inputs)
-        })
-        result.tableSchema?.let { schema ->
-            Row {
-                TextButton(enabled = !state.busy && result.offset > 0, onClick = { model.page(schema.table, (result.offset - 100).coerceAtLeast(0), result.columnOffset) }) { Text("上一页") }
-                TextButton(enabled = !state.busy, onClick = { model.page(schema.table, result.offset, result.columnOffset) }) { Text("刷新") }
-                TextButton(enabled = !state.busy && result.hasMore && result.stableOrder && result.offset + result.rows.size <= 1_000_000, onClick = { model.page(schema.table, result.offset + result.rows.size, result.columnOffset) }) { Text("下一页") }
+        if (tab == 2) {
+            if (schema == null) Text("请先选择一张表。") else { Text(schema.table.label, style = MaterialTheme.typography.titleMedium); TableStructurePanel(schema) }
+        } else if (result != null) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(schema?.table?.label ?: "查询结果", style = MaterialTheme.typography.titleMedium)
+                    Text("${result.offset + 1}–${result.offset + result.rows.size} 行 · ${result.totalColumns} 列", style = MaterialTheme.typography.bodySmall)
+                }
+                if (schema != null) TextButton(enabled = !state.busy && state.kind == DatabaseKind.SQL_SERVER, modifier = Modifier.testTag("allow-session-write"),
+                    onClick = { if (state.writable) model.writable(false) else allowWrite = true }) { Text(if (state.writable) "退出编辑" else "开启编辑") }
+                Box { TextButton(onClick = { more = true }) { Text("更多 ▾") }
+                    DropdownMenu(more, { more = false }) {
+                        if (schema != null) {
+                            DropdownMenuItem(text = { Text(if (favorites.any { it.matches(state.connectionKey, schema.table) }) "取消表收藏" else "收藏此表") }, onClick = { more = false; model.toggleTableFavorite(schema.table) })
+                            DropdownMenuItem(text = { Text("查看表结构") }, onClick = { more = false; tab = 2 })
+                        }
+                        DropdownMenuItem(text = { Text("导出当前页 CSV") }, enabled = !state.busy && PageCsv.canExport(result), onClick = { more = false; export(result) })
+                    }
+                }
             }
-            if (result.stableOrder) Text("按主键排序；并发增删可能改变页边界，分页不是数据库快照。")
-            val canEdit = state.writable && schema.readOnlyReason == null && !state.busy
-            Row {
-                Button(enabled = canEdit, onClick = { editing = MutationKind.INSERT }) { Text("新增") }
+            if (schema != null && tab == 0) {
+                val reason = schema.readOnlyReason
+                Text(reason ?: if (state.writable) "编辑模式 · 双击字段修改，预览后提交" else "当前只读 · 点击开启编辑后双击字段", style = MaterialTheme.typography.bodySmall, color = if (reason != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (result.totalColumns > result.columns.size) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Text("字段 ${result.columnOffset + 1}–${result.columnOffset + result.columns.size} / ${result.totalColumns}", Modifier.weight(1f))
+                if (schema != null) {
+                    TextButton(enabled = !state.busy && result.columnOffset > 0, onClick = { model.page(schema.table, result.offset, result.columnOffset - 64) }) { Text("上一组字段") }
+                    TextButton(enabled = !state.busy && result.columnOffset + 64 < result.totalColumns, onClick = { model.page(schema.table, result.offset, result.columnOffset + 64) }) { Text("下一组字段") }
+                }
+            }
+            if (result.rows.isEmpty()) Text("没有记录。")
+            ResultGrid(result, state, settings, { selected = it }, { row, inputs -> model.preview(MutationKind.UPDATE, row, inputs) })
+        } else if (tab == 0) {
+            Text("选择表后浏览或编辑数据，也可以切换到 SQL 编辑器编写查询。")
+            Button(onClick = { showObjects = true }) { Text("选择表") }
+        }
+    }
+    if (schema != null && tab == 0) {
+        HorizontalDivider()
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(enabled = !state.busy && result.offset > 0, onClick = { model.page(schema.table, (result.offset - 100).coerceAtLeast(0), result.columnOffset) }) { Text("上一页") }
+            TextButton(enabled = !state.busy, onClick = { model.page(schema.table, result.offset, result.columnOffset) }) { Text("刷新") }
+            TextButton(enabled = !state.busy && result.hasMore && result.stableOrder && result.offset + result.rows.size <= 1_000_000, onClick = { model.page(schema.table, result.offset + result.rows.size, result.columnOffset) }) { Text("下一页") }
+            if (state.writable) {
+                val canEdit = schema.readOnlyReason == null && !state.busy
+                TextButton(enabled = canEdit, onClick = { editing = MutationKind.INSERT }) { Text("新增") }
                 TextButton(enabled = canEdit && selected != null, onClick = { editing = MutationKind.UPDATE }) { Text("修改选中行") }
                 TextButton(enabled = canEdit && selected != null, onClick = { model.preview(MutationKind.DELETE, selected, emptyMap()) }) { Text("删除选中行") }
             }
-            editing?.let { kind -> EditForm(schema, result, kind, selected, { editing = null }) { values ->
-                editing = null; model.preview(kind, selected, values)
-            } }
         }
-        selected?.let { row -> Text("记录详情（第 ${result.offset + row + 1} 行）", style = MaterialTheme.typography.titleMedium)
-            result.columns.forEachIndexed { index, column -> Text("${column.name} (${column.typeName})：${Values.display(result.rows[row][index]).ifEmpty { "（空字符串）" }}") }
-        }
+        editing?.let { kind -> EditForm(schema, result, kind, selected, { editing = null }) { values -> editing = null; model.preview(kind, selected, values) } }
     }
-}
-
-@Composable
-private fun Choice(label: String, values: List<String>, selected: String, enabled: Boolean, tag: String, onSelect: (String) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    Box { OutlinedButton(modifier = Modifier.fillMaxWidth().testTag(tag), enabled = enabled && values.isNotEmpty(), onClick = { expanded = true }) { Text("$label：$selected") }
-        DropdownMenu(expanded, { expanded = false }, modifier = Modifier.heightIn(max = 320.dp)) {
-            values.forEach { value -> DropdownMenuItem(text = { Text(value) }, onClick = { expanded = false; onSelect(value) }) }
-        }
-    }
+    if (allowWrite) AlertDialog(onDismissRequest = { allowWrite = false }, title = { Text(if (state.production) "开启生产库编辑？" else "开启本次连接编辑？") },
+        text = { Text("${state.connectionName} / ${state.catalog} / ${state.schema}\n每次修改需预览并确认，提交即写入服务器。切库、断开后恢复只读。无主键、触发器或不支持的类型仍不能编辑。") },
+        confirmButton = { TextButton(enabled = !state.busy, onClick = { allowWrite = false; model.writable(true) }) { Text("确认开启编辑") } }, dismissButton = { TextButton(onClick = { allowWrite = false }) { Text("取消") } })
+    if (savingQuery) AlertDialog(onDismissRequest = { savingQuery = false }, title = { Text("收藏 SELECT 草稿") }, text = {
+        OutlinedTextField(queryName, { queryName = it }, label = { Text("查询名称") }, singleLine = true)
+    }, confirmButton = { TextButton(enabled = queryName.isNotBlank() && queryName.length <= 80, onClick = { model.saveQuery(queryName); savingQuery = false }) { Text("保存收藏") } }, dismissButton = { TextButton(onClick = { savingQuery = false }) { Text("取消") } })
 }
 
 @Composable

@@ -14,7 +14,7 @@ data class ColumnDef(val name: String, val jdbcType: Int, val typeName: String, 
     val editable get() = !identity && !generated && !rowVersion && jdbcType in EDITABLE_TYPES
     companion object {
         val EDITABLE_TYPES = setOf(Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR,
-            Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.DECIMAL, Types.NUMERIC, Types.BIT, Types.BOOLEAN)
+            Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.DECIMAL, Types.NUMERIC, Types.BIT, Types.BOOLEAN, Types.DATE, Types.TIME, Types.TIMESTAMP, -155)
     }
 }
 data class TableSchema(val table: TableRef, val columns: List<ColumnDef>, val hasTriggers: Boolean, val readOnlyOverride: String? = null) {
@@ -74,6 +74,7 @@ object Values {
                     if (input.text.length > minOf(column.size, 4000)) throw WorkspaceRejected("${column.name} 超过字段长度或本版 4000 字符限制")
                     DbValue.Text(input.text)
                 }
+                Types.DATE, Types.TIME, Types.TIMESTAMP, -155 -> SqlServerTemporal.parse(column, input.text)
                 Types.BIT, Types.BOOLEAN -> when (input.text.lowercase()) {
                     "true", "1" -> DbValue.Bool(true)
                     "false", "0" -> DbValue.Bool(false)

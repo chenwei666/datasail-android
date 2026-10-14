@@ -32,7 +32,20 @@ class MainActivity : ComponentActivity() {
         setContent {
             val preferences by workspace.settings.collectAsStateWithLifecycle()
             val dark = when (preferences.theme) { ThemeMode.SYSTEM -> isSystemInDarkTheme(); ThemeMode.LIGHT -> false; ThemeMode.DARK -> true }
-            MaterialTheme(colorScheme = if (dark) darkColorScheme(primary = Color(0xFFADC9FF), onPrimary = Color(0xFF10315F), secondaryContainer = Color(0xFF293C56), onSecondaryContainer = Color(0xFFD2E4FF), surface = Color(0xFF10151C), background = Color(0xFF10151C)) else lightColorScheme(primary = Color(0xFF285DA3), onPrimary = Color.White, primaryContainer = Color(0xFFD6E5FC), secondaryContainer = Color(0xFFE3ECF8), onSecondaryContainer = Color(0xFF183755), surface = Color(0xFFFFFFFF), background = Color(0xFFF3F5F8), surfaceContainer = Color(0xFFEDF1F7), outlineVariant = Color(0xFFD7DEE8))) {
+            val colors = if (dark) darkColorScheme(
+                primary = Color(0xFFADC9FF), onPrimary = Color(0xFF10315F), primaryContainer = Color(0xFF243D60),
+                secondaryContainer = Color(0xFF293C56), onSecondaryContainer = Color(0xFFD2E4FF),
+                surface = Color(0xFF10151C), background = Color(0xFF10151C), onSurface = Color(0xFFE3EAF4), onSurfaceVariant = Color(0xFFA9B7C9),
+                surfaceContainerLowest = Color(0xFF0C1118), surfaceContainerLow = Color(0xFF151D28),
+                surfaceContainer = Color(0xFF1B2634), surfaceContainerHigh = Color(0xFF233143), surfaceContainerHighest = Color(0xFF2A3A4E), outlineVariant = Color(0xFF36475B)
+            ) else lightColorScheme(
+                primary = Color(0xFF285DA3), onPrimary = Color.White, primaryContainer = Color(0xFFD6E5FC),
+                secondaryContainer = Color(0xFFE3ECF8), onSecondaryContainer = Color(0xFF183755),
+                surface = Color.White, background = Color(0xFFF3F5F8), onSurface = Color(0xFF182231), onSurfaceVariant = Color(0xFF526173),
+                surfaceContainerLowest = Color.White, surfaceContainerLow = Color(0xFFF7F9FC),
+                surfaceContainer = Color(0xFFEDF1F7), surfaceContainerHigh = Color(0xFFE7EDF5), surfaceContainerHighest = Color(0xFFDDE5F0), outlineVariant = Color(0xFFD7DEE8)
+            )
+            MaterialTheme(colorScheme = colors) {
                 WorkspaceApp(workspace, model, ai)
             }
         }

@@ -1,0 +1,58 @@
+versions/V0.9.1/apk/DataSail-V0.9.1-debug.apk: 1 file pushed, 0 skipped. 14.0 MB/s (25574067 bytes in 1.745s)
+Performing Push Install
+Success
+    versionCode=15 minSdk=26 targetSdk=36
+    versionName=0.9.1
+app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk: 1 file pushed, 0 skipped. 2298.7 MB/s (1303081 bytes in 0.001s)
+Performing Push Install
+Success
+
+com.example.datasail.UpgradeStateSeedTest:.
+
+Time: 0.753
+
+OK (1 test)
+
+
+app/build/outputs/apk/debug/app-debug.apk: 1 file pushed, 0 skipped. 71.7 MB/s (24167392 bytes in 0.322s)
+Performing Push Install
+Success
+    versionCode=16 minSdk=26 targetSdk=36
+    versionName=0.10.0
+synthetic upgrade marker
+app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk: 1 file pushed, 0 skipped. 3611.9 MB/s (1303223 bytes in 0.000s)
+Performing Push Install
+Success
+
+com.example.datasail.SmokeTest:..
+Error in launchShowsHonestNavigation(com.example.datasail.SmokeTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '开发占位包名：com.example.datasail
+首次发行前需确认正式身份与签名。' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.SmokeTest.launchShowsHonestNavigation(SmokeTest.kt:29)
+
+com.example.datasail.UpgradeTest:.
+com.example.datasail.UpgradeStateVerifyTest:.
+
+Time: 39.48
+There was 1 failure:
+1) launchShowsHonestNavigation(com.example.datasail.SmokeTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '开发占位包名：com.example.datasail
+首次发行前需确认正式身份与签名。' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:81)
+	at com.example.datasail.SmokeTest.launchShowsHonestNavigation(SmokeTest.kt:29)
+
+FAILURES!!!
+Tests run: 5,  Failures: 1
+
+
