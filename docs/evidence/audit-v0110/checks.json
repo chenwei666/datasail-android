@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-14",
+  "sourceCommit": "88cb0bbb4fd9030acf7a6035d586f4221db760c0",
+  "unitTests": {
+    "core": {
+      "tests": 85,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "driver": {
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "unitCommand": "./gradlew :core:test :sqlserver-android:test :app:testDebugUnitTest --rerun-tasks --console=plain",
+  "unitExitCode": 0,
+  "buildCommand": "./gradlew :core:test :sqlserver-android:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --console=plain",
+  "buildExitCode": 0,
+  "buildNote": "Initial build and lint check reused up-to-date outputs; subsequent unit command forced all tasks to execute.",
+  "notRun": [
+    "Android device tests",
+    "database integration tests",
+    "Release/R8 build",
+    "live AI services"
+  ],
+  "diagnostic": "FilterBoundaryProbe.java: reproduces current limitations, not a fix regression test."
+}

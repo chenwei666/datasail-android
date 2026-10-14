@@ -32,7 +32,7 @@ data class WorkspaceUiState(val busy: Boolean = false, val connected: Boolean = 
     val indices: List<String> = emptyList(), val searchPage: SearchPage? = null, val mapping: IndexMapping? = null,
     val collections: List<String> = emptyList(), val documents: DocumentPage? = null,
     val keys: KeyScan? = null, val keyContent: KeyContent? = null,
-    val navigationIssues: List<String> = emptyList(), val tables: List<TableRef> = emptyList(), val result: ResultPage? = null, val preview: MutationPreview? = null,
+    val resultStale: Boolean = false, val selectedSchema: TableSchema? = null, val navigationIssues: List<String> = emptyList(), val tables: List<TableRef> = emptyList(), val result: ResultPage? = null, val preview: MutationPreview? = null,
     val message: String = "请选择已授权的数据库连接；默认只读。")
 // Operation completion is authoritative even when a later step in that operation failed.
 internal fun WorkspaceUiState.withSession(actual: SessionSnapshot): WorkspaceUiState {
@@ -42,6 +42,7 @@ internal fun WorkspaceUiState.withSession(actual: SessionSnapshot): WorkspaceUiS
         schemas = if (targetChanged) emptyList() else schemas,
         tables = if (targetChanged) emptyList() else tables,
         result = if (targetChanged) null else result,
+        selectedSchema = if (targetChanged) null else selectedSchema,
         preview = null)
 }
 class WorkspaceViewModel(application: Application) : AndroidViewModel(application) {
@@ -64,6 +65,8 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     private val queryStore = QueryStore(application)
     private val queryList = MutableStateFlow<List<SavedQuery>>(emptyList())
     val queries = queryList.asStateFlow()
+    internal val memory = WorkspaceMemory()
+    private var lastConnection: SavedConnection? = null
     private val queryText = MutableStateFlow("SELECT 1 AS 示例")
     val draftSql = queryText.asStateFlow()
     private var queryStorageValid = false
@@ -130,7 +133,10 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             val table = navigation.tables.singleOrNull { it.schema == value.schema && it.name == value.name && it.view == value.view }
                 ?: throw WorkspaceRejected("收藏对象不存在或不可见，请刷新并检查 Schema / 权限。未打开其它同名表。")
             navigation to session.page(table)
-        }) { navigation(it.first).copy(result = it.second, message = "已打开收藏表") }
+        }) {
+            memory.remember(connectionKey, it.second)
+            navigation(it.first).copy(result = it.second, selectedSchema = it.second.tableSchema, message = "已打开收藏表")
+        }
         return true
     }
     fun updateSettings(value: AppSettings) {
@@ -175,10 +181,17 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             finally { password.fill('\u0000'); saving = false }
         }
     }
-    fun editSql(value: String) { if (value.length <= 16000) queryText.value = value }
+    fun editSql(value: String) { if (value.length <= 16000) { queryText.value = value; memory.draft(mutable.value.connectionKey, value) } }
+    fun clearWorkspaceMemory() { memory.clear(); message("已清除本次运行的工作状态与查询历史") }
+    fun reconnect(needsPassword: () -> Unit) {
+        val old = lastConnection ?: return
+        val current = connections.value.firstOrNull { tableConnectionKey(it) == tableConnectionKey(old) } ?: old
+        val location = memory.last(tableConnectionKey(current))
+        connectSaved(if (current.kind.isSql && current.kind != DatabaseKind.SQLITE && location != null) current.copy(database = location.table.catalog) else current, needsPassword)
+    }
     fun useQuery(query: SavedQuery): Boolean {
         if (!mutable.value.connected || mutable.value.kind != query.kind) { message("请先连接同类型数据库，再载入草稿"); return false }
-        queryText.value = query.sql; message("已载入草稿，请检查当前目标后手动执行"); return true
+        editSql(query.sql); message("已载入草稿，请检查当前目标后手动执行"); return true
     }
     fun saveQuery(name: String) {
         if (!mutable.value.connected || !mutable.value.kind.isSql) return
@@ -314,9 +327,11 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             password.fill('\u0000'); message("连接信息无效，请检查主机、端口、库名和用户名"); return
         }
         val credentials = Credentials(password); password.fill('\u0000')
+        memory.draft(mutable.value.connectionKey, queryText.value)
+        lastConnection = connection
         mutable.value = WorkspaceUiState(busy = true, aiGeneration = epoch + 1, allowExternalAi = connection.allowExternalAi, connectionKey = tableConnectionKey(connection), connectionName = connection.name, target = if (profile.kind == DatabaseKind.SQLITE) "SQLite · ${connection.name}" else "${profile.kind.label} · ${profile.host}:${profile.port}", catalog = if (profile.kind == DatabaseKind.SQLITE) "main" else profile.database,
             kind = profile.kind, production = connection.production, message = if (profile.kind == DatabaseKind.SQLITE) "正在打开只读副本…" else "正在校验 TLS 并登录…")
-        queryText.value = "SELECT 1 AS 示例"
+        queryText.value = memory.draft(tableConnectionKey(connection))
         val ticket = ++epoch
         runner.disconnect(); keyValueRunner.disconnect(); documentRunner.disconnect(); searchRunner.disconnect()
         if (profile.kind.isSearch) {
@@ -356,7 +371,7 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             if (ticket != epoch) return@launch
             result.fold(onSuccess = {
                 mutable.value = mutable.value.copy(busy = false, connected = true, message = "已连接，只读模式")
-                refreshNavigation()
+                restoreWorkspace()
             }, onFailure = { failure(it) })
         } }
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后手动重试") }
@@ -366,11 +381,14 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         if (!mutable.value.connected && !mutable.value.busy) return
         epoch++
         runner.disconnect(); keyValueRunner.disconnect(); documentRunner.disconnect(); searchRunner.disconnect()
-        mutable.value = WorkspaceUiState(message = "已请求取消并断开；未完成操作的执行结果未知，需核对。不会自动重试。")
+        val old = mutable.value
+        memory.draft(old.connectionKey, queryText.value)
+        mutable.value = WorkspaceUiState(connectionKey = old.connectionKey, connectionName = old.connectionName,
+            message = if (old.busy) "已请求取消并断开；未完成操作的执行结果未知，需核对。不会自动重试。" else "已断开；本次运行的草稿与表视图已保留，可重新连接恢复。")
     }
     private fun WorkspaceUiState.navigation(value: SqlNavigation) = copy(
         catalogs = value.catalogs, schemas = value.schemas, schema = value.schema ?: "—",
-        tables = value.tables, result = null, navigationIssues = value.issues,
+        tables = value.tables, result = null, selectedSchema = null, resultStale = false, navigationIssues = value.issues,
         message = if (value.issues.isEmpty()) "已加载数据库对象，请点击表或视图查看数据" else "已连接，但部分对象列表未能加载，请查看数据库导航提示")
     fun refreshNavigation() {
         val preferred = mutable.value.schema.takeUnless { it == "—" }
@@ -378,27 +396,60 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
     }
     fun switchCatalog(name: String) {
         if (mutable.value.busy) return
-        mutable.value = mutable.value.copy(tables = emptyList(), schemas = emptyList(), schema = "—", result = null, navigationIssues = emptyList())
+        mutable.value = mutable.value.copy(tables = emptyList(), schemas = emptyList(), schema = "—", result = null, selectedSchema = null, resultStale = false, navigationIssues = emptyList())
         execute({ s -> s.switchCatalog(name); SqlNavigator.load(s) }) { navigation(it) }
     }
     fun tables(schema: String) {
         if (mutable.value.busy) return
-        mutable.value = mutable.value.copy(schema = schema, tables = emptyList(), result = null, navigationIssues = emptyList())
+        mutable.value = mutable.value.copy(schema = schema, tables = emptyList(), result = null, selectedSchema = null, resultStale = false, navigationIssues = emptyList())
         execute({ SqlNavigator.load(it, schema) }) { navigation(it) }
     }
-    fun page(table: TableRef, offset: Int = 0, columnOffset: Int = 0, view: TableView = mutable.value.result?.takeIf { it.tableSchema?.table == table }?.view ?: TableView()) = execute({ it.page(table, offset, columnOffset, view) }) { copy(result = it) }
-    internal fun aiTableAction(scope: String, table: TableRef, action: AiTableAction, allowWrites: Boolean) {
-        if (!mutable.value.connected || mutable.value.busy || !aiAllowed(this) || aiScope(this) != scope || mutable.value.result?.tableSchema?.table != table) return
-        execute({ AiTableActions.prepare(it, table, action, allowWrites) }) {
-            copy(result = it.page, preview = it.preview, message = if (it.preview == null) "AI 查询完成：${it.page.rows.size} 行${if (it.page.hasMore) "（还有更多）" else ""}" else "AI 已生成单条写入预览；确认后才会提交")
+    private fun restoreWorkspace() {
+        val location = memory.last(mutable.value.connectionKey)
+        execute({ session ->
+            val nav = SqlNavigator.load(session, location?.table?.schema)
+            val table = nav.tables.firstOrNull { it == location?.table }
+            val result = if (table != null) runCatching { session.page(table, location!!.offset, location.columnOffset, location.view) } else null
+            result?.exceptionOrNull()?.let { error -> if (Failures.classify(error).kind in setOf(ErrorKind.NETWORK, ErrorKind.TIMEOUT, ErrorKind.CANCELLED, ErrorKind.UNSUPPORTED, ErrorKind.TLS) || session.isClosed()) throw error }
+            Triple(nav, result?.getOrNull(), result?.exceptionOrNull())
+        }) {
+            val next = navigation(it.first)
+            if (it.second != null) next.copy(result = it.second, selectedSchema = it.second!!.tableSchema, message = "已恢复上次表视图；当前只读")
+            else if (it.third != null) {
+                location?.let { old -> memory.forgetView(connectionKey, old.table) }
+                next.copy(message = "已连接；上次表视图恢复失败，已清除该表的记忆条件，请重新选择表")
+            } else next
         }
     }
-    fun query(sql: String) = execute({ it.select(sql) }) { copy(result = it) }
+    fun page(table: TableRef, offset: Int = 0, columnOffset: Int = 0, view: TableView = mutable.value.result?.takeIf { it.tableSchema?.table == table }?.view ?: memory.location(mutable.value.connectionKey, table)?.view ?: TableView()) = execute({ it.page(table, offset, columnOffset, view) }, onFailure = { error ->
+        if (error is WorkspaceRejected || Failures.classify(error).kind == ErrorKind.SQL) memory.forgetView(mutable.value.connectionKey, table)
+    }) {
+        memory.remember(connectionKey, it)
+        copy(result = it, selectedSchema = it.tableSchema, resultStale = false)
+    }
+    internal fun aiTableAction(scope: String, table: TableRef, action: AiTableAction, allowWrites: Boolean) {
+        if (!mutable.value.connected || mutable.value.busy || mutable.value.resultStale || !aiAllowed(this) || aiScope(this) != scope || mutable.value.result?.tableSchema?.table != table) return
+        execute({ AiTableActions.prepare(it, table, action, allowWrites) }) {
+            memory.remember(connectionKey, it.page)
+            copy(result = it.page, selectedSchema = it.page.tableSchema, resultStale = false, preview = it.preview, message = if (it.preview == null) "AI 查询完成：${it.page.rows.size} 行${if (it.page.hasMore) "（还有更多）" else ""}" else "AI 已生成单条写入预览；确认后才会提交")
+        }
+    }
+    fun query(sql: String) {
+        val started = android.os.SystemClock.elapsedRealtime()
+        execute({ it.select(sql) }) {
+            memory.record(connectionKey, QueryRun(sql, catalog, schema, it.rows.size, android.os.SystemClock.elapsedRealtime() - started))
+            copy(result = it, resultStale = false)
+        }
+    }
     fun writable(enabled: Boolean) = execute({ it.setWritable(enabled) }) { copy(writable = enabled) }
-    fun preview(kind: MutationKind, row: Int?, inputs: Map<String, CellInput>) = execute({ it.preview(kind, row, inputs) }) { copy(preview = it) }
+    fun preview(kind: MutationKind, row: Int?, inputs: Map<String, CellInput>) {
+        if (mutable.value.resultStale) { message("上次操作失败，请刷新数据后再编辑"); return }
+        execute({ it.preview(kind, row, inputs) }) { copy(preview = it) }
+    }
     fun discardPreview() = execute({ it.discardPreview() }) { copy(preview = null) }
     private data class ConfirmedPage(val mutation: MutationResult, val page: ResultPage?, val refreshFailed: Boolean)
     fun confirm(token: String) {
+        if (mutable.value.resultStale || mutable.value.preview?.token != token) { message("确认已失效，请刷新并重新预览"); return }
         val original = mutable.value.result
         val schema = original?.tableSchema
         execute({ session ->
@@ -411,19 +462,20 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
             }
             ConfirmedPage(mutation, refreshed, failed)
         }) {
-            copy(preview = null, result = it.page, connected = connected && !it.refreshFailed && it.mutation.status != MutationStatus.UNKNOWN,
+            it.page?.let { page -> memory.remember(connectionKey, page) }
+            copy(preview = null, result = it.page, selectedSchema = it.page?.tableSchema ?: selectedSchema, resultStale = false, connected = connected && !it.refreshFailed && it.mutation.status != MutationStatus.UNKNOWN,
                 writable = writable && !it.refreshFailed && it.mutation.status != MutationStatus.UNKNOWN,
                 message = it.mutation.message + if (it.refreshFailed) "；刷新失败，已断开。请重新连接核对，不会重放修改。" else "")
         }
     }
-    private fun <T> execute(operation: (SqlWorkspaceSession) -> T, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
+    private fun <T> execute(operation: (SqlWorkspaceSession) -> T, onFailure: (Throwable) -> Unit = {}, update: WorkspaceUiState.(T) -> WorkspaceUiState) {
         if (mutable.value.busy) return
         mutable.value = mutable.value.copy(busy = true, preview = null)
         val ticket = epoch
         val accepted = runner.execute({ reply -> viewModelScope.launch {
             if (ticket != epoch) return@launch
             mutable.value = mutable.value.withSession(reply.session)
-            reply.result.fold(onSuccess = { mutable.value = mutable.value.copy(busy = false, message = "操作完成").update(it) }, onFailure = ::failure)
+            reply.result.fold(onSuccess = { mutable.value = mutable.value.copy(busy = false, message = "操作完成").update(it) }, onFailure = { onFailure(it); failure(it) })
         } }, operation)
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后重试") }
     }
@@ -469,12 +521,9 @@ class WorkspaceViewModel(application: Application) : AndroidViewModel(applicatio
         if (!accepted) { mutable.value = mutable.value.copy(busy = false); message("上一操作仍在清理，请稍后重试") }
     }
     private fun failure(error: Throwable) {
-        val safe = Failures.classify(error)
-        val lost = safe.kind in setOf(ErrorKind.TIMEOUT, ErrorKind.NETWORK, ErrorKind.CANCELLED, ErrorKind.UNSUPPORTED)
-        mutable.value = mutable.value.copy(busy = false, preview = null, result = null, documents = null, searchPage = null, mapping = null, keys = null, keyContent = null,
-            connected = mutable.value.connected && !lost, writable = mutable.value.writable && !lost,
-            message = if (error is WorkspaceRejected) error.explanation else if (safe.kind == ErrorKind.TLS) "TLS 校验失败。请在连接页点击“获取并核对服务器证书”，或导入 CA；已信任证书可能已变更或过期。" else safe.description)
+        mutable.value = mutable.value.afterFailure(error)
     }
+
     override fun onCleared() {
         certificateReview?.close(); discoveryRunner.close(); runner.close(); keyValueRunner.close(); documentRunner.close(); searchRunner.close(); super.onCleared() }
 }

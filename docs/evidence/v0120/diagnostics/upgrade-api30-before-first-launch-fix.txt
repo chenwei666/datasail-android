@@ -1,0 +1,42 @@
+versions/V0.11.0/apk/DataSail-V0.11.0-debug.apk: 1 file pushed, 0 skipped. 5.5 MB/s (24848526 bytes in 4.311s)
+Performing Push Install
+Success
+    versionCode=17 minSdk=26 targetSdk=36
+    versionName=0.11.0
+Exact com.example.datasail.test APK already installed.
+
+com.example.datasail.UpgradeStateSeedTest:.
+
+Time: 1.883
+
+OK (1 test)
+
+
+app/build/outputs/apk/debug/app-debug.apk: 1 file pushed, 0 skipped. 41.7 MB/s (24912473 bytes in 0.569s)
+Performing Push Install
+Success
+    versionCode=18 minSdk=26 targetSdk=36
+    versionName=0.12.0
+synthetic upgrade marker
+Exact com.example.datasail.test APK already installed.
+
+com.example.datasail.SmokeTest:..
+Error in launchShowsHonestNavigation(com.example.datasail.SmokeTest):
+java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '请在连接页选择数据库并连接，然后浏览表或执行查询。' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.example.datasail.SmokeTest.launchShowsHonestNavigation(SmokeTest.kt:24)
+
+com.example.datasail.UpgradeTest:.
+com.example.datasail.UpgradeStateVerifyTest:.
+
+Time: 57.045
+There was 1 failure:
+1) launchShowsHonestNavigation(com.example.datasail.SmokeTest)
+java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '请在连接页选择数据库并连接，然后浏览表或执行查询。' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.example.datasail.SmokeTest.launchShowsHonestNavigation(SmokeTest.kt:24)
+
+FAILURES!!!
+Tests run: 5,  Failures: 1
+
+

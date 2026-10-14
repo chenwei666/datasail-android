@@ -10,6 +10,27 @@ class TableActionsTest {
         ColumnDef("id", Types.BIGINT, "bigint", false, 19, 0, true, false, 1),
         ColumnDef("name]x", Types.NVARCHAR, "nvarchar", true, 120, 0, false, false),
         ColumnDef("amount", Types.DECIMAL, "decimal", true, 24, 8, false, false)), false)
+    @Test fun unsignedIntegerFiltersPreserveFullRangeAndRejectOverflow() {
+        val unsigned = schema.copy(columns = listOf(schema.columns.first().copy(typeName = "BIGINT UNSIGNED", size = 20)))
+        val maximum = "18446744073709551615"
+        assertEquals(java.math.BigDecimal(maximum), TableViews.compile(unsigned, TableView(listOf(ColumnFilter("id", FilterOperator.EQ, maximum))), SqlNames::quote).parameters.single())
+        for (bad in listOf("-1", "18446744073709551616", "1.5")) assertThrows(WorkspaceRejected::class.java) {
+            TableViews.compile(unsigned, TableView(listOf(ColumnFilter("id", FilterOperator.EQ, bad))), SqlNames::quote)
+        }
+        assertThrows(WorkspaceRejected::class.java) { TableViews.compile(schema, TableView(listOf(ColumnFilter("id", FilterOperator.EQ, maximum))), SqlNames::quote) }
+    }
+    @Test fun unsupportedSqlServerSortAndComparisonAreRejectedLocally() {
+        val text = schema.copy(columns = listOf(ColumnDef("body", Types.LONGVARCHAR, "text", true, 5000, 0, false, false)))
+        assertThrows(WorkspaceRejected::class.java) { TableViews.compile(text, TableView(sorts = listOf(ColumnSort("body"))), SqlNames::quote, sqlServer = true) }
+        assertThrows(WorkspaceRejected::class.java) { TableViews.compile(text, TableView(listOf(ColumnFilter("body", FilterOperator.EQ, "x"))), SqlNames::quote, sqlServer = true) }
+        assertTrue(TableViews.compile(text, TableView(listOf(ColumnFilter("body", FilterOperator.CONTAINS, "x"))), SqlNames::quote, sqlServer = true).where.contains("LIKE"))
+    }
+    @Test fun editingOneRangeConditionReplacesItEvenWhenOperatorChanges() {
+        val lower = ColumnFilter("id", FilterOperator.GT, "10")
+        val upper = ColumnFilter("id", FilterOperator.LE, "20")
+        val next = ColumnFilter("id", FilterOperator.GE, "12")
+        assertEquals(listOf(upper, next), TableViews.replaceFilter(TableView(listOf(lower, upper)), lower, next).filters)
+    }
     @Test fun literalFiltersStayBoundAndSortingHasStableKeyTieBreaker() {
         val literal = "x' OR 1=1 -- !%_["
         val compiled = TableViews.compile(schema, TableView(listOf(ColumnFilter("name]x", FilterOperator.CONTAINS, literal)), listOf(ColumnSort("amount", true))), SqlNames::quote)

@@ -1,0 +1,3 @@
+CONFIRMED: valid BIGINT UNSIGNED maximum rejected: id 筛选值格式不正确，请按字段类型输入
+CONFIRMED: compiler accepts SQL Server text ORDER BY:  ORDER BY [body] ASC,[id] ASC
+No database connection used; server rejection of text sorting not exercised here.

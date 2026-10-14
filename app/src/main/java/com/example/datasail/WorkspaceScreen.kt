@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
@@ -26,12 +27,13 @@ import java.util.UUID
 @Composable
 internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel, ai: AiViewModel) {
     val state by model.state.collectAsStateWithLifecycle()
-    var page by remember { mutableStateOf("连接") }
+    var page by rememberSaveable { mutableStateOf("连接") }
     val contentScroll = rememberScrollState()
     val focus = androidx.compose.ui.platform.LocalFocusManager.current
     val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     LaunchedEffect(page) { focus.clearFocus(); keyboard?.hide(); contentScroll.scrollTo(0) }
-    LaunchedEffect(state.connected) { if (state.connected) page = "工作台" }
+    var wasConnected by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(state.connected) { if (state.connected && !wasConnected) page = "工作台"; wasConnected = state.connected }
     var exportPreview by remember { mutableStateOf<Pair<String, ResultPage>?>(null) }
     var exportSnapshot by remember { mutableStateOf<ResultPage?>(null) }
     val exporter = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
@@ -69,7 +71,7 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel, ai: 
         Column(Modifier.weight(1f).fillMaxWidth().then(if (page == "工作台") Modifier else Modifier.verticalScroll(contentScroll)).padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             when (page) {
                 "连接" -> Connections(model, state)
-                "工作台" -> Workbench(model, state, ai) { exportPreview = state.target + " / " + state.catalog to it }
+                "工作台" -> Workbench(model, state, ai, { page = "连接" }) { exportPreview = state.target + " / " + state.catalog to it }
                 "AI 助手" -> AiScreen(ai, model, { page = "AI 设置" }) { page = "工作台" }
                 "AI 设置" -> AiSettingsScreen(ai, { page = "设置" }, { page = "AI 助手" })
                 "收藏" -> QueryLibrary(model, state) { page = "工作台" }
@@ -100,14 +102,18 @@ internal fun WorkspaceApp(model: WorkspaceViewModel, probe: ProbeViewModel, ai: 
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, ai: AiViewModel, export: (ResultPage) -> Unit) {
-    if (!state.connected) { Text("请在连接页选择数据库并连接，然后浏览表或执行查询。"); return }
+private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiState, ai: AiViewModel, openConnections: () -> Unit, export: (ResultPage) -> Unit) {
+    if (!state.connected) {
+        Text(if (state.connectionKey.isEmpty()) "请在连接页选择数据库并连接，然后浏览表或执行查询。" else "连接已断开。本次运行的草稿与表视图保留；重新连接后读取最新数据。")
+        if (state.connectionKey.isNotEmpty()) Button(enabled = !state.busy, onClick = { model.reconnect(openConnections) }) { Text("重新连接并恢复工作台") }
+        TextButton(onClick = openConnections) { Text("选择其他连接") }; return
+    }
     if (state.kind.isSearch || state.kind.isDocument || state.kind.isKeyValue) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
             when { state.kind.isSearch -> SearchWorkbench(model, state); state.kind.isDocument -> DocumentWorkbench(model, state); else -> KeyValueWorkbench(model, state) }
         }; return
     }
-    var tab by remember { mutableIntStateOf(if (state.message.startsWith("已载入草稿")) 1 else 0) }
+    var tab by rememberSaveable(state.connectionKey) { mutableIntStateOf(if (state.message.startsWith("已载入草稿")) 1 else 0) }
     LaunchedEffect(state.message) { if (state.message.startsWith("已载入草稿")) tab = 1 }
     val paneScroll = remember(tab, state.result?.tableSchema?.table, state.result?.offset) { androidx.compose.foundation.ScrollState(0) }
     val paneFocus = androidx.compose.ui.platform.LocalFocusManager.current
@@ -128,6 +134,11 @@ private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiS
     val settings by model.settings.collectAsStateWithLifecycle()
     val result = state.result
     val schema = result?.tableSchema
+    var gridOptions by remember(state.connectionKey, schema?.table) { mutableStateOf(schema?.let { model.memory.grid(state.connectionKey, it.table) } ?: GridOptions()) }
+    var history by remember { mutableStateOf(false) }
+    val actions: @Composable () -> Unit = {
+        if (schema != null && tab == 0) TableActionBar(model, state, result, selected, { if (state.writable) model.writable(false) else allowWrite = true }) { editing = it }
+    }
     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedButton(onClick = { picker = "数据库" }, enabled = !state.busy, modifier = Modifier.testTag("catalog-picker")) { Text("${state.catalog} ▾") }
         OutlinedButton(onClick = { picker = "Schema" }, enabled = !state.busy, modifier = Modifier.testTag("schema-picker")) { Text("${state.schema} ▾") }
@@ -160,16 +171,18 @@ private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiS
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(enabled = !state.busy, onClick = { model.query(sql) }) { Text("执行查询") }
                 TextButton(enabled = !state.busy, onClick = { savingQuery = true; queryName = "" }) { Text("收藏查询") }
+                TextButton(onClick = { history = true }) { Text("查询历史") }
             }
             Text("单条只读查询；写入请使用数据页的编辑模式。", style = MaterialTheme.typography.bodySmall)
         }
         if (tab == 2) {
-            if (schema == null) Text("请先选择一张表。") else { Text(schema.table.label, style = MaterialTheme.typography.titleMedium); TableStructurePanel(schema) }
+            val structure = state.selectedSchema
+            if (structure == null) Text("请先选择一张表。") else { Text(structure.table.label, style = MaterialTheme.typography.titleMedium); TableStructurePanel(structure) }
         } else if (result != null) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(schema?.table?.label ?: "查询结果", style = MaterialTheme.typography.titleMedium)
-                    Text("${result.offset + 1}–${result.offset + result.rows.size} 行 · ${result.totalColumns} 列", style = MaterialTheme.typography.bodySmall)
+                    Text("${if (result.rows.isEmpty()) 0 else result.offset + 1}–${result.offset + result.rows.size} 行 · ${result.totalColumns} 列", style = MaterialTheme.typography.bodySmall)
                 }
                 if (schema != null) TextButton(enabled = !state.busy && state.kind == DatabaseKind.SQL_SERVER, modifier = Modifier.testTag("allow-session-write"),
                     onClick = { if (state.writable) model.writable(false) else allowWrite = true }) { Text(if (state.writable) "退出编辑" else "开启编辑") }
@@ -195,33 +208,49 @@ private fun ColumnScope.Workbench(model: WorkspaceViewModel, state: WorkspaceUiS
                 }
             }
             if (result.rows.isEmpty()) Text("没有记录。")
-            ResultGrid(result, state, settings, { selected = it }, { row, inputs -> model.preview(MutationKind.UPDATE, row, inputs) }, changeView = result.tableSchema?.let { schema -> { view -> model.page(schema.table, view = view) } })
+            ResultGrid(result, state, settings, { selected = it }, { row, inputs -> model.preview(MutationKind.UPDATE, row, inputs) }, changeView = result.tableSchema?.let { schema -> { view -> model.page(schema.table, view = view) } },
+                gridOptions = gridOptions, onGridOptions = { options -> gridOptions = options; schema?.let { model.memory.grid(state.connectionKey, it.table, options) } }, actions = actions)
         } else if (tab == 0) {
             Text("选择表后浏览或编辑数据，也可以切换到 SQL 编辑器编写查询。")
             Button(onClick = { showObjects = true }) { Text("选择表") }
         }
     }
-    if (schema != null && tab == 0) {
-        HorizontalDivider()
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(enabled = !state.busy && result.offset > 0, onClick = { model.page(schema.table, (result.offset - 100).coerceAtLeast(0), result.columnOffset) }) { Text("上一页") }
-            TextButton(enabled = !state.busy, onClick = { model.page(schema.table, result.offset, result.columnOffset) }) { Text("刷新") }
-            TextButton(enabled = !state.busy && result.hasMore && result.stableOrder && result.offset + result.rows.size <= 1_000_000, onClick = { model.page(schema.table, result.offset + result.rows.size, result.columnOffset) }) { Text("下一页") }
-            if (state.writable) {
-                val canEdit = schema.readOnlyReason == null && !state.busy
-                TextButton(enabled = canEdit, onClick = { editing = MutationKind.INSERT }) { Text("新增") }
-                TextButton(enabled = canEdit && selected != null, onClick = { editing = MutationKind.UPDATE }) { Text("修改选中行") }
-                TextButton(enabled = canEdit && selected != null, onClick = { model.preview(MutationKind.DELETE, selected, emptyMap()) }) { Text("删除选中行") }
-            }
-        }
-        editing?.let { kind -> EditForm(schema, result, kind, selected, { editing = null }) { values -> editing = null; model.preview(kind, selected, values) } }
-    }
+    actions()
+    if (schema != null) editing?.let { kind -> EditForm(schema, result, kind, selected, { editing = null }) { values -> editing = null; model.preview(kind, selected, values) } }
+    if (history) AlertDialog(onDismissRequest = { history = false }, title = { Text("本次连接的查询历史") }, text = {
+        val runs = model.memory.history(state.connectionKey)
+        if (runs.isEmpty()) Text("尚无成功查询；历史仅保留在本次运行内，不保存结果行。")
+        else LazyColumn(Modifier.heightIn(max = 380.dp)) { itemsIndexed(runs) { _, run ->
+            TextButton(onClick = { model.editSql(run.sql); history = false }) { Column {
+                Text(run.sql.take(300), maxLines = 4)
+                Text("${run.catalog} / ${run.schema} · ${run.rows} 行 · ${run.elapsedMs} ms", style = MaterialTheme.typography.bodySmall)
+            } }
+        } }
+    }, confirmButton = { TextButton(onClick = { history = false }) { Text("关闭") } }, dismissButton = { TextButton(onClick = { model.memory.clearHistory(); history = false }) { Text("清空历史") } })
     if (allowWrite) AlertDialog(onDismissRequest = { allowWrite = false }, title = { Text(if (state.production) "开启生产库编辑？" else "开启本次连接编辑？") },
         text = { Text("${state.connectionName} / ${state.catalog} / ${state.schema}\n每次修改需预览并确认，提交即写入服务器。切库、断开后恢复只读。无主键、触发器或不支持的类型仍不能编辑。") },
         confirmButton = { TextButton(enabled = !state.busy, onClick = { allowWrite = false; model.writable(true) }) { Text("确认开启编辑") } }, dismissButton = { TextButton(onClick = { allowWrite = false }) { Text("取消") } })
     if (savingQuery) AlertDialog(onDismissRequest = { savingQuery = false }, title = { Text("收藏 SELECT 草稿") }, text = {
         OutlinedTextField(queryName, { queryName = it }, label = { Text("查询名称") }, singleLine = true)
     }, confirmButton = { TextButton(enabled = queryName.isNotBlank() && queryName.length <= 80, onClick = { model.saveQuery(queryName); savingQuery = false }) { Text("保存收藏") } }, dismissButton = { TextButton(onClick = { savingQuery = false }) { Text("取消") } })
+}
+
+@Composable
+private fun TableActionBar(model: WorkspaceViewModel, state: WorkspaceUiState, result: ResultPage, selected: Int?, toggleEditing: () -> Unit, edit: (MutationKind) -> Unit) {
+    val schema = result.tableSchema ?: return
+    HorizontalDivider()
+    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        TextButton(enabled = !state.busy && result.offset > 0, onClick = { model.page(schema.table, (result.offset - 100).coerceAtLeast(0), result.columnOffset) }) { Text("上一页") }
+        TextButton(enabled = !state.busy, onClick = { model.page(schema.table, result.offset, result.columnOffset) }) { Text("刷新") }
+        TextButton(enabled = !state.busy && result.hasMore && result.stableOrder && result.offset + result.rows.size <= 1_000_000, onClick = { model.page(schema.table, result.offset + result.rows.size, result.columnOffset) }) { Text("下一页") }
+        if (state.kind == DatabaseKind.SQL_SERVER) TextButton(enabled = !state.busy, onClick = toggleEditing) { Text(if (state.writable) "结束编辑" else "编辑模式") }
+        if (state.writable) {
+            val canEdit = schema.readOnlyReason == null && !state.busy && !state.resultStale
+            TextButton(enabled = canEdit, onClick = { edit(MutationKind.INSERT) }) { Text("新增") }
+            TextButton(enabled = canEdit && selected != null, onClick = { edit(MutationKind.UPDATE) }) { Text("修改选中行") }
+            TextButton(enabled = canEdit && selected != null, onClick = { model.preview(MutationKind.DELETE, selected, emptyMap()) }) { Text("删除选中行") }
+        }
+    }
 }
 
 @Composable

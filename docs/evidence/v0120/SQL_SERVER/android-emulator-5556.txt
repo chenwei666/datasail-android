@@ -1,0 +1,12 @@
+
+com.example.datasail.SqlServerDeviceTest:..
+com.example.datasail.SpreadsheetSqlServerUiTest:.
+com.example.datasail.TableFilteringTest:....
+com.example.datasail.WorkbenchInteractionTest:...
+com.example.datasail.MobileWorkflowTest:.
+
+Time: 269.06
+
+OK (11 tests)
+
+

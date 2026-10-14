@@ -1,15 +1,17 @@
-# V0.11.0 实际测试报告
+# V0.12.0 实际测试报告
 
-日期：2026-10-14。版本 0.11.0 / versionCode 17；应用包名与签名保持连续。本版产物为 Debug APK，Release/R8 仍被驱动缺失类阻断，不能宣称正式稳定版或零缺陷。
+日期：2026-10-14。版本 0.12.0 / versionCode 18；应用包名与签名保持连续。产物为 Debug APK，Release/R8 仍被驱动缺失类阻断，不能宣称正式稳定版或零缺陷。
 
 ## 完成内容与变更文件
 
-- `TableView.kt`、`SqlWorkspaceSession.kt`、`SqlServerSession.kt`、`JdbcBrowseSession.kt`、`SqliteBrowseSession.kt`：新增元数据白名单筛选和排序，用户值参数绑定。SQL Server / MySQL / MariaDB / PostgreSQL / SQLite 在数据库端执行条件后再分页；最多 8 个 AND 条件、3 个排序字段，追加主键消除排序值相同导致的页序不稳定。输入非法日期拒绝，不自动换算日期；SQL Server 日期时间按类型 CONVERT 精确文本参数，避免驱动将 time 按 datetime 传输。
-- `TableViewControls.kt`、`ResultGrid.kt`、`WorkspaceScreen.kt`：列头菜单提供字段选择、升降序、值/NULL 筛选和移除条件，上方显示当前条件并一键清除。刷新、翻页、字段分组、提交后保留条件。行距、内边距随缩放同步调整，行高考虑系统字体大小，修复 65% 缩放时文本裁切。
-- `AiTableAction.kt`、`AiClient.kt`、`AiTableScreen.kt`、`AiViewModel.kt`、`WorkspaceViewModel.kt`：AI 通过严格 JSON 描述当前表的一次操作，不能指定目标连接/表或 SQL。用户预览问题及表结构后批准发送，读取结果留在本机；默认只查询。每次显式允许写入预览后，可以为 SQL Server 生成单条新增、修改、删除预览，确认具体目标/键/原值/新值后才提交。零条或多条匹配拒绝写入；复用已有短事务、单次 token、乐观并发、未知结果不重试。
-- UI 配置继续统一在设置，问答/SQL 草稿及实时建议沿用原来的非自动执行模式。目标/权限/上下文变化后旧 AI 响应不再应用。未修改包名、签名或存储格式。
+- `WorkspaceMemory.kt`、`WorkspaceViewModel.kt`、`MainActivity.kt`：非致命错误保留上次结果并标记旧数据，刷新前禁止手工/AI 写入；丢失连接清理结果及权限。取消或过期确认 token 在入口拒绝。旋转保留会话，真正进入后台仍断开。本次运行内按连接保留草稿、表位置/筛选及显示选项，显式重连后只读，不恢复事务或自动重放操作。结构变化使记忆条件失效时清理该表条件，允许重新打开。
+- `TableView.kt`：MySQL/MariaDB 无符号整数使用精确 BigInteger 范围校验和 BigDecimal 绑定，修复最大 BIGINT UNSIGNED 过滤失败；按类型限制 SQL Server 不支持的比较/排序。筛选编辑替换原条件。
+- `TableViewControls.kt`、`ResultGrid.kt`、`WorkspaceScreen.kt`：筛选回填、追加多字段排序、按值筛选/排除；全屏与普通表格共享选中单元格、布局和分页/刷新/增删改操作栏，确认弹窗在全屏可见。双指手势逐次累积缩放，保留 65%–200% 上下限与复位。
+- `SqlEditor.kt`、`SettingsScreen.kt`：选中表结构与 SQL 查询结果分开，查询后保留补全元数据；新增每连接最近 30 条成功查询历史（库/Schema/行数/耗时），可载入草稿、清空；设置可清理本次运行工作状态。缓存有界、仅进程内，不存结果行、密码或待提交预览。
+- `AiScreen.kt`、`AiTableScreen.kt`：旧结果禁止作为 AI 表操作上下文，写入预览说明会开启本次连接编辑；保留发送预览、具体变更确认和单条写入边界。
+- 测试及脚本新增实际无符号边界、失败恢复、旋转重连、结构变更、全屏选择一致性、取消确认拒绝；升级基线为 V0.11.0。CI 产物名称与证据路径更新为本版。
 
-操作说明见 [WORKSPACE](WORKSPACE.md) 与 [AI_ASSISTANT](AI_ASSISTANT.md)。列筛选为 AND 组合，不支持任意 SQL、OR 分组或计算表达式；其它 SQL 引擎仍不支持写入。没有给文档/键值/搜索引擎开放 AI 数据写入。
+操作说明见 [WORKSPACE](WORKSPACE.md)、[AI_ASSISTANT](AI_ASSISTANT.md)，审查基线见 [DBEAVER_REVIEW_V0.11.0](DBEAVER_REVIEW_V0.11.0.md)。仅 SQL Server 支持安全单条写入；本轮未开放其它引擎写入、批量暂存、多标签或任意 AI SQL 执行。
 
 ## 实际命令
 
@@ -17,68 +19,72 @@
 export DATASAIL_TOOLS_DIR=/workspace/toolchains
 source scripts/env.sh
 ./gradlew :core:test :sqlserver-android:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
-bash scripts/test-jdbc-workspace-local.sh POSTGRESQL
 bash scripts/test-jdbc-workspace-local.sh MYSQL
 bash scripts/test-jdbc-workspace-local.sh MARIADB
-bash scripts/test-sqlserver-local.sh
-# 以下分别针对一次只启动的一台模拟器
+bash scripts/test-jdbc-workspace-local.sh POSTGRESQL
+# 一次仅运行一台模拟器；分别执行完整升级和 AI 测试
 ANDROID_SERIAL=<selected-emulator> bash scripts/test-android-upgrade.sh --reset-synthetic-emulator
-# API26 最终包 UI 回归
-adb -s emulator-5556 shell am instrument -w -e class com.example.datasail.WorkbenchInteractionTest,com.example.datasail.TableFilteringTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner
-# API30 完整移动 UI 回归
-adb -s emulator-5554 shell am instrument -w -e class com.example.datasail.SettingsUiTest,com.example.datasail.TablePresentationTest,com.example.datasail.AiNavigationTest,com.example.datasail.MobileWorkflowTest,com.example.datasail.WorkbenchInteractionTest,com.example.datasail.TableFilteringTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner
 ANDROID_SERIAL=<selected-emulator> bash scripts/test-ai-android.sh
-DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=<selected-emulator> bash scripts/test-sqlserver-local.sh
+# API30：SQL Server 驱动 + 本轮关键 UI 回归
+ANDROID_SERIAL=emulator-5554 DATASAIL_ANDROID_TESTS=1 DATASAIL_SQLSERVER_ANDROID_COUNT=5 \
+ DATASAIL_SQLSERVER_ANDROID_CLASSES='com.example.datasail.SqlServerDeviceTest,com.example.datasail.TableFilteringTest#recreationAndExplicitReconnectKeepDraftAndTableView,com.example.datasail.TableFilteringTest#filterChipRestoresValueAndFullscreenCanPage,com.example.datasail.WorkbenchInteractionTest#pinchZoomKeepsValuesAndResetRestoresScale' \
+ bash scripts/test-sqlserver-local.sh
+# API26：完整移动工作台 + SQL Server 驱动与 UI
+ANDROID_SERIAL=emulator-5556 DATASAIL_ANDROID_TESTS=1 DATASAIL_SQLSERVER_ANDROID_COUNT=11 \
+ DATASAIL_SQLSERVER_ANDROID_CLASSES='com.example.datasail.SqlServerDeviceTest,com.example.datasail.SpreadsheetSqlServerUiTest,com.example.datasail.TableFilteringTest,com.example.datasail.WorkbenchInteractionTest,com.example.datasail.MobileWorkflowTest' \
+ bash scripts/test-sqlserver-local.sh
 ./gradlew :app:assembleRelease --console=plain
 ```
 
-服务器夹具均为临时隔离的合成数据，镜像固定摘要见各脚本。凭据通过进程环境文件/标准输入进入临时容器和 App 私有目录，退出清理；未访问用户业务服务器。合成 AI HTTPS 服务验证平台 TLS 和三种协议，不代理真实 AI 供应商。
+四种网络 SQL 引擎采用实际临时服务器、固定摘要镜像和隔离合成数据。凭据经临时环境文件/标准输入进入容器及 App 私有目录，脚本退出清理；未访问用户业务服务器。AI 为合成 HTTPS 服务，验证平台 TLS 与三种协议，不代理真实供应商。
 
 ## JVM 与构建
 
 | 检查 | 结果 |
 |---|---:|
-| Core 单元测试 | 85 通过 |
-| App 单元测试 | 14 通过 |
+| Core 单元测试 | 88 通过 |
+| App 单元测试 | 17 通过 |
 | SQL Server 驱动适配测试 | 14 通过 |
 | SQL Server 实连 | 21 通过 |
-| PostgreSQL 实连 | 7 通过 |
-| MySQL 实连 | 7 通过 |
-| MariaDB 实连 | 7 通过 |
-| 合计 | 155 通过，无跳过 |
-| Debug 构建、Android 测试包、lint | 通过 |
+| MySQL 实连 | 8 通过 |
+| MariaDB 实连 | 8 通过 |
+| PostgreSQL 实连 | 8 通过 |
+| 合计 | 164 通过，无跳过 |
+| Debug 构建、Android 测试包、lint | 通过；lint 0 项 |
 | Release/R8 | 失败；193 个缺失类，无 Release APK |
 
-筛选测试覆盖超过首批 100 行的数据、相同排序值的稳定翻页、数值与前导零、特殊字符/引号按字面绑定、NULL 和日期时间。AI 覆盖未知字段/目标/SQL 注入结构拒绝、无写权限拒绝、单条增删改预览与提交、提交前数据库不变、零条/多条匹配拒绝、并发冲突不覆盖。
+无符号边界在真实 MySQL/MariaDB 验证，PostgreSQL 验证超 Long 数值的精确比较。保留绑定、前导零、NULL、日期时间、并发冲突、未知结果不重试等既有测试；类型不支持时本地拒绝，未通过移除只读限制开放写入。
 
-## Android
+## Android 最终 APK
 
-最终结果以 `evidence/v0110/summary.json`、`devices.json` 及对应原始日志为准，APK 安装字节的 SHA-256 与交付包绑定。测试目标为 AOSP API26 / API30 x86_64 软件模拟器，不是真机或 arm64。
+以 `evidence/v0120/summary.json`、`devices.json` 和原始日志为准；设备已安装 APK 字节散列与最终交付包相同。目标为 AOSP API26 / API30 x86_64 软件模拟器，不是真机或 arm64。
 
-| 最终 APK 检查 | API26 | API30 |
+| 最终包检查 | API26 | API30 |
 |---|---:|---:|
-| V0.10.0 覆盖升级、基础流程与密码/设置/AI 配置保持 | 5 | 5 |
-| 移动 UI（API26：缩放/Tab/500 库选择/列头筛选；API30：另含设置/宽表/AI 导航/收藏导出） | 4 | 8 |
-| HTTPS AI：三协议、发送预览/草稿、实时建议、自然语言实际查询 | 4 | 4 |
-| SQL Server ART / UI：时间筛选、AI 单条操作、安全编辑、NULL、取消与冲突 | 3 | 3 |
-| 合计 | 16 | 20 |
+| V0.11.0 覆盖升级、基础流程、密码/设置/AI 配置保持 | 5 | 5 |
+| SQL Server 与移动工作台组合回归 | 11 | 5 |
+| HTTPS AI：三协议、预览/草稿、实时建议、自然语言实际查询 | 4 | 4 |
+| 合计 | 20 | 14 |
 
-共 36 项最终 APK Android 检查通过，另各有 1 项旧版准备测试。API26 完整重走旧版安装与覆盖升级后通过，API30 的 8 项 UI、4 项 AI、3 项 SQL Server 均整组通过；没有跳过失败断言。
+共 34 项最终 APK Android 检查通过；另有两项旧版本种子准备测试，不计入 34。
 
-交付 APK SHA-256：`7472e7c1540f1747faafedd0716235fdc31512cb73e9a5921b0e4cfdecd72ca7`。两台模拟器读取已安装 APK 字节所得散列均相同。
+API26 组合包含 SQL Server 驱动 2、实际 UI 1、筛选/恢复 4、缩放/Tab/500 库选择 3、收藏/导出流程 1。实际 SQL Server UI 验证全屏删除预览、取消后调用旧 token 被拒绝且服务器记录仍存在；保留单元格提交、NULL、只读查询等断言。
 
-## 发现并修复的问题
+API30 组合包含驱动 2 和关键 UI 3，验证筛选回填、全屏翻页/刷新及退出后的选中单元格一致性、旋转和显式重连保留草稿/筛选/只读、表结构更改导致旧条件失效后可重新打开，以及双指缩放上下限。不同平台覆盖范围有差异，不把部分测试称为全矩阵。
 
-API30 冷启动时系统媒体服务和 System UI 发生无响应，尚未运行数舟测试。保留系统日志/截图，选择系统“Wait”后确认 Launcher 恢复焦点、服务已注册，再执行应用测试；未关闭 ANR、修改系统信任或降低应用断言。
+最终 APK SHA-256：`0e14bc6882235af1e116069f8887e7a6f4d49e42671bfc218ba381ddd023c0ae`。
 
-新增真实时间筛选回归最初失败：SQL Server 返回 `time and datetime are incompatible in the greater than operator`。原因是 JDBC 默认将 java.sql.Time 参数作为 datetime 发送。改用与字段类型绑定的 `CONVERT(time(7),?,126)` 等精确文本转换后，相同真实用例通过；初次失败保存在 `diagnostics/sqlserver-temporal-filter-first.xml`，没有删除断言或跳过测试。
+## 测试发现、修复及环境恢复
 
-一次额外调用升级验证器时失败，因该一次性验证器在首次通过后会清除升级夹具（预期字号 18 已恢复默认 14），不是 App 升级丢失设置。保留失败日志后重新执行完整的旧版安装、准备数据、覆盖安装与验证流程；没有重写待验证数据来让断言通过。
+1. 共享网格选项后，首次双指回归仅缩放到 107%，预期为 200%。原因是重组前读取旧状态，修复为单次指针手势独立累积；保留原 200%/65% 断言并复验。首次失败见 `diagnostics/mobile-api30-before-zoom-fix.txt`。
+2. 完整升级回归发现首次未连接工作台错误显示“已断开”。仅对确实保留了连接上下文的会话显示重连入口，初次使用恢复原连接引导；保留 SmokeTest 断言并从旧版安装、准备数据开始重跑。首次失败见 `diagnostics/upgrade-api30-before-first-launch-fix.txt`。
+3. API30 冷启动在应用测试前出现 System UI 无响应，截图保存在 diagnostics。选择系统可见 Wait 后确认 Launcher 恢复焦点再验收，未关闭 ANR 或修改系统信任。
+4. 本轮修复中途曾通过 API30 移动 UI 8 项、SQL Server 3 项及 AI 4 项。由于后续加入选择同步、失效确认与初次使用修复，这些旧 APK 日志仅保存在 diagnostics，不计为最终包通过。
 
-第一轮 API26 的 8 项 UI 和升级测试在日期筛选细化前已通过，日志保存在 diagnostics，不计入最终 APK 的测试数。后续修改后的实际复验范围由 summary 独立列出，不将旧构建结果冒充最终包。
+## 交付与未验证范围
 
-## 交付与限制
+本地包：`app/build/outputs/apk/debug/app-debug.apk`。归档：`versions/V0.12.0/` 与 `versions/V0.12.0.zip`，由干净源码提交生成，含源码、APK、文档、驱动、证据、manifest 和逐文件校验；源码 SHA 见 manifest，归档校验见 `versions/V0.12.0-verification.json`。旧版本不覆盖。归档没有独立重建；发布上传验收原件，不重新编译或签名。
 
-本地安装包：`app/build/outputs/apk/debug/app-debug.apk`。版本归档：`versions/V0.11.0/` 和 `versions/V0.11.0.zip`，由干净源码提交生成，包含源码、APK、文档、驱动、测试证据、manifest 和逐文件校验。归档生成后的校验记录位于 `versions/V0.11.0-verification.json`，源码 SHA 记录在 manifest。原 V0.10.0 及更早归档不覆盖。
+未验收真机/arm64、用户业务数据库、全部服务器版本、真实 AI 供应商账号及计费、大规模生产并发；未重跑 Redis/Valkey/MongoDB/Elasticsearch/OpenSearch 矩阵。草稿/布局/历史仅保留本次进程，真正后台仍断开，分页不是快照。模型可能误解需求，写入仍须核对预览。
 
-没有验证真机/arm64、用户业务数据库、全部服务器版本、真实供应商模型账号/计费、其它引擎写入或大规模生产并发；没有重新验收 Redis/Valkey/MongoDB/Elasticsearch/OpenSearch 全矩阵。模型仍可能误解需求，写入必须核对预览。分页不是数据库快照。下一步最小发行任务为修复剩余 Release 驱动兼容阻塞并进行真机验收。
+Release/R8、正式签名与真机验收尚未完成；下一步最小发行任务是驱动兼容拆分和 Release 实测。功能后续按独立版本推进多标签、暂存编辑及其它 SQL 引擎安全写入，不承诺全部 DBeaver 功能或零缺陷。

@@ -55,6 +55,10 @@ internal fun SettingsScreen(model: WorkspaceViewModel, ai: AiViewModel, openAi: 
         OutlinedButton(onClick = { clearPasswords = true }) { Text("清除全部保存的密码") }
         Text("后台断开连接 · 禁止截屏 · 默认校验服务器证书", style = MaterialTheme.typography.bodySmall)
     }
+    SettingsGroup("本次工作状态") {
+        Text("草稿、表格布局、筛选和最近 30 条成功查询仅保存在进程内；关闭进程后清除。不保留数据行或待提交写入。", style = MaterialTheme.typography.bodySmall)
+        TextButton(onClick = model::clearWorkspaceMemory) { Text("清除本次工作状态与历史") }
+    }
     SettingsGroup("关于数舟") {
         Text("DataSail ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
         Text("本地直连数据库 · AI 辅助查询与编辑")

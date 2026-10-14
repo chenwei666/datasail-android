@@ -51,10 +51,10 @@ class MainActivity : ComponentActivity() {
         }
     }
     override fun onStop() {
-        // No background session: rotation/background transitions request cancellation.
+        // Configuration recreation keeps the serialized session. Real background entry still cancels I/O.
         ai.cancel()
         model.cancel()
-        workspace.disconnect()
+        if (!isChangingConfigurations) workspace.disconnect()
         super.onStop()
     }
 }

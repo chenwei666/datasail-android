@@ -90,9 +90,9 @@ internal object SqlCompletion {
 internal fun SqlEditor(sql: String, change: (String) -> Unit, state: WorkspaceUiState, settings: AppSettings, ai: AiViewModel? = null, workspace: WorkspaceViewModel? = null) {
     var field by remember(state.target, state.catalog, state.schema) { mutableStateOf(TextFieldValue(sql, TextRange(sql.length))) }
     LaunchedEffect(sql) { if (field.text != sql) field = TextFieldValue(sql, TextRange(sql.length)) }
-    val suggestions = remember(field, state.tables, state.result?.tableSchema, settings.completion) {
+    val suggestions = remember(field, state.tables, (state.selectedSchema ?: state.result?.tableSchema), settings.completion) {
         if (!settings.completion || !field.selection.collapsed) emptyList() else SqlCompletion.suggestions(field.text, field.selection.start,
-            state.kind, state.tables.map { it.name }, state.result?.tableSchema?.columns?.map { it.name }.orEmpty())
+            state.kind, state.tables.map { it.name }, (state.selectedSchema ?: state.result?.tableSchema)?.columns?.map { it.name }.orEmpty())
     }
     fun complete(suggestion: SqlSuggestion) {
         val (text, cursor) = SqlCompletion.apply(field.text, suggestion)

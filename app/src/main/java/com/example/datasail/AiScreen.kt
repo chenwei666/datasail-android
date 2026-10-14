@@ -23,7 +23,7 @@ internal fun aiAllowed(workspace: WorkspaceViewModel): Boolean {
 internal fun aiScope(workspace: WorkspaceViewModel): String {
     val state = workspace.state.value
     val parts = listOf(state.aiGeneration.toString(), state.connectionKey, state.catalog, state.schema, state.kind.name,
-        state.writable.toString(), state.result?.view.toString(), state.result?.offset.toString(), state.connected.toString(), aiAllowed(workspace).toString(), workspace.draftSql.value, state.result?.tableSchema.toString())
+        state.writable.toString(), state.resultStale.toString(), state.result?.view.toString(), state.result?.offset.toString(), state.connected.toString(), aiAllowed(workspace).toString(), workspace.draftSql.value, state.result?.tableSchema.toString())
     return MessageDigest.getInstance("SHA-256").digest(parts.joinToString("") { "${it.length}:$it" }.toByteArray()).joinToString("") { "%02x".format(it) }
 }
 internal data class AiApproval(val profile: AiProfile, val scope: String, val text: String)

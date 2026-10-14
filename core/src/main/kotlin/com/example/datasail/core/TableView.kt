@@ -16,6 +16,18 @@ data class TableView(val filters: List<ColumnFilter> = emptyList(), val sorts: L
 data class CompiledTableView(val where: String, val order: String, val parameters: List<Any>)
 
 object TableViews {
+    private val textTypes = setOf(Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR)
+    fun sortable(column: ColumnDef, sqlServer: Boolean = false, sqlite: Boolean = false): Boolean = sqlite ||
+        (column.jdbcType in textTypes + ColumnDef.EDITABLE_TYPES + setOf(Types.REAL, Types.FLOAT, Types.DOUBLE, Types.BINARY, Types.VARBINARY) &&
+            column.typeName.lowercase() !in (if (sqlServer) setOf("text", "ntext", "image", "xml") else setOf("json", "xml")))
+    fun operators(column: ColumnDef, sqlServer: Boolean = false, sqlite: Boolean = false): List<FilterOperator> {
+        val scalar = sortable(column, sqlServer, sqlite) && column.jdbcType !in setOf(Types.BINARY, Types.VARBINARY)
+        return FilterOperator.entries.filter { op -> !op.needsValue ||
+            (op in setOf(FilterOperator.CONTAINS, FilterOperator.STARTS_WITH) && (sqlite || column.jdbcType in textTypes)) ||
+            (scalar && op !in setOf(FilterOperator.CONTAINS, FilterOperator.STARTS_WITH)) }
+    }
+    fun replaceFilter(view: TableView, previous: ColumnFilter?, next: ColumnFilter): TableView =
+        view.copy(filters = view.filters.filterNot { it == previous || (it.column == next.column && it.operator == next.operator) } + next)
     fun compile(schema: TableSchema, view: TableView, quote: (String) -> String, sqlite: Boolean = false, sqlServer: Boolean = false): CompiledTableView {
         if (view.filters.size > 8 || view.sorts.size > 3) throw WorkspaceRejected("最多 8 个筛选条件、3 个排序字段")
         fun column(name: String) = schema.columns.singleOrNull { it.name == name }
@@ -23,6 +35,7 @@ object TableViews {
         val parameters = mutableListOf<Any>()
         val predicates = view.filters.map { filter ->
             val definition = column(filter.column)
+            if (filter.operator !in operators(definition, sqlServer, sqlite)) throw WorkspaceRejected("此字段类型不支持此筛选方式")
             val name = quote(definition.name)
             if (!filter.operator.needsValue) "$name ${filter.operator.sql}" else {
                 if (filter.value.length > 4000) throw WorkspaceRejected("筛选值超过 4000 字符")
@@ -38,7 +51,14 @@ object TableViews {
                         when {
                             sqlServer && definition.jdbcType in SqlServerTemporal.types -> SqlServerTemporal.parse(definition, filter.value).value
                             sqlite || textType -> filter.value
-                            definition.jdbcType in setOf(Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT) -> filter.value.toLong()
+                            definition.jdbcType in setOf(Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT) -> {
+                                if (definition.typeName.contains("unsigned", ignoreCase = true)) {
+                                    val bits = when (definition.jdbcType) { Types.TINYINT -> 8; Types.SMALLINT -> 16; Types.INTEGER -> if (definition.typeName.contains("mediumint", true)) 24 else 32; else -> 64 }
+                                    val integer = filter.value.toBigInteger()
+                                    require(integer.signum() >= 0 && integer.bitLength() <= bits)
+                                    integer.toBigDecimal()
+                                } else filter.value.toLong()
+                            }
                             definition.jdbcType in setOf(Types.NUMERIC, Types.DECIMAL, Types.REAL, Types.FLOAT, Types.DOUBLE) -> BigDecimal(filter.value).also { require(it.precision() <= 1000 && kotlin.math.abs(it.scale().toLong()) <= 1000) }
                             definition.jdbcType in setOf(Types.BIT, Types.BOOLEAN) -> when (filter.value.lowercase()) { "true", "1" -> true; "false", "0" -> false; else -> throw IllegalArgumentException() }
                             definition.jdbcType == Types.DATE -> java.sql.Date.valueOf(java.time.LocalDate.parse(filter.value).toString())
@@ -54,7 +74,10 @@ object TableViews {
             }
         }
         if (view.sorts.map { it.column }.distinct().size != view.sorts.size) throw WorkspaceRejected("排序字段重复")
-        val ordered = view.sorts.map { column(it.column); quote(it.column) + if (it.descending) " DESC" else " ASC" } +
+        val ordered = view.sorts.map {
+            if (!sortable(column(it.column), sqlServer, sqlite)) throw WorkspaceRejected("此字段类型暂不支持排序")
+            quote(it.column) + if (it.descending) " DESC" else " ASC"
+        } +
             schema.keys.filterNot { key -> view.sorts.any { it.column == key.name } }.map { quote(it.name) + " ASC" }
         return CompiledTableView(if (predicates.isEmpty()) "" else " WHERE " + predicates.joinToString(" AND "),
             if (ordered.isEmpty()) "" else " ORDER BY " + ordered.joinToString(","), parameters)

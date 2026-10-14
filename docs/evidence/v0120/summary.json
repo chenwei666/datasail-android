@@ -1,0 +1,55 @@
+{
+  "version": "0.12.0",
+  "versionCode": 18,
+  "finalApkSha256": "0e14bc6882235af1e116069f8887e7a6f4d49e42671bfc218ba381ddd023c0ae",
+  "androidTestApkSha256": "57f7f0adbca1c9bd9ed920464a4d354bd351e42f699233ba3cafd75f0bc9632a",
+  "requiredJvmReports": [
+    "test",
+    "sqlServerTest",
+    "jdbcWorkspaceTest"
+  ],
+  "jvmTests": {
+    "core-unit": 88,
+    "app-unit": 17,
+    "driver-profile": 14,
+    "sqlserver": 21,
+    "MYSQL": 8,
+    "MARIADB": 8,
+    "POSTGRESQL": 8
+  },
+  "androidTests": {
+    "upgrade-api26.txt": 5,
+    "ai-emulator-5556.txt": 4,
+    "SQL_SERVER/android-emulator-5556.txt": 11,
+    "upgrade-api30.txt": 5,
+    "ai-emulator-5554.txt": 4,
+    "SQL_SERVER/android-emulator-5554.txt": 5
+  },
+  "previousVersionUpgradeSeedTests": {
+    "api26": 1,
+    "api30": 1
+  },
+  "release": {
+    "exitCode": 1,
+    "missingClasses": 193,
+    "apkDelivered": false
+  },
+  "scope": "Nonfatal SQL error snapshots with stale-write guard; configuration recreation and explicit read-only reconnect; invalid remembered view recovery after schema changes; exact unsigned integer filters on real MySQL/MariaDB and PostgreSQL numeric comparison; typed filters, editable filter chips, multi-sort, shared fullscreen actions and cell selection, process-local drafts/layout/history, retained completion metadata. API26 full mobile and SQL Server GUI tests; API30 targeted recovery/selection/pinch and SQL Server driver tests. Both APIs verify synthetic HTTPS AI and V0.11.0 in-place upgrade. Final artifact hashes bound to installed bytes.",
+  "recoveries": [
+    "Initial Android pinch regression showed only 107% instead of 200% after sharing grid options. Fixed by accumulating scale per pointer gesture; original assertions retained and rerun.",
+    "Upgrade smoke test caught first-launch workbench incorrectly saying disconnected; restored the original initial connection guidance and reran the complete old-install/seed/upgrade flow.",
+    "Pre-final mobile and SQL Server GUI runs retained in diagnostics. Final results above exclude those earlier APKs; final runs include remembered-schema recovery and cancelled-token rejection where applicable."
+  ],
+  "environmentRecovery": "API30 cold boot System UI ANR before app testing; captured screenshot, selected visible Wait button, verified Launcher focus before tests.",
+  "unverified": [
+    "physical/arm64",
+    "user business databases and other server versions",
+    "live AI vendor accounts and billing",
+    "other engine writes, bulk/staged editing, multiple tabs",
+    "Redis/Valkey/MongoDB/Elasticsearch/OpenSearch matrix not rerun",
+    "Release/R8 and protected production signing",
+    "independent archived-source rebuild",
+    "fresh cloud restore",
+    "full DBeaver functionality"
+  ]
+}

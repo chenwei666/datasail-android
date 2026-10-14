@@ -34,6 +34,22 @@ class JdbcWorkspaceIntegrationTest {
             }
         }
     }
+    @Test fun exactLargeIntegerFilteringUsesServerMetadata() {
+        connect().use { raw ->
+            val type = if (pg) "NUMERIC(20,0)" else "BIGINT UNSIGNED"
+            raw.createStatement().use {
+                it.execute("CREATE TABLE unsigned_filter_fixture(id $type PRIMARY KEY)")
+                it.execute("INSERT INTO unsigned_filter_fixture VALUES (18446744073709551615),(9223372036854775808)")
+            }
+            JdbcBrowseSession(raw, profile()).use { session ->
+                val table = session.tables(if (pg) "public" else "synthetic").single { it.name == "unsigned_filter_fixture" }
+                val found = session.page(table, view = TableView(listOf(ColumnFilter("id", FilterOperator.EQ, "18446744073709551615"))))
+                assertEquals(1, found.rows.size)
+                assertEquals(DbValue.Decimal(java.math.BigDecimal("18446744073709551615")), found.rows.single().single())
+                assertEquals(1, session.page(table, view = TableView(listOf(ColumnFilter("id", FilterOperator.GT, "9223372036854775808")))).rows.size)
+            }
+        }
+    }
     @Test fun serverSideFilteringSortingAndTemporalParameters() = fixture { session, table ->
         val sorted = session.page(table, view = TableView(sorts = listOf(ColumnSort("id", true))))
         assertEquals(DbValue.Integer(105), sorted.rows.first()[0])

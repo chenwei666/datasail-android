@@ -178,6 +178,21 @@ class SpreadsheetSqlServerUiTest {
         compose.waitUntil(10000) { !model.state.value.busy && model.state.value.preview == null }
         assertNull(value())
         assertEquals(DbValue.Null, model.state.value.result!!.rows[0][1])
+        // Fullscreen must retain its toolbar and surface the real global confirmation dialog.
+        compose.onNodeWithText("全屏表格").performScrollTo().performClick()
+        compose.onNode(hasTestTag("cell-0-1") and hasAnyAncestor(isDialog())).performScrollTo().performTouchInput { click() }
+        compose.mainClock.advanceTimeBy(600)
+        compose.onNode(hasText("删除选中行") and hasAnyAncestor(isDialog())).performScrollTo().performClick()
+        compose.waitUntil(10000) { model.state.value.preview != null }
+        compose.onNodeWithText("确认删除 1 行").assertIsDisplayed()
+        val cancelledToken = model.state.value.preview!!.token
+        compose.onNodeWithText("取消", substring = false).performClick()
+        compose.waitUntil(10000) { model.state.value.preview == null && !model.state.value.busy }
+        compose.onNodeWithText("退出全屏").assertIsDisplayed()
+        compose.runOnIdle { model.confirm(cancelledToken) }
+        assertTrue(model.state.value.message.contains("确认已失效"))
+        raw().use { c -> c.createStatement().use { statement -> statement.executeQuery("SELECT COUNT(*) FROM dbo.ui_grid_v081").use { rows -> assertTrue(rows.next()); assertEquals(1, rows.getInt(1)) } } }
+        compose.onNodeWithText("退出全屏").performClick()
         compose.runOnIdle { model.query("SELECT id, code FROM dbo.ui_grid_v081") }
         compose.waitUntil(10000) { !model.state.value.busy && model.state.value.result != null }
         selectCell()

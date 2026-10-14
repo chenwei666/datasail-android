@@ -41,28 +41,34 @@ internal fun spreadsheetColumn(index: Int): String {
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: AppSettings, selectRow: (Int) -> Unit,
-    preview: (Int, Map<String, CellInput>) -> Unit, expanded: Boolean = false, changeView: ((TableView) -> Unit)? = null) {
+    preview: (Int, Map<String, CellInput>) -> Unit, expanded: Boolean = false, changeView: ((TableView) -> Unit)? = null, gridOptions: GridOptions? = null, onGridOptions: ((GridOptions) -> Unit)? = null, actions: (@Composable () -> Unit)? = null, selectionState: MutableState<Pair<Int, Int>?>? = null) {
     var filterColumn by remember(page) { mutableStateOf<String?>(null) }
-    var selected by remember(page) { mutableStateOf<Pair<Int, Int>?>(null) }
+    var editingFilter by remember(page) { mutableStateOf<ColumnFilter?>(null) }
+    val activeSelection = selectionState ?: remember(page) { mutableStateOf<Pair<Int, Int>?>(null) }
+    var selected by activeSelection
     var editing by remember(page) { mutableStateOf(false) }
     var input by remember(page) { mutableStateOf(CellInput()) }
     var fullscreen by remember { mutableStateOf(false) }
     var chooseColumns by remember { mutableStateOf(false) }
     var rowDetails by remember(page) { mutableStateOf(false) }
-    var visible by remember(page.columns) { mutableStateOf(page.columns.indices.toSet()) }
-    var width by remember(settings.columnWidth) { mutableIntStateOf(settings.columnWidth) }
-    var wrap by remember(settings.wrapCells) { mutableStateOf(settings.wrapCells) }
-    var zoom by remember { mutableFloatStateOf(1f) }
+    var localOptions by remember(page.tableSchema?.table) { mutableStateOf(GridOptions()) }
+    val options = gridOptions ?: localOptions
+    val currentOptions by rememberUpdatedState(options)
+    fun updateOptions(value: GridOptions) { if (onGridOptions != null) onGridOptions(value) else localOptions = value }
+    val visible = page.columns.indices.filter { page.columns[it].name !in options.hidden }.toSet().ifEmpty { page.columns.indices.take(1).toSet() }
+    val width = options.width ?: settings.columnWidth
+    val wrap = options.wrap ?: settings.wrapCells
+    val zoom = options.zoom
     val viewport = (with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp().value } * (if (expanded) 0.58f else 0.38f)).coerceIn(140f, 520f).dp
     val horizontal = remember(page.tableSchema?.table, page.columnOffset, page.columns) { ScrollState(0) }
-    val rowsScroll = remember(page.tableSchema?.table, page.offset) { androidx.compose.foundation.lazy.LazyListState() }
+    val rowsScroll = remember(page.tableSchema?.table, page.offset, page.view) { androidx.compose.foundation.lazy.LazyListState() }
     val gridFocus = remember { FocusRequester() }
     val editFocus = remember { FocusRequester() }
     val context = LocalContext.current
     val lineHeight = (settings.gridFont * 1.4f * zoom).sp
     val rowHeight = maxOf(((if (wrap) 88 else if (settings.compactGrid) 44 else 60) * zoom).dp, with(LocalDensity.current) { lineHeight.toDp() } * (if (wrap) 3 else 1) + (16 * zoom).dp)
     val headerHeight = maxOf((64 * zoom).dp, with(LocalDensity.current) { (20 * zoom).sp.toDp() } * (if (settings.showColumnTypes) 3 else 2) + (16 * zoom).dp)
-    fun editable(row: Int, column: Int): Boolean = state.writable && state.kind == DatabaseKind.SQL_SERVER && !state.busy &&
+    fun editable(row: Int, column: Int): Boolean = state.writable && state.kind == DatabaseKind.SQL_SERVER && !state.busy && !state.resultStale &&
         page.tableSchema?.readOnlyReason == null && page.tableSchema?.columns?.getOrNull(page.columnOffset + column)?.let { it.editable && it.primaryKeyOrder == 0 } == true &&
         page.rows[row].none { it is DbValue.Unavailable }
     fun choose(row: Int, column: Int, edit: Boolean = false) {
@@ -75,22 +81,23 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
     }
     LaunchedEffect(editing, selected, input.isNull) { if (editing && !input.isNull) editFocus.requestFocus() }
     if (changeView != null) {
-        TableViewBar(page, state.busy, { filterColumn = it }, changeView)
-        filterColumn?.let { ColumnViewDialog(page, it, state.kind, { filterColumn = null }, changeView) }
+        TableViewBar(page, state.busy, { column, filter -> filterColumn = column; editingFilter = filter }, changeView)
+        filterColumn?.let { ColumnViewDialog(page, it, state.kind, editingFilter, { filterColumn = null }, changeView) }
     }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        AssistChip(onClick = { zoom = 1f }, label = { Text("${(zoom * 100).toInt()}% · 重置") }, modifier = Modifier.testTag("grid-zoom"))
-        if (!expanded) AssistChip(onClick = { fullscreen = true }, label = { Text("全屏表格") })
+        AssistChip(onClick = { updateOptions(options.copy(zoom = 1f)) }, label = { Text("${(zoom * 100).toInt()}% · 重置") }, modifier = Modifier.testTag("grid-zoom"))
+        if (!expanded) AssistChip(enabled = !editing, onClick = { fullscreen = true }, label = { Text("全屏表格") })
         AssistChip(onClick = { chooseColumns = true }, label = { Text("显示列 ${visible.size}/${page.columns.size}") })
-        FilterChip(selected = wrap, onClick = { wrap = !wrap }, label = { Text("换行") })
-        AssistChip(onClick = { width = when (width) { 140 -> 200; 200 -> 280; 280 -> 360; else -> 140 } }, label = { Text("列宽 $width") })
+        FilterChip(selected = wrap, onClick = { updateOptions(options.copy(wrap = !wrap)) }, label = { Text("换行") })
+        AssistChip(onClick = { updateOptions(options.copy(width = when (width) { 140 -> 200; 200 -> 280; 280 -> 360; else -> 140 })) }, label = { Text("列宽 $width") })
     }
+    if (state.resultStale) Text("上次操作失败，以下为之前的数据。请刷新后再编辑。", color = MaterialTheme.colorScheme.error)
     Text("双指缩放 · 单指滚动 · 双击编辑", style = MaterialTheme.typography.bodySmall)
     selected?.let { (row, column) ->
         val definition = page.tableSchema?.columns?.getOrNull(page.columnOffset + column)
         Text("${spreadsheetColumn(page.columnOffset + column)}${page.offset + row + 1} · ${page.columns[column].name}", style = MaterialTheme.typography.titleSmall)
         SelectionContainer { Text(spreadsheetText(page.rows[row][column]).ifEmpty { "（空字符串）" }, modifier = Modifier.heightIn(max = 96.dp).verticalScroll(rememberScrollState()), fontFamily = FontFamily.Monospace, fontSize = (settings.gridFont * zoom).sp) }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TextButton(onClick = { rowDetails = true }) { Text("整行详情") }
             TextButton(enabled = page.rows[row][column] !is DbValue.Unavailable, onClick = {
                 val clip = ClipData.newPlainText("DataSail 单元格", spreadsheetText(page.rows[row][column]))
@@ -99,7 +106,20 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
             }) { Text("复制单元格") }
             TextButton(enabled = editable(row, column) && !editing, onClick = { val old = page.rows[row][column]; input = CellInput(if (old == DbValue.Null) "" else spreadsheetText(old), old == DbValue.Null); editing = true }) { Text("编辑单元格") }
         }
+        if (changeView != null && definition != null && page.rows[row][column] !is DbValue.Unavailable) {
+            val cell = page.rows[row][column]
+            val operators = TableViews.operators(definition, state.kind == DatabaseKind.SQL_SERVER, state.kind == DatabaseKind.SQLITE)
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("按此值筛选" to (if (cell == DbValue.Null) FilterOperator.IS_NULL else FilterOperator.EQ),
+                    "排除此值" to (if (cell == DbValue.Null) FilterOperator.NOT_NULL else FilterOperator.NE)).forEach { (label, op) ->
+                    TextButton(enabled = !state.busy && !editing && op in operators && (cell == DbValue.Null || spreadsheetText(cell).length <= 4000), onClick = {
+                        changeView(TableViews.replaceFilter(page.view, null, ColumnFilter(definition.name, op, if (cell == DbValue.Null) "" else spreadsheetText(cell))))
+                    }) { Text(label) }
+                }
+            }
+        }
         if (editing) {
+            if (expanded) Text("退出全屏会丢弃尚未预览的输入。", style = MaterialTheme.typography.bodySmall)
             if (definition?.nullable == true) Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(input.isNull, { input = input.copy(isNull = it) }, modifier = Modifier.testTag("cell-null")); Text("设为 NULL")
             }
@@ -111,14 +131,19 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
             Text("先预览或取消当前修改，再选择其它单元格。", style = MaterialTheme.typography.bodySmall)
         } else if (!editable(row, column)) Text(page.tableSchema?.readOnlyReason ?: if (page.tableSchema == null) "查询结果只读；请从表浏览入口编辑" else if (state.writable) "此列只读（主键、自增或不支持的类型）" else "当前只读；请点击上方「开启编辑」", style = MaterialTheme.typography.bodySmall)
     }
-    Surface(modifier = Modifier.testTag("result-grid").pointerInput(Unit) {
+    Surface(modifier = Modifier.testTag("result-grid").pointerInput(state.connectionKey, page.tableSchema?.table) {
         awaitEachGesture {
             awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            // Pointer events may be delivered before recomposition; accumulate within the gesture.
+            var gestureZoom = currentOptions.zoom
             do {
                 val event = awaitPointerEvent(PointerEventPass.Initial)
                 if (event.changes.count { it.pressed && it.previousPressed } >= 2) {
                     val factor = event.calculateZoom()
-                    if (factor.isFinite() && factor > 0f) zoom = (zoom * factor).coerceIn(0.65f, 2f)
+                    if (factor.isFinite() && factor > 0f) {
+                        gestureZoom = (gestureZoom * factor).coerceIn(0.65f, 2f)
+                        updateOptions(currentOptions.copy(zoom = gestureZoom))
+                    }
                     event.changes.forEach { it.consume() }
                 }
             } while (event.changes.any { it.pressed })
@@ -140,7 +165,7 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
         }.focusable().horizontalScroll(horizontal)) {
             Row(Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
                 Box(Modifier.width(48.dp).height(headerHeight), contentAlignment = Alignment.Center) { Text("#", style = MaterialTheme.typography.labelMedium) }
-                page.columns.forEachIndexed { index, column -> if (index in visible) Column(Modifier.width((width * zoom).dp).height(headerHeight).border(0.5.dp, MaterialTheme.colorScheme.outlineVariant).testTag("column-${column.name}").clickable(enabled = changeView != null && !state.busy) { filterColumn = column.name }.padding((8 * zoom).dp)) {
+                page.columns.forEachIndexed { index, column -> if (index in visible) Column(Modifier.width((width * zoom).dp).height(headerHeight).border(0.5.dp, MaterialTheme.colorScheme.outlineVariant).testTag("column-${column.name}").clickable(enabled = changeView != null && !state.busy) { filterColumn = column.name; editingFilter = null }.padding((8 * zoom).dp)) {
                     val sort = page.view.sorts.firstOrNull { it.column == column.name }
                     val mark = (if (sort == null) "" else if (sort.descending) " ↓" else " ↑") + (if (page.view.filters.any { it.column == column.name }) " •" else "")
                     Text("${column.name}$mark${if (changeView != null) " ▾" else ""}", fontSize = (14 * zoom).sp, lineHeight = (20 * zoom).sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -174,11 +199,11 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
     if (chooseColumns) AlertDialog(onDismissRequest = { chooseColumns = false }, title = { Text("显示字段") }, text = {
         LazyColumn(Modifier.heightIn(max = 400.dp)) { itemsIndexed(page.columns) { index, column ->
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(index in visible, { checked -> if (checked) visible = visible + index else if (visible.size > 1) visible = visible - index })
+                Checkbox(index in visible, { checked -> if (checked || visible.size > 1) updateOptions(options.copy(hidden = if (checked) options.hidden - column.name else options.hidden + column.name)) })
                 Text("${column.name} · ${column.typeName}")
             }
         } }
-    }, confirmButton = { TextButton(onClick = { chooseColumns = false }) { Text("完成") } }, dismissButton = { TextButton(onClick = { visible = page.columns.indices.toSet() }) { Text("全部显示") } })
+    }, confirmButton = { TextButton(onClick = { chooseColumns = false }) { Text("完成") } }, dismissButton = { TextButton(onClick = { updateOptions(options.copy(hidden = emptySet())) }) { Text("全部显示") } })
     if (rowDetails && selected != null) AlertDialog(onDismissRequest = { rowDetails = false }, title = { Text("第 ${page.offset + selected!!.first + 1} 行 · 已加载字段") }, text = {
         LazyColumn(Modifier.heightIn(max = 480.dp)) { itemsIndexed(page.columns) { index, column -> Column(Modifier.padding(vertical = 8.dp)) {
             Text("${column.name} · ${column.typeName}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
@@ -196,8 +221,9 @@ internal fun ResultGrid(page: ResultPage, state: WorkspaceUiState, settings: App
                 Text("${state.connectionName} / ${state.catalog} / ${state.schema} · ${if (state.production) "生产" else "常规"} · ${if (state.writable) "可写" else "只读"}", style = MaterialTheme.typography.bodySmall)
                 HorizontalDivider()
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ResultGrid(page, state, settings, selectRow, { row, inputs -> fullscreen = false; preview(row, inputs) }, expanded = true, changeView = changeView)
+                    ResultGrid(page, state, settings, selectRow, preview, expanded = true, changeView = changeView, gridOptions = options, onGridOptions = ::updateOptions, selectionState = activeSelection)
                 }
+                actions?.invoke()
             }
         }
     }

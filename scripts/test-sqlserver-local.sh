@@ -53,14 +53,15 @@ export DATASAIL_SQLSERVER_CONFIG="$fixture/database.properties"
 export DATASAIL_SQLSERVER_TRUSTSTORE="$fixture/trust.p12"
 task=sqlServerTest
 suite=SQL_SERVER
-android_class=com.example.datasail.SqlServerDeviceTest,com.example.datasail.SpreadsheetSqlServerUiTest
-android_count=3
+android_class="${DATASAIL_SQLSERVER_ANDROID_CLASSES:-com.example.datasail.SqlServerDeviceTest,com.example.datasail.SpreadsheetSqlServerUiTest}"
+android_count="${DATASAIL_SQLSERVER_ANDROID_COUNT:-3}"
+[[ "$android_class" =~ ^[A-Za-z0-9_.,#]+$ && "$android_count" =~ ^[1-9][0-9]?$ ]] || { echo 'Invalid Android test selection'; exit 2; }
 if [[ "${DATASAIL_SQLSERVER_AUTOCERT:-0}" == 1 ]]; then
  android_count=2; task=sqlServerAutoCertificateTest; suite=SQL_SERVER_AUTOCERT; android_class=com.example.datasail.CertificateTrustUiTest
 fi
 ./gradlew ":core:$task" --console=plain
-mkdir -p "docs/evidence/v0110/$suite"
-cp core/build/test-results/"$task"/TEST-*.xml "docs/evidence/v0110/$suite/"
+mkdir -p "docs/evidence/v0120/$suite"
+cp core/build/test-results/"$task"/TEST-*.xml "docs/evidence/v0120/$suite/"
 
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
@@ -73,6 +74,6 @@ if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  adb shell am instrument -w -e class "$android_class" com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  adb shell run-as com.example.datasail rm -f files/fixture.properties files/fixture-ca.pem
  rg -q "OK \($android_count tests\)" "$fixture/android-result.txt"
- cp "$fixture/android-result.txt" "docs/evidence/v0110/$suite/android-${ANDROID_SERIAL}.txt"
- if [[ "$suite" == SQL_SERVER ]]; then adb exec-out run-as com.example.datasail cat files/v081-grid.png > "docs/evidence/v0110/$suite/grid-${ANDROID_SERIAL}.png"; fi
+ cp "$fixture/android-result.txt" "docs/evidence/v0120/$suite/android-${ANDROID_SERIAL}.txt"
+ if [[ "$suite" == SQL_SERVER && "$android_class" == *SpreadsheetSqlServerUiTest* ]]; then adb exec-out run-as com.example.datasail cat files/v081-grid.png > "docs/evidence/v0120/$suite/grid-${ANDROID_SERIAL}.png"; fi
 fi

@@ -1,0 +1,10 @@
+
+com.example.datasail.TableFilteringTest:....
+com.example.datasail.WorkbenchInteractionTest:...
+com.example.datasail.MobileWorkflowTest:.
+
+Time: 372.282
+
+OK (8 tests)
+
+

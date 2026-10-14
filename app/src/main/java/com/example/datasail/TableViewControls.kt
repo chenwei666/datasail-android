@@ -14,26 +14,30 @@ import androidx.compose.ui.unit.dp
 import com.example.datasail.core.*
 
 @Composable
-internal fun TableViewBar(page: ResultPage, busy: Boolean, choose: (String) -> Unit, apply: (TableView) -> Unit) {
+internal fun TableViewBar(page: ResultPage, busy: Boolean, choose: (String, ColumnFilter?) -> Unit, apply: (TableView) -> Unit) {
     val schema = page.tableSchema ?: return
     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(enabled = !busy, onClick = { schema.columns.firstOrNull()?.let { choose(it.name) } }) { Text("筛选 / 排序") }
-        page.view.filters.forEach { filter -> AssistChip(enabled = !busy, onClick = { choose(filter.column) },
+        OutlinedButton(enabled = !busy, onClick = { schema.columns.firstOrNull()?.let { choose(it.name, null) } }) { Text("筛选 / 排序") }
+        page.view.filters.forEach { filter -> AssistChip(enabled = !busy, onClick = { choose(filter.column, filter) },
             label = { Text("${filter.column} ${filter.operator.label} ${filter.value.take(30)}") }) }
-        page.view.sorts.forEach { sort -> AssistChip(enabled = !busy, onClick = { choose(sort.column) }, label = { Text("${sort.column} ${if (sort.descending) "↓" else "↑"}") }) }
+        page.view.sorts.forEach { sort -> AssistChip(enabled = !busy, onClick = { choose(sort.column, null) }, label = { Text("${sort.column} ${if (sort.descending) "↓" else "↑"}") }) }
         if (page.view != TableView()) TextButton(enabled = !busy, onClick = { apply(TableView()) }) { Text("清除条件") }
     }
 }
 
 @Composable
-internal fun ColumnViewDialog(page: ResultPage, initial: String, kind: DatabaseKind, dismiss: () -> Unit, apply: (TableView) -> Unit) {
+internal fun ColumnViewDialog(page: ResultPage, initial: String, kind: DatabaseKind, existing: ColumnFilter? = null, dismiss: () -> Unit, apply: (TableView) -> Unit) {
     val schema = page.tableSchema ?: return
     var column by remember(initial) { mutableStateOf(initial) }
-    var operator by remember { mutableStateOf(FilterOperator.EQ) }
-    var value by remember { mutableStateOf("") }
+    var operator by remember { mutableStateOf(existing?.operator ?: FilterOperator.EQ) }
+    var value by remember { mutableStateOf(existing?.value ?: "") }
     var columns by remember { mutableStateOf(false) }
     var operators by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
+    val definition = schema.columns.first { it.name == column }
+    val availableOperators = TableViews.operators(definition, kind == DatabaseKind.SQL_SERVER, kind == DatabaseKind.SQLITE)
+    val canSort = TableViews.sortable(definition, kind == DatabaseKind.SQL_SERVER, kind == DatabaseKind.SQLITE)
+    LaunchedEffect(column) { if (operator !in availableOperators) operator = availableOperators.first() }
     fun submit(view: TableView) {
         try {
             TableViews.compile(schema, view, { "\"" + it.replace("\"", "\"\"") + "\"" }, sqlite = kind == DatabaseKind.SQLITE, sqlServer = kind == DatabaseKind.SQL_SERVER)
@@ -45,14 +49,19 @@ internal fun ColumnViewDialog(page: ResultPage, initial: String, kind: DatabaseK
             Text("条件在数据库端执行；多个条件同时满足。", style = MaterialTheme.typography.bodySmall)
             OutlinedButton(onClick = { columns = true }, modifier = Modifier.fillMaxWidth()) { Text("字段：$column ▾") }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { submit(page.view.copy(sorts = listOf(ColumnSort(column)))) }) { Text("升序 ↑") }
-                OutlinedButton(onClick = { submit(page.view.copy(sorts = listOf(ColumnSort(column, true)))) }) { Text("降序 ↓") }
+                OutlinedButton(enabled = canSort, onClick = { submit(page.view.copy(sorts = listOf(ColumnSort(column)))) }) { Text("升序 ↑") }
+                OutlinedButton(enabled = canSort, onClick = { submit(page.view.copy(sorts = listOf(ColumnSort(column, true)))) }) { Text("降序 ↓") }
             }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(enabled = canSort && (page.view.sorts.size < 3 || page.view.sorts.any { it.column == column }), onClick = { submit(page.view.copy(sorts = page.view.sorts.filterNot { it.column == column } + ColumnSort(column))) }) { Text("追加升序") }
+                TextButton(enabled = canSort && (page.view.sorts.size < 3 || page.view.sorts.any { it.column == column }), onClick = { submit(page.view.copy(sorts = page.view.sorts.filterNot { it.column == column } + ColumnSort(column, true))) }) { Text("追加降序") }
+            }
+            if (!canSort) Text("此字段类型不支持排序", style = MaterialTheme.typography.bodySmall)
             if (page.view.sorts.isNotEmpty()) TextButton(onClick = { submit(page.view.copy(sorts = emptyList())) }) { Text("恢复主键排序") }
             HorizontalDivider()
             Box {
                 OutlinedButton(onClick = { operators = true }) { Text("${operator.label} ▾") }
-                DropdownMenu(operators, { operators = false }) { FilterOperator.entries.forEach { item -> DropdownMenuItem(text = { Text(item.label) }, onClick = { operator = item; operators = false }) } }
+                DropdownMenu(operators, { operators = false }) { availableOperators.forEach { item -> DropdownMenuItem(text = { Text(item.label) }, onClick = { operator = item; operators = false }) } }
             }
             if (operator.needsValue) OutlinedTextField(value, { value = it.take(4000); error = "" }, label = { Text("筛选值") },
                 supportingText = { Text("日期时间：yyyy-MM-dd HH:mm:ss；文本按原值匹配") }, modifier = Modifier.fillMaxWidth().testTag("table-filter-value"))
@@ -61,7 +70,7 @@ internal fun ColumnViewDialog(page: ResultPage, initial: String, kind: DatabaseK
             }
             if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
         }
-    }, confirmButton = { TextButton(onClick = { submit(page.view.copy(filters = page.view.filters.filterNot { it.column == column && it.operator == operator } + ColumnFilter(column, operator, if (operator.needsValue) value else ""))) }) { Text("应用筛选") } },
+    }, confirmButton = { TextButton(onClick = { submit(TableViews.replaceFilter(page.view, existing, ColumnFilter(column, operator, if (operator.needsValue) value else ""))) }) { Text("应用筛选") } },
         dismissButton = { TextButton(onClick = dismiss) { Text("取消") } })
     if (columns) AlertDialog(onDismissRequest = { columns = false }, title = { Text("选择字段") }, text = {
         var search by remember { mutableStateOf("") }

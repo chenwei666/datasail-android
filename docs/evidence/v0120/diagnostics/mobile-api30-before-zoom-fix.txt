@@ -1,0 +1,47 @@
+
+com.example.datasail.TableFilteringTest:....
+com.example.datasail.WorkbenchInteractionTest:.
+Error in pinchZoomKeepsValuesAndResetRestoresScale(com.example.datasail.WorkbenchInteractionTest):
+java.lang.AssertionError: Failed to assert the following: (Text + InputText + EditableText contains '200% · 重置' (ignoreCase: false))
+Semantics of the node:
+Node #2385 at (l=0.0, t=21.0, r=274.0, b=105.0)px, Tag: 'grid-zoom'
+Focused = 'false'
+Role = 'Button'
+Text = '[107% · 重置]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 6 siblings
+Selector used: (TestTag = 'grid-zoom')
+
+	at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:264)
+	at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:254)
+	at androidx.compose.ui.test.AssertionsKt.assertTextContains(Assertions.kt:208)
+	at androidx.compose.ui.test.AssertionsKt.assertTextContains$default(Assertions.kt:204)
+	at com.example.datasail.WorkbenchInteractionTest.pinchZoomKeepsValuesAndResetRestoresScale(WorkbenchInteractionTest.kt:44)
+.
+com.example.datasail.MobileWorkflowTest:.
+
+Time: 360.963
+There was 1 failure:
+1) pinchZoomKeepsValuesAndResetRestoresScale(com.example.datasail.WorkbenchInteractionTest)
+java.lang.AssertionError: Failed to assert the following: (Text + InputText + EditableText contains '200% · 重置' (ignoreCase: false))
+Semantics of the node:
+Node #2385 at (l=0.0, t=21.0, r=274.0, b=105.0)px, Tag: 'grid-zoom'
+Focused = 'false'
+Role = 'Button'
+Text = '[107% · 重置]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 6 siblings
+Selector used: (TestTag = 'grid-zoom')
+
+	at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:264)
+	at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:254)
+	at androidx.compose.ui.test.AssertionsKt.assertTextContains(Assertions.kt:208)
+	at androidx.compose.ui.test.AssertionsKt.assertTextContains$default(Assertions.kt:204)
+	at com.example.datasail.WorkbenchInteractionTest.pinchZoomKeepsValuesAndResetRestoresScale(WorkbenchInteractionTest.kt:44)
+
+FAILURES!!!
+Tests run: 8,  Failures: 1
+
+
