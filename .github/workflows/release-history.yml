@@ -26,6 +26,7 @@ jobs:
             python3 scripts/publish-history.py --refresh-visibility
           else
             python3 scripts/publish-history.py
+            env -u GH_TOKEN -u GITHUB_TOKEN python3 scripts/verify-public-downloads.py
           fi
       - name: Record actual result
         if: always()
