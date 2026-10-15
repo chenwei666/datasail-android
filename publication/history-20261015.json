@@ -1,5 +1,9 @@
 {
   "status": "audited",
+  "visibilityChange": {
+    "exitCode": 1,
+    "error": "gh: Resource not accessible by integration (HTTP 403)"
+  },
   "repository": {
     "full_name": "chenwei666/datasail-android",
     "private": true,
