@@ -1,0 +1,1 @@
+Candidate b061d63a: database and local UI checks precede the retained AI TLS test constructor. AI test fixture failed on the removed reflective constructor. Valkey device checks passed, but the shell post-test receipt failed after editing an active script; not a completed script run. Kept as diagnostic evidence only. Final tests are rerun against the next APK.

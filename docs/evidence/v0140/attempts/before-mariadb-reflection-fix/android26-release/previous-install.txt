@@ -1,0 +1,2 @@
+    versionCode=21 minSdk=26 targetSdk=36
+    versionName=0.13.0

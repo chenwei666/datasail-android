@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.JdbcWorkspaceIntegrationTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-15T03:26:25.275Z" hostname="b6e64093f9ae" time="1.888">
+  <properties/>
+  <testcase name="exactLargeIntegerFilteringUsesServerMetadata" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.56"/>
+  <testcase name="writesUseBoundValuesFullRowConflictsAndOneUseTokens" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.31"/>
+  <testcase name="wideTableWindowsReachLastColumnWithExactType" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.063"/>
+  <testcase name="serverSideFilteringSortingAndTemporalParameters" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.186"/>
+  <testcase name="floatsAndBinaryTextComparisonDoNotLoseConcurrentChanges" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.094"/>
+  <testcase name="serverEnforcesReadonlyBeyondSyntaxAndCannotPoisonNextTransaction" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.167"/>
+  <testcase name="unusualIdentifiersAreQuotedAndExactMetadataDoesNotMatchWildcards" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.041"/>
+  <testcase name="rejectsWriteSyntaxAndExecutableComments" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.127"/>
+  <testcase name="browsingPreservesTypesAndPaginationAndClosesTransactions" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.301"/>
+  <testcase name="rejectsWrongHostnameUntrustedCaAndWrongPassword" classname="com.example.datasail.core.JdbcWorkspaceIntegrationTest" time="0.036"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,9 @@
+
+com.example.datasail.JdbcWorkspaceDeviceTest:..
+com.example.datasail.DiscoveryUiTest:..
+
+Time: 68.456
+
+OK (4 tests)
+
+

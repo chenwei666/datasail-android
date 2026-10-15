@@ -1,33 +1,28 @@
-# Release 驱动适配审查（V0.2.2）
+# Android 驱动混淆适配（V0.14.0）
 
-已完成 SQL Server Android 源码适配第一阶段，见 [构建与行为边界](../sqlserver-android/README.md)。Release/R8 仍失败；没有把缺失类清单作为 dontwarn 配置，没有占位的成功实现。
+本轮从 193 类 R8 缺失引用基线出发，为应用实际使用的 TCP/TLS、账号认证和同步数据库路径提供源码适配。正常 `assembleRelease` 已通过，不使用 `-ignorewarnings` 或批量 `-dontwarn`。最终 DEX 审计和实际设备结果见 [测试报告](TEST_REPORT.md)；构建通过不是数据库兼容性结论。
 
-## 本轮证据
+| 模块 | 派生版本 | Android 边界 |
+|---|---|---|
+| sqlserver-android | 13.6.0.jre8-datasail.3 | 保留 SQL 账号、TLS、JDBC 整数类型 API、事务和关闭；集成认证/GSS、云令牌、连接池/XA、可选密钥库与 enclave 分支明确拒绝 |
+| postgresql-android | 42.7.14-datasail.1 | 保留 TCP/TLS、密码/SCRAM；Runtime 堆预算；拒绝 GSS/SSPI 和 StAX；SAN 身份验证 |
+| mariadb-android | 3.5.10-datasail.1 | 保留 MySQL/MariaDB TCP/TLS 与普通密码认证；拒绝 JNA 本地传输、GSS、AWS、JMX、XA 和缺少提供者的 Parsec；普通连接关闭保留 |
+| mongodb-core-android / mongodb-sync-android | 5.6.5-datasail.1 | 保留同步 TCP/TLS、SCRAM、BSON/Document 和 zlib；拒绝异步/Netty、本地传输、其它认证、SRV/TXT、snappy/zstd 和自动客户端字段加密 |
 
-```bash
-./gradlew :sqlserver-android:check
-./gradlew :app:assembleRelease --console=plain
-./gradlew :core:driverCompatibilityReport --console=plain
-```
+每个模块保存完整上游源码 JAR、来源及 SHA-256、源码补丁、修改后源码哈希和 class 清单。构建仅重编译修改源文件，与锁定上游 JAR 合并；其余 class/资源逐字节校验，失效上游签名移除，派生 JAR 使用自身版本和元数据。没有占位平台类，也不改写字节码规避依赖。
 
-profile 构建锁定微软 13.6.0.jre8 原始二进制和完整源码，精确应用补丁，编译 3 个源码文件中的 5 个类，其余 class/资源字节不变。派生 JAR 自行标识版本，不沿用失效的微软 JAR 签名。
+MariaDB 的 LGPL 源码和重新链接说明见该模块 README。真实 ANTLR、SLF4J、BSON 等运行依赖单独固定版本和验证元数据。AndroidTest 所需两个 Error Prone 注解使用逐字节校验的原始源码，仅进入测试 APK。
 
-- MaxResultBufferParser 使用 Runtime.maxMemory，修复容量乘法溢出，移除其 JMX 依赖。
-- SQLServerCertificateUtils 不接受 CN 身份回退，PKCS#1 客户端密钥明确拒绝；移除其 JNDI 和 BouncyCastle PEM 依赖。
-- SQLServerSQLXML 的 StAX 请求明确不支持；移除 StAX 实现，保留字符串/流/DOM/SAX 及其安全配置。
-- R8 实际缺失类从 V0.2.1 的 147 个减少到 132 个（减少 15 个，没有新增）。这是局部进展，不是 Release 通过。
+## R8 运行适配
 
-引用审查使用固定 V0.2.1 缺失类型基线，ASM 9.8 对每个方法建立独立常量池。报告同时列原始 SQL Server 143、派生 SQL Server 136、未改动 MariaDB 72 个方法，共 351 行；实际应用两驱动对应 208 个相关方法。报告仅定位引用，不证明可达或可以删除。ASM 仅为构建工具，不进入 APK。
+- JDBC/TLS 反射入口保留必要类名和构造器。
+- MariaDB/MySQL 按属性名反射绑定的 Builder 和配置字段保留；连接前再次核验账号、TLS、超时、本地文件和多语句策略，异常时在打开 socket 前拒绝。
+- SQL Server 按名称加载的 `SQLServerResource*` 消息资源保留，避免驱动初始化时 `MissingResourceException`。
+- `release-test-api.pro` 从实际测试调用点及外部覆盖接口生成精确共享 ABI 规则，独立测试 APK 与真实 Release 链接；Kotlin 默认接口适配器和协程探针保留必要名称。没有整库 keep。
+- 使用正式签名、不可调试的真实混淆 APK 执行设备验证，合成夹具仅传入可丢弃 SDK 模拟器。Debug 通过不替代 Release 结果。
 
-## 下一步最小适配范围
+## 重建
 
-| 位置 | 未解决问题与验收 |
-|---|---|
-| SQLServerConnection.connectInternal / logon | 直接引用 GSSCredential。需分离并明确拒绝集成认证分支，保留 SQL 账号流程，不能删除整个方法 |
-| SQLServerConnection.poolCloseEventNotify | XAConnection 引用。需审查非池化普通连接关闭路径，不能用不关闭连接的空实现 |
-| SQLType 重载、JNDI 数据源、Kerberos/Entra/AWS、可选加密插件 | 逐项区分 API 签名、可达功能和可选依赖；不能从 UI 没入口推出 R8 后无引用 |
-| MariaDB 驱动 | 尚未修改；LGPL 源码及重链接义务仍需单独核对 |
+参见 [正式构建说明](RELEASE_BUILD.md)。CI 对每个推送/PR 执行未签名 R8 构建及 DEX 基线检查；生产私钥不进入普通 CI。
 
-后续源码修改保持锁定版本、可重放 patch、明确拒绝能力和完整回归；不能静默换驱动或提高 minSdk。
-
-进入可交付 Release 的门槛：R8 无批量忽略即可构建，最终 DEX 没有不受支持的可达平台引用；SQL 账号 TLS 正负例、参数化读写/冲突/未知提交、关闭/超时/取消、升级在混淆 APK 上重跑。API26、API30、真机各自记录，当前 Debug/JVM 结果不替代这些门槛。
+后续仍需真实 Android/arm64 设备、其它服务器版本及扩展认证的独立验证。新增驱动功能必须补充来源、运行依赖、正负例和真实混淆 APK 验证，不能根据桌面驱动支持推断 Android 支持。

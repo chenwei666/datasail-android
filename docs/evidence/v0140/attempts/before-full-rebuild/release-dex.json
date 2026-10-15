@@ -1,0 +1,9 @@
+{
+  "apkSha256": "d4d5737281ace5b83a92bc295f28138ff998434322b1be8c1333720982932388",
+  "baselineCount": 193,
+  "dexFiles": [
+    "classes.dex"
+  ],
+  "remainingMissingTypeReferences": [],
+  "missingRequiredReflectionSymbols": []
+}

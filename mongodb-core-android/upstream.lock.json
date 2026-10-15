@@ -1,0 +1,53 @@
+{
+  "profile": "5.6.5-datasail.1",
+  "upstream": "org.mongodb:mongodb-driver-core:5.6.5",
+  "sourceFile": "mongodb-driver-core-5.6.5-sources.jar",
+  "sourceSha256": "d38c9728891f85ceb6faf02dbcf48488cccfc6c5cd0a77b93bd511466132316e",
+  "binarySha256": "125489cc9cef8b510c3ebd46f1c5bfc75d864630eff9ffb40a239ed7732633fc",
+  "sources": {
+    "com/mongodb/MongoClientSettings.java": "7834555f56f8838c9b49ca916e4d06301030104a759adec683400b906ed033ce",
+    "com/mongodb/connection/TransportSettings.java": "da8e25cf7017e832b1f29ac33d80b9875570c56a26340d4f1b1b39e12f429723",
+    "com/mongodb/internal/connection/InternalStreamConnection.java": "5fdee27b462c4e7f4547527aa5a08c484589e1f41421fb3664b809194aa4ac0a",
+    "com/mongodb/internal/connection/InternalStreamConnectionFactory.java": "e4bc44655c2a113b3cc8f0f13318145f2160e19e9417db5fcae4e025e69b3eda",
+    "com/mongodb/internal/connection/SocketStreamFactory.java": "688a8040b6d8532113b0291c00bba3b480eeec02acfc248e249907dc265ca60a",
+    "com/mongodb/internal/connection/StreamFactoryHelper.java": "34657620c7c7569dea3343034706a290644d6931c38ecad984847028fe5f5a94",
+    "com/mongodb/internal/dns/DefaultDnsResolver.java": "5cf3ff7ce95cdb8d8d00a8c2772f33859b0346e43dda7da8e8e0ccaf59104ec3",
+    "com/mongodb/management/MBeanServerFactory.java": "e900e5e900f8731a1d4fcadf3a8af0cf79e89b21898d1859be0829832714f28c"
+  },
+  "replacedEntries": [
+    "com/mongodb/MongoClientSettings$1.class",
+    "com/mongodb/MongoClientSettings$Builder.class",
+    "com/mongodb/MongoClientSettings.class",
+    "com/mongodb/connection/TransportSettings.class",
+    "com/mongodb/internal/connection/InternalStreamConnection$1.class",
+    "com/mongodb/internal/connection/InternalStreamConnection$2.class",
+    "com/mongodb/internal/connection/InternalStreamConnection$MessageHeaderCallback$MessageCallback.class",
+    "com/mongodb/internal/connection/InternalStreamConnection$MessageHeaderCallback.class",
+    "com/mongodb/internal/connection/InternalStreamConnection.class",
+    "com/mongodb/internal/connection/InternalStreamConnectionFactory$1.class",
+    "com/mongodb/internal/connection/InternalStreamConnectionFactory.class",
+    "com/mongodb/internal/connection/SocketStreamFactory.class",
+    "com/mongodb/internal/connection/StreamFactoryHelper$1.class",
+    "com/mongodb/internal/connection/StreamFactoryHelper.class",
+    "com/mongodb/internal/dns/DefaultDnsResolver.class",
+    "com/mongodb/management/MBeanServerFactory.class"
+  ],
+  "compiledEntries": [
+    "com/mongodb/MongoClientSettings$1.class",
+    "com/mongodb/MongoClientSettings$Builder.class",
+    "com/mongodb/MongoClientSettings.class",
+    "com/mongodb/connection/TransportSettings.class",
+    "com/mongodb/internal/connection/InternalStreamConnection$1.class",
+    "com/mongodb/internal/connection/InternalStreamConnection$2.class",
+    "com/mongodb/internal/connection/InternalStreamConnection$MessageHeaderCallback$MessageCallback.class",
+    "com/mongodb/internal/connection/InternalStreamConnection$MessageHeaderCallback.class",
+    "com/mongodb/internal/connection/InternalStreamConnection.class",
+    "com/mongodb/internal/connection/InternalStreamConnectionFactory$1.class",
+    "com/mongodb/internal/connection/InternalStreamConnectionFactory.class",
+    "com/mongodb/internal/connection/SocketStreamFactory.class",
+    "com/mongodb/internal/connection/StreamFactoryHelper$1.class",
+    "com/mongodb/internal/connection/StreamFactoryHelper.class",
+    "com/mongodb/internal/dns/DefaultDnsResolver.class",
+    "com/mongodb/management/MBeanServerFactory.class"
+  ]
+}

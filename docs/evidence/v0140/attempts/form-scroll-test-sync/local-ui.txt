@@ -1,0 +1,44 @@
+
+com.example.datasail.SmokeTest:...
+com.example.datasail.AiHistoryTest:...
+com.example.datasail.AiNavigationTest:.
+com.example.datasail.AiStoreTest:..
+com.example.datasail.ConnectionUiTest:.
+Error in engineSearchAdaptsFormAndPreventsInvalidConnection(com.example.datasail.ConnectionUiTest):
+java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '配置 Valkey' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.example.datasail.ConnectionUiTest.engineSearchAdaptsFormAndPreventsInvalidConnection(ConnectionUiTest.kt:43)
+
+com.example.datasail.MobileWorkflowTest:.
+com.example.datasail.PasswordVaultTest:...
+com.example.datasail.PasswordWorkflowTest:.
+com.example.datasail.QueryStoreTest:...
+com.example.datasail.SettingsUiTest:.
+com.example.datasail.SqliteDeviceTest:...
+com.example.datasail.TableFavoriteStoreTest:.
+com.example.datasail.TableFilteringTest:....
+com.example.datasail.TablePresentationTest:
+Error in all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:120)
+
+com.example.datasail.WorkbenchInteractionTest:....
+
+Time: 304.644
+There were 2 failures:
+1) engineSearchAdaptsFormAndPreventsInvalidConnection(com.example.datasail.ConnectionUiTest)
+java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '配置 Valkey' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.example.datasail.ConnectionUiTest.engineSearchAdaptsFormAndPreventsInvalidConnection(ConnectionUiTest.kt:43)
+2) all130ColumnsAreReachableWithFullscreenAndRowDetails(com.example.datasail.TablePresentationTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.TablePresentationTest.all130ColumnsAreReachableWithFullscreenAndRowDetails(TablePresentationTest.kt:120)
+
+FAILURES!!!
+Tests run: 33,  Failures: 2
+
+

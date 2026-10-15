@@ -1,0 +1,1 @@
+Candidate evidence before Connector/J reflective property preservation and fail-closed policy verification. Includes earlier failed shrinker/test ABI attempts; not final release verification. Final device evidence must bind the new APK hash.

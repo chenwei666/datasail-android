@@ -28,6 +28,19 @@ class ConnectionUiTest {
     private val compose = createAndroidComposeRule<MainActivity>()
     // Seed before Activity/ViewModel construction; recreation intentionally retains ViewModels.
     @get:Rule val rules: RuleChain = RuleChain.outerRule(fixture).around(compose)
+    private fun finishSearchInput() {
+        // Keep the platform IME from leaking a resizing window into the next
+        // navigation assertion when multiple Activity scenarios run together.
+        compose.runOnIdle {
+            val view = compose.activity.window.decorView
+            (compose.activity.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager)
+                .hideSoftInputFromWindow(view.windowToken, 0)
+        }
+        compose.waitUntil(10000) {
+            compose.runOnIdle { androidx.core.view.ViewCompat.getRootWindowInsets(compose.activity.window.decorView)
+                ?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) != true }
+        }
+    }
     @Test fun engineSearchAdaptsFormAndPreventsInvalidConnection() {
         compose.onNodeWithText("新建连接").performClick()
         // Only synthetic metadata is present; allow test screenshots without changing production FLAG_SECURE.
@@ -39,7 +52,12 @@ class ConnectionUiTest {
         compose.onNodeWithText("键值", useUnmergedTree = true).performClick()
         compose.onNodeWithText("MySQL").assertDoesNotExist()
         compose.onNodeWithText("搜索可连接的数据库").performTextInput("Valkey")
+        finishSearchInput()
         compose.onNode(hasText("Valkey") and !hasSetTextAction()).performScrollTo().performClick()
+        // Stage changes also dismiss the IME and animate the form into view.
+        compose.waitUntil(10000) {
+            runCatching { compose.onNodeWithText("配置 Valkey").assertIsDisplayed() }.isSuccess
+        }
         compose.onNodeWithText("配置 Valkey").assertIsDisplayed()
         compose.onNodeWithText("数据库编号").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("ACL 用户名").performScrollTo().assertIsDisplayed()
@@ -47,6 +65,7 @@ class ConnectionUiTest {
         compose.onNodeWithText("返回我的连接").performScrollTo().performClick()
         compose.onNodeWithText("新建连接").performClick()
         compose.onNodeWithText("搜索可连接的数据库").performTextInput("SQLite")
+        finishSearchInput()
         compose.onNode(hasText("SQLite") and !hasSetTextAction()).performScrollTo().performClick()
         compose.onNodeWithText("选择 SQLite 文件").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("密码").assertDoesNotExist()

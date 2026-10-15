@@ -1,0 +1,9 @@
+
+com.example.datasail.SearchDeviceTest:....
+com.example.datasail.SearchUiTest:..
+
+Time: 105.656
+
+OK (6 tests)
+
+

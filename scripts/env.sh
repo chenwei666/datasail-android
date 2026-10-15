@@ -31,3 +31,7 @@ PY
     fi
     unset datasail_proxy_flags
 fi
+
+# Select instrumentation variant without changing production debuggability.
+DATASAIL_TEST_VARIANT_TITLE="${DATASAIL_TEST_VARIANT:-debug}"
+DATASAIL_TEST_VARIANT_TITLE="${DATASAIL_TEST_VARIANT_TITLE^}"

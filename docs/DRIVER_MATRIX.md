@@ -1,17 +1,17 @@
-# V0.13.0 驱动与能力矩阵
+# V0.14.0 驱动与能力矩阵
 
 每种引擎独立验收。下面是实现范围；本轮实际执行的服务器、Android 版本与失败记录以 [测试报告](TEST_REPORT.md) 为准。未通过的 Release、真机和其它服务器版本不能从 JVM 成功推断。
 
 | 引擎 | 驱动 | 浏览 | 单对象写入边界 |
 |---|---|---|---|
-| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.2 | 库、Schema、表、视图、分页、SELECT | 主键与完整原行 / rowversion 校验；双击草稿、确认提交；受限整表删除另需表名确认 |
-| MySQL | MariaDB Connector/J 3.5.10 | 库、表、视图、分页、SELECT | InnoDB、主键、可见触发器状态、完整原行；参数化短事务；二进制浮点参数 |
+| SQL Server | mssql-jdbc 13.6.0.jre8-datasail.3 | 库、Schema、表、视图、分页、SELECT | 主键与完整原行 / rowversion 校验；双击草稿、确认提交；受限整表删除另需表名确认 |
+| MySQL | MariaDB Connector/J 3.5.10-datasail.1 | 库、表、视图、分页、SELECT | InnoDB、主键、可见触发器状态、完整原行；参数化短事务；二进制浮点参数 |
 | MariaDB | 同上，单独验收 | 同上 | 同上；不以兼容协议代替独立验证 |
-| PostgreSQL | pgjdbc 42.7.14 | Schema、表、视图、分页、SELECT | 主键、完整原行及元数据校验；短事务；复杂类型仍有只读限制 |
+| PostgreSQL | pgjdbc 42.7.14-datasail.1 | Schema、表、视图、分页、SELECT | 主键、完整原行及元数据校验；短事务；复杂类型仍有只读限制 |
 | SQLite | Android SQLiteDatabase | 一致性私有副本、表、视图、分页、SELECT | 只改应用内副本；主键、完整原行；整数、文本、浮点；不自动写回原文件 |
 | Redis | 自有 RESP2/TLS | SCAN、六类键、TTL、有界预览 | 完整 UTF-8 字符串；WATCH / MULTI / EXEC；保留现有 TTL；不重试 |
 | Valkey | 同上，单独验收 | 同上 | 同上；其它集合类型当前仍只读 |
-| MongoDB | Java Driver 5.6.5 | 集合、受限筛选、游标、Extended JSON | 有界完整文档；不可改 _id；按完整原文及各 BSON 类型原子校验，二进制排序规则；需 MongoDB 5.0+ 的表达式能力 |
+| MongoDB | Java Driver 5.6.5-datasail.1 | 集合、受限筛选、游标、Extended JSON | 有界完整文档；不可改 _id；按完整原文及各 BSON 类型原子校验，二进制排序规则；需 MongoDB 5.0+ 的表达式能力 |
 | Elasticsearch | 平台 HTTPS | 索引、映射、DSL、分页 | 单文档新增、替换、删除；if_seq_no / if_primary_term 乐观锁 |
 | OpenSearch | 同上，单独验收 | 同上 | 同上；无 bulk、脚本或索引管理 |
 
@@ -30,7 +30,7 @@
 - MariaDB 11.8.9：`mariadb@sha256:6422478cb8e159f080fb1d8ccf65101e26fe51385787fde7d16c3b165a331f15`
 - PostgreSQL 18.3：`postgres@sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db`
 
-JVM 使用 Temurin 21.0.8+9；本轮设备验收使用 Android 8/API26 AOSP x86_64 软件模拟器；Android 11/API30 本轮尚无通过证据。真机、arm64、云认证、其它服务器版本尚无验证。Release/R8 仍失败，不将 Debug 验收冒充混淆发行兼容。
+JVM 使用 Temurin 21.0.8+9；本轮使用正式签名混淆 APK，在 Android 8/API26 与 Android 11/API30 x86_64 软件模拟器上分别验收，逐项结果以 TEST_REPORT 为准。正常 R8 构建和最终 DEX 缺失引用检查通过；真机、arm64、云认证、其它服务器版本尚未验证。驱动桌面扩展边界见 DRIVER_RELEASE_PLAN。
 
 其它引擎见 DATABASE_SCOPE，全部仍为规划项目。下一批优先 ClickHouse；Oracle、Db2、国产及兼容协议数据库逐项接入，不能将协议相似推断为已支持。
 

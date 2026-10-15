@@ -16,6 +16,10 @@ android-test = "1.2.1"
 test-runner = "1.6.2"
 
 [libraries]
+bson = { module = "org.mongodb:bson", version.ref = "mongodb" }
+antlr-runtime = { module = "org.antlr:antlr4-runtime", version = "4.9.3" }
+slf4j-nop = { module = "org.slf4j:slf4j-nop", version = "2.0.17" }
+jsr305 = { module = "com.google.code.findbugs:jsr305", version = "3.0.2" }
 mongodb = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 conscrypt = { module = "org.conscrypt:conscrypt-android", version.ref = "conscrypt" }

@@ -1,0 +1,12 @@
+/tmp/datasail-final-default-build.log:> Task :app:compileReleaseKotlin
+/tmp/datasail-final-default-build.log:> Task :app:minifyReleaseWithR8 UP-TO-DATE
+/tmp/datasail-final-default-build.log:BUILD SUCCESSFUL in 50s
+/tmp/datasail-final-default-build.log:105 actionable tasks: 11 executed, 94 up-to-date
+/tmp/datasail-clean-signed-rebuild.log:> Task :app:compileReleaseKotlin UP-TO-DATE
+/tmp/datasail-clean-signed-rebuild.log:> Task :app:minifyReleaseWithR8
+/tmp/datasail-clean-signed-rebuild.log:BUILD SUCCESSFUL in 1m 57s
+/tmp/datasail-clean-signed-rebuild.log:105 actionable tasks: 17 executed, 88 up-to-date
+/tmp/datasail-clean-kotlin-rebuild.log:> Task :app:compileReleaseKotlin
+/tmp/datasail-clean-kotlin-rebuild.log:> Task :app:minifyReleaseWithR8
+/tmp/datasail-clean-kotlin-rebuild.log:BUILD SUCCESSFUL in 3m 15s
+/tmp/datasail-clean-kotlin-rebuild.log:103 actionable tasks: 23 executed, 80 up-to-date

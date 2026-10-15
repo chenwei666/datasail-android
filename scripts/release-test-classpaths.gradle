@@ -1,0 +1,16 @@
+// Invoke with -Pdatasail.testBuildType=release and this file as a Gradle init script.
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    app.tasks.register('recordReleaseTestClasspaths') {
+        dependsOn('compileReleaseAndroidTestJavaWithJavac')
+        doLast {
+            def data = [:]
+            ['releaseRuntimeClasspath', 'releaseAndroidTestRuntimeClasspath'].each { name ->
+                data[name] = app.configurations.getByName(name).files.collect { it.absolutePath }.sort()
+            }
+            def output = rootProject.layout.buildDirectory.file('release-test-classpaths.json').get().asFile
+            output.parentFile.mkdirs()
+            output.text = groovy.json.JsonOutput.toJson(data)
+        }
+    }
+}

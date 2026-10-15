@@ -82,6 +82,14 @@ class TablePresentationTest {
         compose.onNodeWithTag("structure-columns").performScrollTo()
         compose.onNodeWithText("1. id").assertIsDisplayed()
         compose.onNodeWithTag("copy-column-0").performScrollTo().performClick()
+        // The Android clipboard service updates after the input callback on API30.
+        // Wait for the actual copied value, retaining the same content assertion.
+        compose.waitUntil(10000) {
+            compose.runOnIdle {
+                val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                clipboard.primaryClip?.getItemAt(0)?.text?.toString() == "id"
+            }
+        }
         compose.runOnIdle {
             val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
             assertEquals("id", clipboard.primaryClip!!.getItemAt(0).text.toString())
@@ -106,8 +114,16 @@ class TablePresentationTest {
         compose.onAllNodesWithText("换行").onLast().performClick()
         compose.onAllNodesWithTag("cell-0-1").onLast().performScrollTo().performTouchInput { click() }
         compose.mainClock.advanceTimeBy(600)
-        compose.onNode(hasText("整行详情") and hasAnyAncestor(isDialog())).performScrollTo().performClick()
-        compose.onAllNodesWithText("0007 完整已加载值 中文换行").onLast().assertIsDisplayed()
+        val detailsButton = compose.onNode(hasText("整行详情") and hasAnyAncestor(isDialog()))
+        // Its immediate parent scrolls horizontally. Bring that toolbar into the
+        // outer vertical viewport before injecting a real touch on the button.
+        detailsButton.onParent().performScrollTo()
+        detailsButton.assertIsDisplayed().performClick()
+        // Wait for the nested details dialog; the same value is already visible
+        // in the underlying grid and cannot prove the click callback completed.
+        compose.waitUntil(10000) { compose.onAllNodesWithText("第 1 行 · 已加载字段").fetchSemanticsNodes().isNotEmpty() }
+        val details = isDialog() and hasAnyDescendant(hasText("第 1 行 · 已加载字段"))
+        compose.onNode(hasText("0007 完整已加载值 中文换行") and hasAnyAncestor(details)).assertIsDisplayed()
         compose.onNodeWithText("关闭").performClick()
         if (android.os.Build.VERSION.SDK_INT >= 28) compose.onNodeWithText("退出全屏").onParent().onParent().captureToImage().asAndroidBitmap().let { bitmap -> File(context.filesDir,"table-v091.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG,100,it) } }
         compose.onNodeWithText("退出全屏").performClick()

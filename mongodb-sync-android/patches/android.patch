@@ -1,0 +1,36 @@
+--- a/com/mongodb/client/internal/MongoClientImpl.java
++++ b/com/mongodb/client/internal/MongoClientImpl.java
+@@ -59,7 +59,6 @@
+ import java.util.concurrent.atomic.AtomicBoolean;
+ 
+ import static com.mongodb.assertions.Assertions.notNull;
+-import static com.mongodb.client.internal.Crypts.createCrypt;
+ import static com.mongodb.internal.event.EventListenerHelper.getCommandListener;
+ import static java.lang.String.format;
+ import static org.bson.codecs.configuration.CodecRegistries.withUuidRepresentation;
+@@ -94,6 +93,7 @@
+         this.settings = notNull("settings", settings);
+         this.mongoDriverInformation = mongoDriverInformation;
+         AutoEncryptionSettings autoEncryptionSettings = settings.getAutoEncryptionSettings();
++        if (autoEncryptionSettings != null) throw new UnsupportedOperationException("Client-side field encryption is unavailable in the Android profile");
+         if (settings.getContextProvider() != null && !(settings.getContextProvider() instanceof SynchronousContextProvider)) {
+             throw new IllegalArgumentException("The contextProvider must be an instance of "
+                     + SynchronousContextProvider.class.getName() + " when using the synchronous driver");
+@@ -102,7 +102,7 @@
+         this.delegate = new MongoClusterImpl(autoEncryptionSettings, cluster,
+                                              withUuidRepresentation(settings.getCodecRegistry(), settings.getUuidRepresentation()),
+                                              (SynchronousContextProvider) settings.getContextProvider(),
+-                                             autoEncryptionSettings == null ? null : createCrypt(settings, autoEncryptionSettings), this,
++                                             null /* Client-side field encryption is not supported by this profile. */, this,
+                                              operationExecutor, settings.getReadConcern(), settings.getReadPreference(), settings.getRetryReads(),
+                                              settings.getRetryWrites(), settings.getServerApi(),
+                                              new ServerSessionPool(cluster, TimeoutSettings.create(settings), settings.getServerApi()),
+@@ -311,6 +311,8 @@
+     private static Cluster createCluster(final MongoClientSettings settings,
+                                          @Nullable final MongoDriverInformation mongoDriverInformation,
+                                          final StreamFactory streamFactory, final StreamFactory heartbeatStreamFactory) {
++        if (settings.getAutoEncryptionSettings() != null) throw new UnsupportedOperationException("Client-side field encryption is unavailable in the Android profile");
++
+         notNull("settings", settings);
+         return new DefaultClusterFactory().createCluster(settings.getClusterSettings(), settings.getServerSettings(),
+                 settings.getConnectionPoolSettings(), InternalConnectionPoolSettings.builder().build(),

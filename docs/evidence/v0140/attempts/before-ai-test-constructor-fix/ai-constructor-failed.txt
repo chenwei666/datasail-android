@@ -1,0 +1,26 @@
+Exact com.example.datasail APK already installed.
+Exact com.example.datasail.test APK already installed.
+SELinux: Loaded file_contexts
+SELinux: Loaded file_contexts
+
+com.example.datasail.AiServiceUiTest:
+Error in androidTlsAndAllThreeProtocolContracts(com.example.datasail.AiServiceUiTest):
+java.lang.NoSuchMethodException: <init> [class i4.h, class [C, class javax.net.ssl.SSLContext]
+	at java.lang.Class.getConstructor0(Class.java:2320)
+	at java.lang.Class.getDeclaredConstructor(Class.java:2166)
+	at com.example.datasail.AiServiceUiTest.transport(AiServiceUiTest.kt:29)
+	at com.example.datasail.AiServiceUiTest.androidTlsAndAllThreeProtocolContracts(AiServiceUiTest.kt:228)
+
+Error in realtimeSuggestionsRequireConsentAndNeverExecuteOrReuseAfterLeaving(com.example.datasail.AiServiceUiTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 20000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.AiServiceUiTest.realtimeSuggestionsRequireConsentAndNeverExecuteOrReuseAfterLeaving(AiServiceUiTest.kt:180)
+
+Error in directChatKeepsHistoryAndClearsOnProfileChange(com.example.datasail.AiServiceUiTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 20000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:755)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:362)
+	at com.example.datasail.AiServiceUiTest.directChatKeepsHistoryAndClearsOnProfileChange(AiServiceUiTest.kt:67)
+INSTRUMENTATION_RESULT: shortMsg=Process crashed.
+INSTRUMENTATION_CODE: 0

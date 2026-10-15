@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=DataSail
+Signer #1 certificate SHA-256 digest: 86d3ec30bb7bb3ab44a41b1268d40003a746c2ecda078b7db5ad249ce02ae93c
+Signer #1 certificate SHA-1 digest: 06e868506f3549ea91ca1e1510c4f942da4274b2
+Signer #1 certificate MD5 digest: 7471c0badbd9d3ea572cecc5adf84a99
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 4096
+Signer #1 public key SHA-256 digest: 7250869c7fb522ef295104bfd8005132b8f8684bea5ee56769c5eac0d1187f26
+Signer #1 public key SHA-1 digest: af21e8f19597d16aee2c6e4584890a6f72360a5f
+Signer #1 public key MD5 digest: 6f9a2a9f2d758752daa9cbd6f79458f4

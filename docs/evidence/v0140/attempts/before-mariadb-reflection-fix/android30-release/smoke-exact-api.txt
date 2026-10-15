@@ -1,0 +1,109 @@
+
+com.example.datasail.SmokeTest:
+Error in jdbcEntryPointsLoadOnAndroid(com.example.datasail.SmokeTest):
+java.lang.AbstractMethodError: abstract method "p6.z1 v6.r.a()"
+	at v6.t.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at v6.s.<clinit>(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:93)
+	at p6.s0.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:45)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:34)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:411)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+
+Error in metadataRoundTripPreservesConnectionPolicy(com.example.datasail.SmokeTest):
+java.lang.NoClassDefFoundError: v6.s
+	at p6.s0.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:45)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:34)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:411)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+	... 33 trimmed
+Caused by: java.lang.AbstractMethodError: abstract method "p6.z1 v6.r.a()"
+	at v6.t.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at v6.s.<clinit>(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:93)
+	... 44 more
+
+Error in launchShowsHonestNavigation(com.example.datasail.SmokeTest):
+java.lang.NoClassDefFoundError: v6.s
+	at p6.s0.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:45)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:34)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:411)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+	... 33 trimmed
+Caused by: java.lang.AbstractMethodError: abstract method "p6.z1 v6.r.a()"
+	at v6.t.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at v6.s.<clinit>(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:93)
+	... 44 more
+
+
+Time: 0.241
+There were 3 failures:
+1) jdbcEntryPointsLoadOnAndroid(com.example.datasail.SmokeTest)
+java.lang.AbstractMethodError: abstract method "p6.z1 v6.r.a()"
+	at v6.t.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at v6.s.<clinit>(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:93)
+	at p6.s0.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:45)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:34)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:411)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+2) metadataRoundTripPreservesConnectionPolicy(com.example.datasail.SmokeTest)
+java.lang.NoClassDefFoundError: v6.s
+	at p6.s0.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:45)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:34)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:411)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+	... 33 trimmed
+Caused by: java.lang.AbstractMethodError: abstract method "p6.z1 v6.r.a()"
+	at v6.t.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at v6.s.<clinit>(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:93)
+	... 44 more
+3) launchShowsHonestNavigation(com.example.datasail.SmokeTest)
+java.lang.NoClassDefFoundError: v6.s
+	at p6.s0.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:45)
+	at androidx.compose.ui.test.IdlingResourceRegistry.<init>(IdlingResourceRegistry.jvm.kt:34)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:411)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+	... 33 trimmed
+Caused by: java.lang.AbstractMethodError: abstract method "p6.z1 v6.r.a()"
+	at v6.t.b(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:1)
+	at v6.s.<clinit>(r8-map-id-2fb06e1c361088d1ec77640e675e6302cf234a8caa106837fe3b11a6346cc488:93)
+	... 44 more
+
+FAILURES!!!
+Tests run: 3,  Failures: 3
+
+

@@ -2,11 +2,11 @@
 
 **An AI-assisted, multi-database management tool for Android. Query data, edit records and ask questions on your phone.**
 
-[简体中文](README.md) · **English** · [Download](https://github.com/chenwei666/datasail-android/releases/tag/V0.13.0) · [All versions](docs/VERSION_HISTORY.md) · [Workbench guide (Chinese)](docs/WORKSPACE.md)
+[简体中文](README.md) · **English** · [Download](https://github.com/chenwei666/datasail-android/releases/tag/V0.14.0) · [All versions](docs/VERSION_HISTORY.md) · [Workbench guide (Chinese)](docs/WORKSPACE.md)
 
 DataSail is a native Android database client built with Kotlin, Jetpack Compose and ViewModel. It connects directly to databases without requiring Root, Termux, a web wrapper or a mandatory relay service. Database features remain available with AI disabled. The application interface is currently primarily Chinese; this English overview does not imply a fully localized English UI.
 
-> Current version: **V0.13.0 / versionCode 21**. Downloadable APKs are **Debug prereleases**. Release/R8 and physical-device acceptance remain incomplete. Public availability is not a production-readiness claim.
+> Current version: **V0.14.0 / versionCode 22**. The APK is an **independently production-signed, non-debuggable, minified Release**. Actual test scope and limitations are documented separately; physical devices, arm64 and other server versions still require independent validation.
 
 ## Features
 
@@ -42,12 +42,12 @@ Open **Settings → AI services and models**, select a service, enter its endpoi
 
 ## Install and get started
 
-1. Download `DataSail-V0.13.0-debug.apk` from the [V0.13.0 release](https://github.com/chenwei666/datasail-android/releases/tag/V0.13.0). Check its SHA-256 against the attached checksum file if needed.
-2. Install the APK. The configured minimum is Android 8/API26; V0.13.0 device evidence comes from an API26 x86_64 emulator. The current build has not passed API30, physical-device or arm64 acceptance.
+1. Download `DataSail-V0.14.0-release.apk` from the [V0.14.0 release](https://github.com/chenwei666/datasail-android/releases/tag/V0.14.0). Check its SHA-256 against the attached checksum file if needed.
+2. Install the APK. The configured minimum is Android 8/API26; this release is validated separately on API26 and API30 x86_64 emulators, with exact coverage in the test report. Physical devices and arm64 remain unverified.
 3. Add an authorized connection, enter the server, account and TLS settings, then discover and select a database. Your phone needs an existing trusted network route to the server.
 4. Open a table to filter, query or edit. Review the target and proposed changes before confirming a write.
 
-An in-place **V0.12.2 → V0.13.0** upgrade using the same application ID and certificate was tested, preserving connections, credentials, favorites and settings. Do not uninstall to upgrade. Other version jumps and direct downgrades are not universally guaranteed. Browse [all 21 historical versions](docs/VERSION_HISTORY.md).
+**Signing transition: V0.13.0 and earlier used a Debug certificate and cannot be overwritten by this production-signed release.** Preserve connection details, favorites, SQL and settings before deciding to uninstall. Uninstalling removes local data and encryption keys; no complete migration tool is available. Future official releases must reuse this production certificate. See [signing and migration](docs/RELEASE_BUILD.md) and [all versions](docs/VERSION_HISTORY.md).
 
 For IP addresses or self-signed certificates, retrieve the certificate in connection settings and independently verify its SHA-256 with your administrator before trusting that specific connection. Certificate errors never silently disable verification or fall back to plaintext. [Certificate guide (Chinese)](docs/CERTIFICATE_TRUST.md)
 
@@ -57,20 +57,20 @@ Credentials and AI history use Android Keystore/AES-GCM and local storage exclud
 
 ## Verification and release status
 
-The V0.13.0 development cycle passed **201 JVM checks and 67 Android checks**, with **38 relevant Android checks rerun on the final APK** for affected engines, AI, memory, UI and upgrade behavior. These are original version-specific results; this publication/documentation update adds no new device certification.
+This release adds rebuildable Android source profiles for SQL Server, PostgreSQL, MariaDB/MySQL and MongoDB. Normal R8 builds pass without suppressing missing-class warnings. Final DEX auditing checks the original 193 missing types, and device evidence is bound to the final APK SHA-256.
 
-Release/R8 is still blocked by 193 missing classes. A production shrinker build, protected production signing, physical-device acceptance and coverage of all server versions remain outstanding. Tests did not access user business databases or live paid AI accounts. See the [original test report](docs/TEST_REPORT.md) and [publication verification report](docs/PUBLICATION_REPORT.md).
+JVM, Android, positive/negative TLS cases, database operations, UI and AI results are recorded separately. Building or passing JVM tests does not establish Android compatibility. Tests use isolated synthetic data, not user business databases or paid AI accounts. See the [release test report](docs/TEST_REPORT.md), [known limitations](docs/KNOWN_ISSUES.md), [driver adaptation notes](docs/DRIVER_RELEASE_PLAN.md) and [historical publication verification](docs/PUBLICATION_REPORT.md).
 
 ## Development and licensing
 
 ```bash
 bash scripts/setup-cloud.sh
 source scripts/env.sh
-./gradlew :sqlserver-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+./gradlew :sqlserver-android:check :postgresql-android:check :mariadb-android:check :mongodb-core-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
 ```
 
 In this cloud workspace, first set `export DATASAIL_TOOLS_DIR=/workspace/toolchains`. The [testing guide (Chinese)](docs/TESTING.md) documents pinned tools, isolated database fixtures and Android checks.
 
 [Version history](docs/VERSION_HISTORY.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Report an issue](https://github.com/chenwei666/datasail-android/issues)
 
-First-party code is licensed under [Apache-2.0](LICENSE). See [third-party notices](docs/THIRD_PARTY.md) for driver/source obligations. The existing `com.example.datasail` application identity and certificate are retained for upgrade continuity.
+First-party code is licensed under [Apache-2.0](LICENSE). See [third-party notices](docs/THIRD_PARTY.md) for driver/source obligations. The application ID remains `com.example.datasail`. This release introduces an independent production certificate, which future official releases must reuse. Historical Debug installation migration is described above.

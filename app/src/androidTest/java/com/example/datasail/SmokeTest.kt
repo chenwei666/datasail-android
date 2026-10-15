@@ -26,7 +26,7 @@ class SmokeTest {
         compose.onNodeWithText("常用查询").assertIsDisplayed()
         compose.onNodeWithText("设置").performClick()
         compose.onNodeWithText("开发诊断与数据库支持").performScrollTo().performClick()
-        compose.onNodeWithText("应用标识：com.example.datasail · 构建：debug").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("应用标识：com.example.datasail · 构建：${BuildConfig.BUILD_TYPE}").performScrollTo().assertIsDisplayed()
     }
     @Test fun jdbcEntryPointsLoadOnAndroid() {
         // Class loading alone is not TLS/login/database compatibility evidence.

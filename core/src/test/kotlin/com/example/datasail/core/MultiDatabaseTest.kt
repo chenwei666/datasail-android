@@ -5,6 +5,21 @@ import org.junit.Test
 import java.sql.Types
 
 class MultiDatabaseTest {
+    @Test fun mariaDbParsedPolicyRejectsLostTlsAndUnsafeOptionsBeforeConnecting() {
+        val profile = ConnectionProfile(DatabaseKind.MYSQL, "localhost", 3306, "synthetic", "fixture")
+        val properties = JdbcConnector.safeProperties(profile).apply { setProperty("password", "synthetic-only") }
+        JdbcConnector.verifyMariaDbConfiguration(JdbcConnector.url(profile), properties)
+        for ((key, value) in listOf("sslMode" to "disable", "tlsSocketType" to "", "allowLocalInfile" to "true",
+            "allowMultiQueries" to "true", "allowPublicKeyRetrieval" to "true", "useServerPrepStmts" to "false",
+            "connectTimeout" to "0", "socketTimeout" to "0")) {
+            val changed = java.util.Properties().apply { putAll(properties); setProperty(key, value) }
+            val failure = assertThrows(java.sql.SQLException::class.java) {
+                JdbcConnector.verifyMariaDbConfiguration(JdbcConnector.url(profile), changed)
+            }
+            assertFalse(failure.message.orEmpty().contains("synthetic-only"))
+        }
+    }
+
     @Test fun cleanupFailureCannotMaskQueryTimeout() {
         val closed = java.util.concurrent.atomic.AtomicBoolean()
         fun statement(): java.sql.PreparedStatement = java.lang.reflect.Proxy.newProxyInstance(javaClass.classLoader, arrayOf(java.sql.PreparedStatement::class.java)) { _, method, _ ->
@@ -50,6 +65,7 @@ class MultiDatabaseTest {
     @Test fun postgresRequiresStrictTlsWithoutReconnectOrPasswordPersistence() {
         val properties = JdbcConnector.safeProperties(ConnectionProfile(DatabaseKind.POSTGRESQL, "db.example.test", 5432, "synthetic", "u"))
         assertEquals("verify-full", properties.getProperty("sslmode"))
+        assertEquals("disable", properties.getProperty("gssEncMode"))
         assertEquals(PostgreSqlTlsFactory::class.java.name, properties.getProperty("sslfactory"))
         assertEquals("always", properties.getProperty("readOnlyMode"))
         assertFalse(properties.containsKey("password"))

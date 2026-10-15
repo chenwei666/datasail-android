@@ -8,6 +8,7 @@ dependencies {
     compileOnly(libs.mssql)
     testImplementation(libs.junit)
 }
+val profileLock = groovy.json.JsonSlurper().parse(file("upstream.lock.json")) as Map<*, *>
 val generated = layout.buildDirectory.dir("generated/profile")
 val prepareProfile by tasks.registering(Exec::class) {
     inputs.files("profile.py", "upstream.lock.json", "patches/android-platform.patch", "upstream/mssql-jdbc-13.6.0.jre8-sources.jar", upstream)
@@ -18,19 +19,17 @@ sourceSets.main { java.srcDir(generated) }
 tasks.compileJava { dependsOn(prepareProfile) }
 tasks.jar {
     archiveBaseName.set("mssql-jdbc-android")
-    archiveVersion.set("13.6.0.jre8-datasail.2")
+    archiveVersion.set(profileLock["profile"] as String)
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
     duplicatesStrategy = DuplicatesStrategy.FAIL
     from({ zipTree(upstream.singleFile) }) {
         exclude("META-INF/MANIFEST.MF", "META-INF/MSFTSIG.SF", "META-INF/MSFTSIG.RSA")
-        listOf("MaxResultBufferParser", "SQLServerCertificateUtils", "SQLServerSQLXML", "ByteArrayOutputStreamToInputStream", "SQLServerEntityResolver", "DDC", "DDC\$1", "AsciiFilteredInputStream", "AsciiFilteredUnicodeInputStream", "StreamSetterArgs", "InputStreamGetterArgs").forEach {
-            exclude("com/microsoft/sqlserver/jdbc/$it.class")
-        }
+        (profileLock["replacedEntries"] as List<*>).forEach { exclude(it as String) }
     }
     from("upstream.lock.json") { into("META-INF"); rename { "datasail-profile.json" } }
     from(rootProject.file("docs/licenses/mssql-jdbc-LICENSE.txt")) { into("META-INF"); rename { "LICENSE" } }
-    manifest { attributes("Implementation-Title" to "DataSail SQL Server Android profile", "Implementation-Version" to "13.6.0.jre8-datasail.2") }
+    manifest { attributes("Implementation-Title" to "DataSail SQL Server Android profile", "Implementation-Version" to profileLock["profile"]) }
 }
 val profile by configurations.creating { isCanBeConsumed = true; isCanBeResolved = false }
 val verifyProfile by tasks.registering(Exec::class) {

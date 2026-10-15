@@ -1,8 +1,8 @@
 # GitHub 发布校验 / Publication verification
 
-日期 / Date: 2026-10-15 (Asia/Bangkok)。本次维护中英文介绍与历史分发，不生成新应用版本；最新安装包仍为 V0.13.0 / versionCode 21。
+以下为 2026-10-15 (Asia/Bangkok) 完成的 V0.1.0–V0.13.0 历史发布记录。V0.14.0 正式签名与混淆构建另见 [本版说明](releases/V0.14.0.md) 和 [测试报告](TEST_REPORT.md)。
 
-This task updates bilingual documentation and historical distribution. It does not create a new application version; the current APK remains V0.13.0 / versionCode 21.
+The record below covers historical releases V0.1.0–V0.13.0. V0.14.0 production signing and minification have separate release notes and verification evidence; the earlier R8 failure below is a historical result.
 
 ## 原件核验 / Artifact verification
 

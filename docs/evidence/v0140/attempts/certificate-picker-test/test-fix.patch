@@ -1,0 +1,31 @@
+diff --git a/app/src/androidTest/java/com/example/datasail/CertificateTrustUiTest.kt b/app/src/androidTest/java/com/example/datasail/CertificateTrustUiTest.kt
+index a7c597b..bb2a986 100644
+--- a/app/src/androidTest/java/com/example/datasail/CertificateTrustUiTest.kt
++++ b/app/src/androidTest/java/com/example/datasail/CertificateTrustUiTest.kt
+@@ -58,6 +58,7 @@ class CertificateTrustUiTest {
+         compose.onNodeWithText("连接服务器并扫描").performScrollTo().performClick()
+         compose.waitUntil(45000) { !model.discovery.value.busy }
+         assertTrue(model.discovery.value.message, "master" in model.discovery.value.result!!.names)
++        compose.onNodeWithTag("discovered-database-picker").performScrollTo().performClick()
+         compose.onNodeWithText("master").performScrollTo().performClick()
+         compose.onNodeWithText("连接数据库").performScrollTo().performClick()
+         compose.waitUntil(45000) { model.state.value.let { it.connected && !it.busy } }
+diff --git a/app/src/androidTest/java/com/example/datasail/TablePresentationTest.kt b/app/src/androidTest/java/com/example/datasail/TablePresentationTest.kt
+index 7ba8723..20e1b8d 100644
+--- a/app/src/androidTest/java/com/example/datasail/TablePresentationTest.kt
++++ b/app/src/androidTest/java/com/example/datasail/TablePresentationTest.kt
+@@ -82,6 +82,14 @@ class TablePresentationTest {
+         compose.onNodeWithTag("structure-columns").performScrollTo()
+         compose.onNodeWithText("1. id").assertIsDisplayed()
+         compose.onNodeWithTag("copy-column-0").performScrollTo().performClick()
++        // The Android clipboard service updates after the input callback on API30.
++        // Wait for the actual copied value, retaining the same content assertion.
++        compose.waitUntil(10000) {
++            compose.runOnIdle {
++                val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
++                clipboard.primaryClip?.getItemAt(0)?.text?.toString() == "id"
++            }
++        }
+         compose.runOnIdle {
+             val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+             assertEquals("id", clipboard.primaryClip!!.getItemAt(0).text.toString())

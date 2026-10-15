@@ -1,0 +1,39 @@
+name: Publish verified production release
+on:
+  push:
+    branches: [release-assets/production-v0140]
+    paths: ['.github/workflows/production-release.yml', 'scripts/publish-production.py', 'release-production/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: datasail-production-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'chenwei666/datasail-android' && github.ref == 'refs/heads/release-assets/production-v0140'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Ensure APK verification tools are available
+        shell: bash
+        run: |
+          if [ ! -x "$ANDROID_HOME/build-tools/36.0.0/apksigner" ]; then
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'build-tools;36.0.0' </dev/null
+          fi
+      - name: Verify, upload and anonymously download exact production artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish-production.py
+      - name: Record the actual publication result
+        if: always()
+        run: |
+          test -f publication/production.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add publication/production.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record production release verification result'
+            git push origin HEAD:release-assets/production-v0140
+          fi

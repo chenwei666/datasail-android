@@ -1,0 +1,16 @@
+{
+  "profile": "5.6.5-datasail.1",
+  "upstream": "org.mongodb:mongodb-driver-sync:5.6.5",
+  "sourceFile": "mongodb-driver-sync-5.6.5-sources.jar",
+  "sourceSha256": "358da9ede6b3551473a67c5d25c39bb6c252a95440f81ab53c916d7aa1c2f3cb",
+  "binarySha256": "0081f88d2d1b293719e1fa65608e69e117380e17b346b304f835509f8a20c12e",
+  "sources": {
+    "com/mongodb/client/internal/MongoClientImpl.java": "961d99342879ae9d21f679e5d07d2f820645a273fb72c39e8ff05502b5c8ef31"
+  },
+  "replacedEntries": [
+    "com/mongodb/client/internal/MongoClientImpl.class"
+  ],
+  "compiledEntries": [
+    "com/mongodb/client/internal/MongoClientImpl.class"
+  ]
+}

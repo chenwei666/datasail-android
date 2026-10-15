@@ -1,0 +1,10 @@
+{
+  "applicationId": "com.example.datasail",
+  "certificateSubject": "CN=DataSail",
+  "certificateSha256": "86d3ec30bb7bb3ab44a41b1268d40003a746c2ecda078b7db5ad249ce02ae93c",
+  "keyAlgorithm": "RSA",
+  "keySize": 4096,
+  "firstRelease": "0.14.0",
+  "historicalDebugCertificateSha256": "1c0f10a1cc14cc44b1eefc18a78de23b34ce30761b70dae039bea7f302cc78db",
+  "historicalDebugUpgradeCompatible": false
+}

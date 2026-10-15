@@ -1,0 +1,85 @@
+Synthetic fixture seeded; reader SET and DEL rejected by ACL.
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :mariadb-android:prepareProfile UP-TO-DATE
+> Task :mariadb-android:compileJava UP-TO-DATE
+> Task :mariadb-android:processResources NO-SOURCE
+> Task :mariadb-android:classes UP-TO-DATE
+> Task :mariadb-android:jar UP-TO-DATE
+
+> Task :mariadb-android:verifyProfile
+Verified source overlay: 3.5.10-datasail.1 21 compiled classes; other upstream bytes unchanged
+
+> Task :mongodb-core-android:prepareProfile UP-TO-DATE
+> Task :mongodb-core-android:compileJava UP-TO-DATE
+> Task :mongodb-core-android:processResources NO-SOURCE
+> Task :mongodb-core-android:classes UP-TO-DATE
+> Task :mongodb-core-android:jar UP-TO-DATE
+
+> Task :mongodb-core-android:verifyProfile
+Verified source overlay: 5.6.5-datasail.1 16 compiled classes; other upstream bytes unchanged
+
+> Task :mongodb-sync-android:prepareProfile UP-TO-DATE
+> Task :mongodb-sync-android:compileJava UP-TO-DATE
+> Task :mongodb-sync-android:processResources NO-SOURCE
+> Task :mongodb-sync-android:classes UP-TO-DATE
+> Task :mongodb-sync-android:jar UP-TO-DATE
+
+> Task :mongodb-sync-android:verifyProfile
+Verified source overlay: 5.6.5-datasail.1 1 compiled classes; other upstream bytes unchanged
+
+> Task :postgresql-android:prepareProfile UP-TO-DATE
+> Task :postgresql-android:compileJava UP-TO-DATE
+> Task :postgresql-android:processResources NO-SOURCE
+> Task :postgresql-android:classes UP-TO-DATE
+> Task :postgresql-android:jar UP-TO-DATE
+
+> Task :postgresql-android:verifyProfile
+Verified source overlay: 42.7.14-datasail.1 21 compiled classes; other upstream bytes unchanged
+
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 81 source-compiled classes; all other upstream entries unchanged; original platform patches retain their JMX/JNDI/StAX/BouncyCastle checks.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileIntegrationTestKotlin UP-TO-DATE
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:processIntegrationTestResources NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:keyValueTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+KeyValueIntegrationTest > readsAndBounds PASSED
+
+KeyValueIntegrationTest > deadlinesAndCancellation PASSED
+
+KeyValueIntegrationTest > singleObjectWritesAndConflicts PASSED
+
+KeyValueIntegrationTest > strictIdentityAndAuthentication PASSED
+
+BUILD SUCCESSFUL in 23s
+24 actionable tasks: 6 executed, 18 up-to-date
+Exact com.example.datasail APK already installed.
+Exact com.example.datasail.test APK already installed.
+SELinux: Loaded file_contexts
+SELinux: Loaded file_contexts
+SELinux: Loaded file_contexts
+32871
+
+com.example.datasail.KeyValueDeviceTest:....
+
+Time: 66.659
+
+OK (4 tests)
+
+
+scripts/test-key-value-local.sh: line 92: thon3: command not found

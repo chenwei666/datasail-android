@@ -7,3 +7,11 @@ dependencyResolutionManagement {
 }
 rootProject.name = "DataSail"
 include(":app", ":core", ":sqlserver-android", ":sasl-android")
+
+include(":postgresql-android")
+
+include(":mariadb-android")
+
+include(":mongodb-core-android")
+
+include(":mongodb-sync-android")

@@ -1,0 +1,11 @@
+{
+  "serial": "emulator-5556",
+  "variant": "release",
+  "installedApkSha256": "d4d5737281ace5b83a92bc295f28138ff998434322b1be8c1333720982932388",
+  "installedTestApkSha256": "ddf62e07aa2b504e9d8d534bf9158a1e57258932cae446660302f5f4ecc39bc9",
+  "api": "26",
+  "androidVersion": "8.0.0",
+  "abi": "x86_64",
+  "buildFingerprint": "Android/sdk_phone_x86_64/generic_x86_64:8.0.0/OSR1.180418.004/4931640:userdebug/test-keys",
+  "emulator": "1"
+}

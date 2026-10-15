@@ -1,0 +1,8 @@
+
+com.example.datasail.KeyValueDeviceTest:....
+
+Time: 25.429
+
+OK (4 tests)
+
+

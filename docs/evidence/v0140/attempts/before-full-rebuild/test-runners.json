@@ -1,0 +1,8 @@
+{
+  "applicationSha256": "d4d5737281ace5b83a92bc295f28138ff998434322b1be8c1333720982932388",
+  "previousTestApkSha256": "ddf62e07aa2b504e9d8d534bf9158a1e57258932cae446660302f5f4ecc39bc9",
+  "currentTestApkSha256": "f30178dd537876bc32fa444dce0542b79f9c3832c30839c52c23bad2cbf6f007",
+  "testOnlyPatch": "attempts/certificate-picker-test/test-fix.patch",
+  "testOnlyPatchSha256": "17abdc0292cc38e6c753603fa99e1dfa1973466bad120b5a7b1c67e502b8b0c3",
+  "reason": "CertificateTrustUiTest opens the existing database chooser; TablePresentationTest waits for the actual clipboard value before asserting it. No application APK change. Both test APKs are archived."
+}

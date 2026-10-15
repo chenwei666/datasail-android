@@ -1,0 +1,17 @@
+[
+  {
+    "file": "SLF4J-2.0.17-LICENSE.txt",
+    "source": "org.slf4j/slf4j-api/2.0.17/META-INF/LICENSE.txt",
+    "sha256": "4e7f90c86ab51278228bce153122f1d8df30149d13ce9ef524c8444a84c32dcc"
+  },
+  {
+    "file": "CheckerQual-3.55.1-LICENSE.txt",
+    "source": "org.checkerframework/checker-qual/3.55.1/META-INF/LICENSE.txt",
+    "sha256": "e90eaa08dea089df10f2bf7f9dba63a5f6237c01562c4741e2e86773e78582d5"
+  },
+  {
+    "file": "ANTLR4-4.9.3-LICENSE.txt",
+    "source": "https://raw.githubusercontent.com/antlr/antlr4/4.9.3/LICENSE.txt",
+    "sha256": "b1b379fcaf3219593a4c433feb1b35c780bed23fafaae440b1ae2771a9521e3a"
+  }
+]

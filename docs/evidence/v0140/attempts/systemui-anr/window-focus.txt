@@ -1,0 +1,3 @@
+  mCurrentFocus=Window{535098a u0 Application Not Responding: com.android.systemui}
+  mFocusedApp=ActivityRecord{53aacbf u0 com.android.launcher3/.uioverrides.QuickstepLauncher t8}
+    mAwake=true mScreenOnEarly=true mScreenOnFully=true

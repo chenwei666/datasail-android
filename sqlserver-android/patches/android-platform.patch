@@ -1,3 +1,577 @@
+--- a/com/microsoft/sqlserver/jdbc/DDC.java
++++ b/com/microsoft/sqlserver/jdbc/DDC.java
+@@ -35,6 +35,24 @@
+  */
+ 
+ final class DDC {
++
++    // Android java.sql has no java.time overloads. These constructors implement the same
++    // local calendar fields as the JDK valueOf overloads, including nanosecond precision.
++    @SuppressWarnings("deprecation")
++    private static java.sql.Timestamp timestampFromLocal(LocalDateTime value) {
++        return new java.sql.Timestamp(value.getYear() - 1900, value.getMonthValue() - 1,
++                value.getDayOfMonth(), value.getHour(), value.getMinute(), value.getSecond(), value.getNano());
++    }
++
++    @SuppressWarnings("deprecation")
++    private static java.sql.Date dateFromLocal(LocalDate value) {
++        return new java.sql.Date(value.getYear() - 1900, value.getMonthValue() - 1, value.getDayOfMonth());
++    }
++
++    @SuppressWarnings("deprecation")
++    private static java.sql.Time timeFromLocal(LocalTime value) {
++        return new java.sql.Time(value.getHour(), value.getMinute(), value.getSecond());
++    }
+ 
+     private DDC() {
+         throw new UnsupportedOperationException(SQLServerException.getErrString("R_notSupported"));
+@@ -1169,7 +1187,8 @@
+                                 cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE),
+                                 cal.get(Calendar.SECOND), subSecondNanos);
+                     } else {
+-                        return ts2.toLocalDateTime();
++                        return LocalDateTime.of(ts2.getYear() + 1900, ts2.getMonth() + 1, ts2.getDate(),
++                                ts2.getHours(), ts2.getMinutes(), ts2.getSeconds(), ts2.getNanos());
+                     }
+                 }
+                 return ts2;
+@@ -1293,11 +1312,11 @@
+             case SQL_VARIANT:
+                 switch (ssType) {
+                     case DATE:
+-                        return java.sql.Date.valueOf(ldt.toLocalDate());
++                        return dateFromLocal(ldt.toLocalDate());
+ 
+                     case DATETIME:
+                     case DATETIME2:
+-                        java.sql.Timestamp ts = java.sql.Timestamp.valueOf(ldt);
++                        java.sql.Timestamp ts = timestampFromLocal(ldt);
+                         ts.setNanos(subSecondNanos);
+                         return ts;
+ 
+@@ -1305,7 +1324,7 @@
+                         if (subSecondNanos % Nanos.PER_MILLISECOND >= Nanos.PER_MILLISECOND / 2) {
+                             ldt = ldt.plusNanos(1000000);
+                         }
+-                        java.sql.Time t = java.sql.Time.valueOf(ldt.toLocalTime());
++                        java.sql.Time t = timeFromLocal(ldt.toLocalTime());
+                         t.setTime(t.getTime() + (ldt.getNano() / Nanos.PER_MILLISECOND));
+                         return t;
+ 
+@@ -1317,13 +1336,13 @@
+                 }
+ 
+             case DATE:
+-                return java.sql.Date.valueOf(ldt.toLocalDate());
++                return dateFromLocal(ldt.toLocalDate());
+ 
+             case TIME:
+                 if (subSecondNanos % Nanos.PER_MILLISECOND >= Nanos.PER_MILLISECOND / 2) {
+                     ldt = ldt.plusNanos(1000000);
+                 }
+-                java.sql.Time t = java.sql.Time.valueOf(ldt.toLocalTime());
++                java.sql.Time t = timeFromLocal(ldt.toLocalTime());
+                 t.setTime(t.getTime() + (ldt.getNano() / Nanos.PER_MILLISECOND));
+                 return t;
+ 
+@@ -1332,7 +1351,7 @@
+                     return ldt;
+                 }
+ 
+-                java.sql.Timestamp ts = java.sql.Timestamp.valueOf(ldt);
++                java.sql.Timestamp ts = timestampFromLocal(ldt);
+                 ts.setNanos(subSecondNanos);
+                 return ts;
+ 
+@@ -1340,19 +1359,20 @@
+                 switch (ssType) {
+                     case DATE:
+                         return String.format(Locale.US, "%1$tF", // yyyy-mm-dd
+-                                java.sql.Timestamp.valueOf(ldt));
++                                timestampFromLocal(ldt));
+ 
+                     case TIME:
+-                        return String.format(Locale.US, "%1$tT%2$s", // hh:mm:ss[.nnnnnnn]
+-                                ldt, fractionalSecondsString(subSecondNanos, fractionalSecondsScale));
++                        return String.format(Locale.US, "%1$02d:%2$02d:%3$02d%4$s", // wall-clock hh:mm:ss[.nnnnnnn]
++                                ldt.getHour(), ldt.getMinute(), ldt.getSecond(),
++                                fractionalSecondsString(subSecondNanos, fractionalSecondsScale));
+ 
+                     case DATETIME2:
+                         return String.format(Locale.US, "%1$tF %1$tT%2$s", // yyyy-mm-dd hh:mm:ss[.nnnnnnn]
+-                                java.sql.Timestamp.valueOf(ldt),
++                                timestampFromLocal(ldt),
+                                 fractionalSecondsString(subSecondNanos, fractionalSecondsScale));
+ 
+                     case DATETIME: // and SMALLDATETIME
+-                        return (java.sql.Timestamp.valueOf(ldt)).toString();
++                        return (timestampFromLocal(ldt)).toString();
+ 
+                     default:
+                         MessageFormat form = new MessageFormat(
+--- a/com/microsoft/sqlserver/jdbc/ISQLServerCallableStatement.java
++++ b/com/microsoft/sqlserver/jdbc/ISQLServerCallableStatement.java
+@@ -6,7 +6,6 @@
+ package com.microsoft.sqlserver.jdbc;
+ 
+ import java.math.BigDecimal;
+-import java.sql.SQLType;
+ import java.sql.Timestamp;
+ import java.util.Calendar;
+ 
+@@ -30,7 +29,7 @@
+      * 
+      * @deprecated
+      */
+-    @Deprecated(since = "6.5.4")
++    @Deprecated
+     BigDecimal getBigDecimal(String parameterName, int scale) throws SQLServerException;
+ 
+     /**
+@@ -1004,8 +1003,7 @@
+      * @throws SQLServerException
+      *         If any errors occur.
+      */
+-    void registerOutParameter(String parameterName, SQLType sqlType, int precision,
+-            int scale) throws SQLServerException;
++
+ 
+     /**
+      * Registers the parameter in ordinal position index to be of JDBC type sqlType. All OUT parameters must be
+@@ -1026,7 +1024,7 @@
+      * @throws SQLServerException
+      *         If any errors occur.
+      */
+-    void registerOutParameter(int parameterIndex, SQLType sqlType, int precision, int scale) throws SQLServerException;
++
+ 
+     /**
+      * Registers the parameter in ordinal position index to be of JDBC type sqlType. All OUT parameters must be
+@@ -1103,6 +1101,5 @@
+      * @see java.sql.Types
+      * @see #getObject
+      */
+-    void setObject(String parameterName, Object value, SQLType jdbcType, int scale,
+-            boolean forceEncrypt) throws SQLServerException;
++
+ }
+--- a/com/microsoft/sqlserver/jdbc/ISQLServerDataSource.java
++++ b/com/microsoft/sqlserver/jdbc/ISQLServerDataSource.java
+@@ -5,7 +5,6 @@
+ 
+ package com.microsoft.sqlserver.jdbc;
+ 
+-import org.ietf.jgss.GSSCredential;
+ 
+ 
+ /**
+@@ -115,7 +114,7 @@
+      *        TLS encrypt option. Default is true
+      * @deprecated Use {@link ISQLServerDataSource#setEncrypt(String encryptOption)} instead
+      */
+-    @Deprecated(since = "10.1.0", forRemoval = true)
++    @Deprecated
+     void setEncrypt(boolean encryptOption);
+ 
+     /**
+@@ -615,14 +614,14 @@
+      * @param userCredential
+      *        the credential
+      */
+-    void setGSSCredentials(GSSCredential userCredential);
++
+ 
+     /**
+      * Returns the GSSCredential.
+      *
+      * @return GSSCredential
+      */
+-    GSSCredential getGSSCredentials();
++
+ 
+     /**
+      * Sets the access token.
+@@ -825,7 +824,7 @@
+      * @deprecated Use {@link ISQLServerDataSource#setJAASConfigurationName(String configurationName)} instead
+      * 
+      */
+-    @Deprecated(since = "9.3.0", forRemoval = true)
++    @Deprecated
+     void setJASSConfigurationName(String configurationName);
+ 
+     /**
+@@ -836,7 +835,7 @@
+      * @deprecated Use {@link ISQLServerDataSource#getJAASConfigurationName()} instead
+      * 
+      */
+-    @Deprecated(since = "9.3.0", forRemoval = true)
++    @Deprecated
+     String getJASSConfigurationName();
+ 
+     /**
+@@ -1113,7 +1112,7 @@
+      *        Client ID of the user-assigned Managed Identity.
+      * @deprecated Use {@link ISQLServerDataSource#setUser(String user)} instead.
+      */
+-    @Deprecated(since = "12.1.0", forRemoval = true)
++    @Deprecated
+     void setMSIClientId(String managedIdentityClientId);
+ 
+     /**
+@@ -1123,7 +1122,7 @@
+      * 
+      * @deprecated Use {@link ISQLServerDataSource#getUser()} instead.
+      */
+-    @Deprecated(since = "12.1.0", forRemoval = true)
++    @Deprecated
+     String getMSIClientId();
+ 
+     /**
+@@ -1303,7 +1302,7 @@
+      * @return 'AADSecurePrincipalId' property value.
+      * @deprecated Use {@link ISQLServerDataSource#getUser()} instead
+      */
+-    @Deprecated(since = "9.4.1", forRemoval = true)
++    @Deprecated
+     String getAADSecurePrincipalId();
+ 
+     /**
+@@ -1314,7 +1313,7 @@
+      *        Active Directory Service Principal Id.
+      * @deprecated Use {@link ISQLServerDataSource#setUser(String user)} instead
+      */
+-    @Deprecated(since = "9.4.1", forRemoval = true)
++    @Deprecated
+     void setAADSecurePrincipalId(String aadSecurePrincipalId);
+ 
+     /**
+@@ -1325,7 +1324,7 @@
+      *        Active Directory Service Principal secret.
+      * @deprecated Use {@link ISQLServerDataSource#setPassword(String password)} instead
+      */
+-    @Deprecated(since = "9.4.1", forRemoval = true)
++    @Deprecated
+     void setAADSecurePrincipalSecret(String aadSecurePrincipalSecret);
+ 
+     /**
+@@ -1397,7 +1396,7 @@
+      * 
+      * @deprecated
+      */
+-    @Deprecated(since = "12.1.0", forRemoval = true)
++    @Deprecated
+     void setMsiTokenCacheTtl(int timeToLive);
+ 
+     /**
+@@ -1408,7 +1407,7 @@
+      * 
+      * @deprecated
+      */
+-    @Deprecated(since = "12.1.0", forRemoval = true)
++    @Deprecated
+     int getMsiTokenCacheTtl();
+ 
+     /**
+--- a/com/microsoft/sqlserver/jdbc/ISQLServerPreparedStatement.java
++++ b/com/microsoft/sqlserver/jdbc/ISQLServerPreparedStatement.java
+@@ -8,7 +8,6 @@
+ import java.math.BigDecimal;
+ import java.sql.ParameterMetaData;
+ import java.sql.ResultSet;
+-import java.sql.SQLType;
+ 
+ 
+ /**
+@@ -51,8 +50,7 @@
+      *         if parameterIndex does not correspond to a parameter marker in the SQL statement; if a database access
+      *         error occurs or this method is called on a closed {@code PreparedStatement}
+      */
+-    void setObject(int parameterIndex, Object x, SQLType targetSqlType, Integer precision,
+-            Integer scale) throws SQLServerException;
++
+ 
+     /**
+      * Sets the value of the designated parameter with the given object.
+@@ -81,8 +79,7 @@
+      *         if parameterIndex does not correspond to a parameter marker in the SQL statement; if a database access
+      *         error occurs or this method is called on a closed {@code PreparedStatement}
+      */
+-    void setObject(int parameterIndex, Object x, SQLType targetSqlType, Integer precision, Integer scale,
+-            boolean forceEncrypt) throws SQLServerException;
++
+ 
+     /**
+      * The server handle for this prepared statement. If a value {@literal <} 1 is returned no handle has been created.
+--- a/com/microsoft/sqlserver/jdbc/ISQLServerResultSet.java
++++ b/com/microsoft/sqlserver/jdbc/ISQLServerResultSet.java
+@@ -6,7 +6,6 @@
+ package com.microsoft.sqlserver.jdbc;
+ 
+ import java.math.BigDecimal;
+-import java.sql.SQLType;
+ import java.util.Calendar;
+ 
+ import com.microsoft.sqlserver.jdbc.dataclassification.SensitivityClassification;
+@@ -375,8 +374,7 @@
+      * @throws SQLServerException
+      *         If any errors occur.
+      */
+-    void updateObject(int index, Object obj, SQLType targetSqlType, int scale,
+-            boolean forceEncrypt) throws SQLServerException;
++
+ 
+     /**
+      * 
+@@ -406,8 +404,7 @@
+      * @throws SQLServerException
+      *         If any errors occur.
+      */
+-    void updateObject(String columnName, Object obj, SQLType targetSqlType, int scale,
+-            boolean forceEncrypt) throws SQLServerException;
++
+ 
+     /**
+      * Updates the designated column with a <code>boolean</code> value. The updater methods are used to update column
+--- a/com/microsoft/sqlserver/jdbc/MaxResultBufferParser.java
++++ b/com/microsoft/sqlserver/jdbc/MaxResultBufferParser.java
+@@ -3,9 +3,9 @@
+  * available under the terms of the MIT License. See the LICENSE file in the project root for more information.
+  */
+ 
++// Modified by DataSail, 2026-10-12; see patches/android-platform.patch.
+ package com.microsoft.sqlserver.jdbc;
+ 
+-import java.lang.management.ManagementFactory;
+ import java.text.MessageFormat;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+@@ -132,14 +132,15 @@
+ 
+     private static long adjustMemory(long size, long multiplier) throws SQLServerException {
+         checkForNegativeValue(size);
+-        if (size * multiplier > 0.9 * getMaxMemory())
++        // Compare before multiplication to avoid signed long overflow.
++        if (size > (long) (0.9 * getMaxMemory()) / multiplier)
+             return (long) (0.9 * getMaxMemory());
+         else
+             return size * multiplier;
+     }
+ 
+     private static long getMaxMemory() {
+-        return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
++        return Runtime.getRuntime().maxMemory();
+     }
+ 
+     private static void throwNewInvalidMaxResultBufferParameterException(Throwable cause,
+--- a/com/microsoft/sqlserver/jdbc/SQLServerCallableStatement.java
++++ b/com/microsoft/sqlserver/jdbc/SQLServerCallableStatement.java
+@@ -19,7 +19,6 @@
+ import java.sql.ResultSet;
+ import java.sql.RowId;
+ import java.sql.SQLException;
+-import java.sql.SQLType;
+ import java.sql.SQLXML;
+ import java.sql.Time;
+ import java.sql.Timestamp;
+@@ -589,7 +588,7 @@
+     /**
+      * @deprecated
+      */
+-    @Deprecated(since = "6.5.4")
++    @Deprecated
+     @Override
+     public BigDecimal getBigDecimal(int parameterIndex, int scale) throws SQLException {
+         if (loggerExternal.isLoggable(Level.FINER))
+@@ -607,7 +606,7 @@
+     /**
+      * @deprecated
+      */
+-    @Deprecated(since = "6.5.4")
++    @Deprecated
+     @Override
+     public BigDecimal getBigDecimal(String parameterName, int scale) throws SQLServerException {
+         if (loggerExternal.isLoggable(Level.FINER))
+@@ -2867,159 +2866,25 @@
+         }
+     }
+ 
+-    @Override
+-    public void registerOutParameter(int parameterIndex, SQLType sqlType) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "registerOutParameter",
+-                    new Object[] {parameterIndex, sqlType});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        registerOutParameter(parameterIndex, sqlType.getVendorTypeNumber());
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "registerOutParameter");
+-        }
+-    }
+-
+-    @Override
+-    public void registerOutParameter(int parameterIndex, SQLType sqlType, String typeName) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "registerOutParameter",
+-                    new Object[] {parameterIndex, sqlType, typeName});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        registerOutParameter(parameterIndex, sqlType.getVendorTypeNumber(), typeName);
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "registerOutParameter");
+-        }
+-    }
+-
+-    @Override
+-    public void registerOutParameter(int parameterIndex, SQLType sqlType, int scale) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "registerOutParameter",
+-                    new Object[] {parameterIndex, sqlType, scale});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        registerOutParameter(parameterIndex, sqlType.getVendorTypeNumber(), scale);
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "registerOutParameter");
+-        }
+-    }
+-
+-    @Override
+-    public void registerOutParameter(int parameterIndex, SQLType sqlType, int precision,
+-            int scale) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "registerOutParameter",
+-                    new Object[] {parameterIndex, sqlType, scale});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        registerOutParameter(parameterIndex, sqlType.getVendorTypeNumber(), precision, scale);
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "registerOutParameter");
+-        }
+-    }
+-
+-    @Override
+-    public void setObject(String parameterName, Object value, SQLType jdbcType) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "setObject", new Object[] {parameterName, value, jdbcType});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        setObject(parameterName, value, jdbcType.getVendorTypeNumber());
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "setObject");
+-        }
+-    }
+-
+-    @Override
+-    public void setObject(String parameterName, Object value, SQLType jdbcType, int scale) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "setObject",
+-                    new Object[] {parameterName, value, jdbcType, scale});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        setObject(parameterName, value, jdbcType.getVendorTypeNumber(), scale);
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "setObject");
+-        }
+-    }
+-
+-    @Override
+-    public void setObject(String parameterName, Object value, SQLType jdbcType, int scale,
+-            boolean forceEncrypt) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "setObject",
+-                    new Object[] {parameterName, value, jdbcType, scale, forceEncrypt});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        setObject(parameterName, value, jdbcType.getVendorTypeNumber(), scale, forceEncrypt);
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "setObject");
+-        }
+-    }
+-
+-    @Override
+-    public void registerOutParameter(String parameterName, SQLType sqlType, String typeName) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "registerOutParameter",
+-                    new Object[] {parameterName, sqlType, typeName});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        registerOutParameter(parameterName, sqlType.getVendorTypeNumber(), typeName);
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "registerOutParameter");
+-        }
+-    }
+-
+-    @Override
+-    public void registerOutParameter(String parameterName, SQLType sqlType, int scale) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "registerOutParameter",
+-                    new Object[] {parameterName, sqlType, scale});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        registerOutParameter(parameterName, sqlType.getVendorTypeNumber(), scale);
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "registerOutParameter");
+-        }
+-    }
+-
+-    @Override
+-    public void registerOutParameter(String parameterName, SQLType sqlType, int precision,
+-            int scale) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "registerOutParameter",
+-                    new Object[] {parameterName, sqlType, scale});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        registerOutParameter(parameterName, sqlType.getVendorTypeNumber(), precision, scale);
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "registerOutParameter");
+-        }
+-    }
+-
+-    @Override
+-    public void registerOutParameter(String parameterName, SQLType sqlType) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "registerOutParameter",
+-                    new Object[] {parameterName, sqlType});
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        registerOutParameter(parameterName, sqlType.getVendorTypeNumber());
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "registerOutParameter");
+-        }
+-    }
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
+ }
 --- a/com/microsoft/sqlserver/jdbc/SQLServerCertificateUtils.java
 +++ b/com/microsoft/sqlserver/jdbc/SQLServerCertificateUtils.java
 @@ -3,6 +3,7 @@
@@ -110,37 +684,774 @@
 +        return null;
      }
  }
---- a/com/microsoft/sqlserver/jdbc/MaxResultBufferParser.java
-+++ b/com/microsoft/sqlserver/jdbc/MaxResultBufferParser.java
-@@ -3,9 +3,9 @@
-  * available under the terms of the MIT License. See the LICENSE file in the project root for more information.
-  */
+--- a/com/microsoft/sqlserver/jdbc/SQLServerConnection.java
++++ b/com/microsoft/sqlserver/jdbc/SQLServerConnection.java
+@@ -54,9 +54,7 @@
+ import java.util.concurrent.locks.ReentrantLock;
+ import java.util.logging.Level;
  
-+// Modified by DataSail, 2026-10-12; see patches/android-platform.patch.
- package com.microsoft.sqlserver.jdbc;
+-import javax.sql.XAConnection;
+-
+-import org.ietf.jgss.GSSCredential;
++
  
--import java.lang.management.ManagementFactory;
- import java.text.MessageFormat;
+ import com.microsoft.sqlserver.jdbc.SQLServerError.TransientError;
+ 
+@@ -1912,12 +1910,7 @@
+      * request to acquire an access token.
+      */
+     public static void clearUserTokenCache() {
+-        sLock.lock();
+-        try {
+-            PersistentTokenCacheAccessAspect.clearUserTokenCache();
+-        } finally {
+-            sLock.unlock();
+-        }
++        throw new UnsupportedOperationException("Cloud authentication is not supported by the Android profile");
+     }
+ 
+     /** the active set of connection properties */
+@@ -1940,7 +1933,7 @@
+             .getDefaultValue();
+ 
+     /** impersonated user credential */
+-    private transient GSSCredential impersonatedUserCred;
++
+ 
+     /** user created credential flag */
+     private boolean isUserCreatedCredential;
+@@ -2587,24 +2580,11 @@
+     }
+ 
+     private void setKeyVaultProvider(String keyStorePrincipalId) throws SQLServerException {
+-        SQLServerColumnEncryptionAzureKeyVaultProvider provider;
+-        if (null != keyStorePrincipalId) {
+-            provider = new SQLServerColumnEncryptionAzureKeyVaultProvider(keyStorePrincipalId);
+-        } else {
+-            provider = new SQLServerColumnEncryptionAzureKeyVaultProvider();
+-        }
+-        systemColumnEncryptionKeyStoreProvider.put(provider.getName(), provider);
++        throw new SQLServerException("This authentication or key-vault feature is not supported by the Android profile", "0A000", 0, null);
+     }
+ 
+     private void setKeyVaultProvider(String keyStorePrincipalId, String keyStoreSecret) throws SQLServerException {
+-        // need a secret to use the secret method
+-        if (null == keyStoreSecret) {
+-            throw new SQLServerException(SQLServerException.getErrString("R_keyStoreSecretNotSet"), null);
+-        } else {
+-            SQLServerColumnEncryptionAzureKeyVaultProvider provider = new SQLServerColumnEncryptionAzureKeyVaultProvider(
+-                    keyStorePrincipalId, keyStoreSecret);
+-            systemColumnEncryptionKeyStoreProvider.put(provider.getName(), provider);
+-        }
++        throw new SQLServerException("This authentication or key-vault feature is not supported by the Android profile", "0A000", 0, null);
+     }
+ 
+     // Helper to check if timeout value is valid
+@@ -2700,6 +2680,16 @@
+      */
+     Connection connectInternal(Properties propsIn,
+             SQLServerPooledConnection pooledConnection) throws SQLServerException {
++        // Reject unsupported modes before opening a socket; never fall back to password authentication.
++        String requestedAuth = propsIn == null ? "NotSpecified" : propsIn.getProperty("authentication", "NotSpecified");
++        if (pooledConnection != null || (propsIn != null &&
++                (Boolean.parseBoolean(propsIn.getProperty("integratedSecurity", "false"))
++                || propsIn.containsKey("gsscredential") || propsIn.containsKey("accessToken")
++                || propsIn.containsKey("accessTokenCallback") || propsIn.containsKey("accessTokenCallbackClass")))
++                || !("NotSpecified".equalsIgnoreCase(requestedAuth) || "SqlPassword".equalsIgnoreCase(requestedAuth))) {
++            throw new SQLServerException("Android profile supports SQL password authentication and direct connections only", "0A000", 0, null);
++        }
++
+         try {
+             if (propsIn != null) {
+ 
+@@ -2913,19 +2903,8 @@
+                 sPropKey = SQLServerDriverStringProperty.ENCLAVE_ATTESTATION_PROTOCOL.toString();
+                 sPropValue = activeConnectionProperties.getProperty(sPropKey);
+                 if (null != sPropValue) {
+-                    enclaveAttestationProtocol = sPropValue;
+-
+-                    if (enclaveAttestationProtocol.equalsIgnoreCase(AttestationProtocol.HGS.toString())) {
+-                        this.enclaveProvider = new SQLServerVSMEnclaveProvider();
+-                    } else if (enclaveAttestationProtocol.equalsIgnoreCase(AttestationProtocol.NONE.toString())) {
+-                        this.enclaveProvider = new SQLServerNoneEnclaveProvider();
+-                    } else if (enclaveAttestationProtocol.equalsIgnoreCase(AttestationProtocol.AAS.toString())) {
+-                        this.enclaveProvider = new SQLServerAASEnclaveProvider();
+-                    } else {
+-                        throw new SQLServerException(
+-                                SQLServerException.getErrString("R_enclaveInvalidAttestationProtocol"), null);
+-                    }
+-                }
++        throw new SQLServerException("This authentication or key-vault feature is not supported by the Android profile", "0A000", 0, null);
++    }
+ 
+                 // enclave requires columnEncryption=enabled, enclaveAttestationUrl and enclaveAttestationProtocol
+                 if (
+@@ -3207,17 +3186,8 @@
+                 }
+ 
+                 if (intAuthScheme == AuthenticationScheme.JAVA_KERBEROS) {
+-                    sPropKey = SQLServerDriverObjectProperty.GSS_CREDENTIAL.toString();
+-                    if (activeConnectionProperties.containsKey(sPropKey)) {
+-                        impersonatedUserCred = (GSSCredential) activeConnectionProperties.get(sPropKey);
+-                        isUserCreatedCredential = true;
+-                    }
+-                    sPropKey = SQLServerDriverBooleanProperty.USE_DEFAULT_GSS_CREDENTIAL.toString();
+-                    sPropValue = activeConnectionProperties.getProperty(sPropKey);
+-                    if (null != sPropValue && isWindows) {
+-                        useDefaultGSSCredential = isBooleanPropertyOn(sPropKey, sPropValue);
+-                    }
+-                } else if (intAuthScheme == AuthenticationScheme.NTLM) {
++        throw new SQLServerException("This authentication or key-vault feature is not supported by the Android profile", "0A000", 0, null);
++    } else if (intAuthScheme == AuthenticationScheme.NTLM) {
+                     String sPropKeyDomain = SQLServerDriverStringProperty.DOMAIN.toString();
+                     String sPropValueDomain = activeConnectionProperties.getProperty(sPropKeyDomain);
+                     if (null == sPropValueDomain) {
+@@ -5607,7 +5577,7 @@
+             // the next allocated connection.
+             // Also if the app closes a connection handle before committing or rolling back the uncompleted
+             // transaction may lock other updates/queries so close the transaction now.
+-            if (!databaseAutoCommitMode && !(pooledConnectionParent instanceof XAConnection)) {
++            if (!databaseAutoCommitMode && true /* XA/pooling is rejected before connecting in this profile. */) {
+                 connectionCommand("IF @@TRANCOUNT > 0 ROLLBACK TRAN", "close connection");
+             }
+             notifyPooledConnection(null);
+@@ -6329,31 +6299,8 @@
+         byte[] channelBindingInfo = null != tdsChannel ? tdsChannel.getChannelBindingInfo() : null;
+ 
+         if (integratedSecurity) {
+-            if (AuthenticationScheme.NATIVE_AUTHENTICATION == intAuthScheme) {
+-                authentication = new AuthenticationJNI(this, currentConnectPlaceHolder.getServerName(),
+-                        currentConnectPlaceHolder.getPortNumber());
+-            } else if (AuthenticationScheme.JAVA_KERBEROS == intAuthScheme) {
+-                if (null != impersonatedUserCred || useDefaultGSSCredential) {
+-                    authentication = new KerbAuthentication(this, currentConnectPlaceHolder.getServerName(),
+-                            currentConnectPlaceHolder.getPortNumber(), impersonatedUserCred, isUserCreatedCredential,
+-                            useDefaultGSSCredential, channelBindingInfo);
+-                } else {
+-                    authentication = new KerbAuthentication(this, currentConnectPlaceHolder.getServerName(),
+-                            currentConnectPlaceHolder.getPortNumber(), channelBindingInfo);
+-                }
+-            } else if (ntlmAuthentication) {
+-                if (null == ntlmPasswordHash) {
+-                    ntlmPasswordHash = NTLMAuthentication.getNtlmPasswordHash(
+-                            activeConnectionProperties.getProperty(SQLServerDriverStringProperty.PASSWORD.toString()));
+-                    activeConnectionProperties.remove(SQLServerDriverStringProperty.PASSWORD.toString());
+-                }
+-
+-                authentication = new NTLMAuthentication(this,
+-                        activeConnectionProperties.getProperty(SQLServerDriverStringProperty.DOMAIN.toString()),
+-                        activeConnectionProperties.getProperty(SQLServerDriverStringProperty.USER.toString()),
+-                        ntlmPasswordHash, hostName, channelBindingInfo);
+-            }
+-        }
++        throw new SQLServerException("This authentication or key-vault feature is not supported by the Android profile", "0A000", 0, null);
++    }
+         if (null != channelBindingInfo) {
+             Arrays.fill(channelBindingInfo, (byte) 0);
+         }
+@@ -6412,9 +6359,7 @@
+                     authentication.releaseClientContext();
+                     authentication = null;
+                 }
+-                if (null != impersonatedUserCred) {
+-                    impersonatedUserCred = null;
+-                }
++                
+             }
+         }
+     }
+@@ -7005,210 +6950,7 @@
+     }
+ 
+     private SqlAuthenticationToken getFedAuthToken(SqlFedAuthInfo fedAuthInfo) throws SQLServerException {
+-        // fedAuthInfo should not be null.
+-        assert null != fedAuthInfo;
+-
+-        String user = activeConnectionProperties.getProperty(SQLServerDriverStringProperty.USER.toString());
+-
+-        // No of milliseconds to sleep for the initial back off.
+-        int fedauthSleepInterval = BACKOFF_INTERVAL;
+-
+-        if (!msalContextExists()
+-                && !authenticationString
+-                        .equalsIgnoreCase(SqlAuthentication.ACTIVE_DIRECTORY_INTEGRATED.toString())) {
+-            MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_MSALMissing"));
+-            throw new SQLServerException(form.format(new Object[] { authenticationString }), null, 0, null);
+-        }
+-
+-        if (loggerExternal.isLoggable(java.util.logging.Level.FINEST)) {
+-            loggerExternal.finest("Getting FedAuth token " + fedAuthInfo.toString());
+-        }
+-
+-        while (true) {
+-            int millisecondsRemaining = timerRemaining(timerExpire);
+-            if (authenticationString.equalsIgnoreCase(SqlAuthentication.ACTIVE_DIRECTORY_PASSWORD.toString())) {
+-                fedAuthToken = SQLServerMSAL4JUtils.getSqlFedAuthToken(fedAuthInfo, user,
+-                        activeConnectionProperties
+-                                .getProperty(SQLServerDriverStringProperty.PASSWORD.toString()),
+-                        authenticationString, millisecondsRemaining);
+-
+-                // Break out of the retry loop in successful case.
+-                break;
+-            } else if (authenticationString
+-                    .equalsIgnoreCase(SqlAuthentication.ACTIVE_DIRECTORY_MANAGED_IDENTITY.toString())) {
+-
+-                String managedIdentityClientId = activeConnectionProperties
+-                        .getProperty(SQLServerDriverStringProperty.USER.toString());
+-
+-                if (null != managedIdentityClientId && !managedIdentityClientId.isEmpty()) {
+-                    fedAuthToken = SQLServerSecurityUtility.getManagedIdentityCredAuthToken(fedAuthInfo.spn,
+-                            managedIdentityClientId, millisecondsRemaining);
+-                    break;
+-                }
+-
+-                fedAuthToken = SQLServerSecurityUtility.getManagedIdentityCredAuthToken(fedAuthInfo.spn,
+-                        activeConnectionProperties
+-                                .getProperty(SQLServerDriverStringProperty.MSI_CLIENT_ID.toString()),
+-                        millisecondsRemaining);
+-
+-                // Break out of the retry loop in successful case.
+-                break;
+-            } else if (authenticationString
+-                    .equalsIgnoreCase(SqlAuthentication.ACTIVE_DIRECTORY_SERVICE_PRINCIPAL.toString())) {
+-
+-                // aadPrincipalID and aadPrincipalSecret is deprecated replaced by username and
+-                // password
+-                if (aadPrincipalID != null && !aadPrincipalID.isEmpty() && aadPrincipalSecret != null
+-                        && !aadPrincipalSecret.isEmpty()) {
+-                    fedAuthToken = SQLServerMSAL4JUtils.getSqlFedAuthTokenPrincipal(fedAuthInfo, aadPrincipalID,
+-                            aadPrincipalSecret, authenticationString, millisecondsRemaining);
+-                } else {
+-                    fedAuthToken = SQLServerMSAL4JUtils.getSqlFedAuthTokenPrincipal(fedAuthInfo,
+-                            activeConnectionProperties
+-                                    .getProperty(SQLServerDriverStringProperty.USER.toString()),
+-                            activeConnectionProperties
+-                                    .getProperty(SQLServerDriverStringProperty.PASSWORD.toString()),
+-                            authenticationString, millisecondsRemaining);
+-                }
+-
+-                // Break out of the retry loop in successful case.
+-                break;
+-            } else if (authenticationString
+-                    .equalsIgnoreCase(
+-                            SqlAuthentication.ACTIVE_DIRECTORY_SERVICE_PRINCIPAL_CERTIFICATE.toString())) {
+-
+-                // clientCertificate property is used to specify path to certificate file
+-                fedAuthToken = SQLServerMSAL4JUtils.getSqlFedAuthTokenPrincipalCertificate(fedAuthInfo,
+-                        activeConnectionProperties.getProperty(SQLServerDriverStringProperty.USER.toString()),
+-                        servicePrincipalCertificate,
+-                        activeConnectionProperties
+-                                .getProperty(SQLServerDriverStringProperty.PASSWORD.toString()),
+-                        servicePrincipalCertificateKey, servicePrincipalCertificatePassword,
+-                        authenticationString,
+-                        millisecondsRemaining);
+-
+-                // Break out of the retry loop in successful case.
+-                break;
+-            } else if (authenticationString
+-                    .equalsIgnoreCase(SqlAuthentication.ACTIVE_DIRECTORY_INTEGRATED.toString())) {
+-                // If operating system is windows and mssql-jdbc_auth is loaded then choose the
+-                // DLL authentication.
+-                if (isWindows && AuthenticationJNI.isDllLoaded()) {
+-                    try {
+-                        FedAuthDllInfo dllInfo = AuthenticationJNI.getAccessTokenForWindowsIntegrated(
+-                                fedAuthInfo.stsurl, fedAuthInfo.spn, clientConnectionId.toString(),
+-                                ActiveDirectoryAuthentication.JDBC_FEDAUTH_CLIENT_ID, 0);
+-
+-                        // AccessToken should not be null.
+-                        assert null != dllInfo.accessTokenBytes;
+-                        byte[] accessTokenFromDLL = dllInfo.accessTokenBytes;
+-
+-                        String accessToken = new String(accessTokenFromDLL, UTF_16LE);
+-                        Date now = new Date();
+-                        now.setTime(now.getTime() + (dllInfo.expiresIn * 1000));
+-                        fedAuthToken = new SqlAuthenticationToken(accessToken, now);
+-
+-                        // Break out of the retry loop in successful case.
+-                        break;
+-                    } catch (DLLException dllException) {
+-
+-                        // The mssql-jdbc_auth DLL returns -1 for errorCategory if unable to load the
+-                        // mssql-auth.dll
+-                        int errorCategory = dllException.getCategory();
+-                        if (-1 == errorCategory) {
+-                            MessageFormat form = new MessageFormat(
+-                                    SQLServerException.getErrString("R_UnableLoadMSSQLAuthDll"));
+-                            Object[] msgArgs = { Integer.toHexString(dllException.getState()) };
+-                            throw new SQLServerException(form.format(msgArgs), null);
+-                        }
+-
+-                        millisecondsRemaining = timerRemaining(timerExpire);
+-                        if (ActiveDirectoryAuthentication.GET_ACCESS_TOKEN_TRANSIENT_ERROR != errorCategory
+-                                || timerHasExpired(timerExpire)
+-                                || (fedauthSleepInterval >= millisecondsRemaining)) {
+-
+-                            String errorStatus = Integer.toHexString(dllException.getStatus());
+-
+-                            if (connectionlogger.isLoggable(Level.FINER)) {
+-                                connectionlogger.fine(
+-                                        toString()
+-                                                + " SQLServerConnection.getFedAuthToken.DLLException category:"
+-                                                + errorCategory + " error: " + errorStatus);
+-                            }
+-
+-                            MessageFormat form = new MessageFormat(
+-                                    SQLServerException.getErrString("R_ADALAuthenticationMiddleErrorMessage"));
+-                            String errorCode = Integer.toHexString(dllException.getStatus()).toUpperCase();
+-                            Object[] msgArgs1 = { errorCode, dllException.getState() };
+-                            SQLServerException middleException = new SQLServerException(form.format(msgArgs1),
+-                                    dllException);
+-
+-                            form = new MessageFormat(SQLServerException.getErrString("R_MSALExecution"));
+-                            Object[] msgArgs = { user, authenticationString };
+-                            throw new SQLServerException(form.format(msgArgs), null, 0, middleException);
+-                        }
+-
+-                        if (connectionlogger.isLoggable(Level.FINER)) {
+-                            connectionlogger.fine(toString() + " SQLServerConnection.getFedAuthToken sleeping: "
+-                                    + fedauthSleepInterval + " milliseconds.");
+-                            connectionlogger
+-                                    .fine(toString() + " SQLServerConnection.getFedAuthToken remaining: "
+-                                            + millisecondsRemaining + " milliseconds.");
+-                        }
+-
+-                        sleepForInterval(fedauthSleepInterval);
+-                        fedauthSleepInterval = (fedauthSleepInterval < 500) ? fedauthSleepInterval * 2 : 1000;
+-
+-                    }
+-                }
+-                // else choose MSAL4J for integrated authentication. This option is supported
+-                // for both windows and unix,
+-                // so we don't need to check the
+-                // OS version here.
+-                else {
+-                    // Check if MSAL4J library is available
+-                    if (!msalContextExists()) {
+-                        MessageFormat form = new MessageFormat(
+-                                SQLServerException.getErrString("R_DLLandMSALMissing"));
+-                        Object[] msgArgs = { SQLServerDriver.AUTH_DLL_NAME, authenticationString };
+-                        throw new SQLServerException(form.format(msgArgs), null, 0, null);
+-                    }
+-                    fedAuthToken = SQLServerMSAL4JUtils.getSqlFedAuthTokenIntegrated(fedAuthInfo,
+-                            authenticationString,
+-                            millisecondsRemaining);
+-                }
+-                // Break out of the retry loop in successful case.
+-                break;
+-            } else if (authenticationString
+-                    .equalsIgnoreCase(SqlAuthentication.ACTIVE_DIRECTORY_INTERACTIVE.toString())) {
+-                // interactive flow
+-                fedAuthToken = SQLServerMSAL4JUtils.getSqlFedAuthTokenInteractive(fedAuthInfo, user,
+-                        authenticationString, millisecondsRemaining);
+-
+-                // Break out of the retry loop in successful case.
+-                break;
+-            } else if (authenticationString
+-                    .equalsIgnoreCase(SqlAuthentication.ACTIVE_DIRECTORY_DEFAULT.toString())) {
+-                String managedIdentityClientId = activeConnectionProperties
+-                        .getProperty(SQLServerDriverStringProperty.USER.toString());
+-
+-                if (null != managedIdentityClientId && !managedIdentityClientId.isEmpty()) {
+-                    fedAuthToken = SQLServerSecurityUtility.getDefaultAzureCredAuthToken(fedAuthInfo.spn,
+-                            managedIdentityClientId, millisecondsRemaining);
+-                    break;
+-                }
+-
+-                fedAuthToken = SQLServerSecurityUtility.getDefaultAzureCredAuthToken(fedAuthInfo.spn,
+-                        activeConnectionProperties
+-                                .getProperty(SQLServerDriverStringProperty.MSI_CLIENT_ID.toString()),
+-                        millisecondsRemaining);
+-
+-                break;
+-            }
+-        }
+-
+-        return fedAuthToken;
+-
++        throw new SQLServerException("This authentication or key-vault feature is not supported by the Android profile", "0A000", 0, null);
+     }
+ 
+     private boolean msalContextExists() {
+@@ -9533,7 +9275,7 @@
+      * @deprecated Time-to-live is no longer supported for the cached Managed Identity tokens.
+      *             This method will always return 0 and is for backwards compatibility only.
+      */
+-    @Deprecated(since = "12.1.0", forRemoval = true)
++    @Deprecated
+     @Override
+     public int getMsiTokenCacheTtl() {
+         return 0;
+@@ -9543,7 +9285,7 @@
+      * @deprecated Time-to-live is no longer supported for the cached Managed Identity tokens.
+      *             This method is a no-op for backwards compatibility only.
+      */
+-    @Deprecated(since = "12.1.0", forRemoval = true)
++    @Deprecated
+     @Override
+     public void setMsiTokenCacheTtl(int timeToLive) {}
+ 
+--- a/com/microsoft/sqlserver/jdbc/SQLServerDataSource.java
++++ b/com/microsoft/sqlserver/jdbc/SQLServerDataSource.java
+@@ -21,7 +21,6 @@
+ import javax.naming.Reference;
+ import javax.naming.StringRefAddr;
+ 
+-import org.ietf.jgss.GSSCredential;
+ 
+ 
+ /**
+@@ -245,17 +244,9 @@
+                 SQLServerDriverStringProperty.AUTHENTICATION.getDefaultValue());
+     }
+ 
+-    @Override
+-    public void setGSSCredentials(GSSCredential userCredential) {
+-        setObjectProperty(connectionProps, SQLServerDriverObjectProperty.GSS_CREDENTIAL.toString(), userCredential);
+-    }
+-
+-    @Override
+-    public GSSCredential getGSSCredentials() {
+-        return (GSSCredential) getObjectProperty(connectionProps,
+-                SQLServerDriverObjectProperty.GSS_CREDENTIAL.toString(),
+-                SQLServerDriverObjectProperty.GSS_CREDENTIAL.getDefaultValue());
+-    }
++
++
++
+ 
+     @Override
+     public void setUseDefaultGSSCredential(boolean enable) {
+@@ -346,7 +337,7 @@
+      * @deprecated
+      */
+     @Override
+-    @Deprecated(since = "10.1.0", forRemoval = true)
++    @Deprecated
+     public void setEncrypt(boolean encryptOption) {
+         setStringProperty(connectionProps, SQLServerDriverStringProperty.ENCRYPT.toString(),
+                 Boolean.toString(encryptOption));
+@@ -1167,7 +1158,7 @@
+      * @deprecated
+      */
+     @Override
+-    @Deprecated(since = "9.3.0", forRemoval = true)
++    @Deprecated
+     public void setJASSConfigurationName(String configurationName) {
+         setStringProperty(connectionProps, SQLServerDriverStringProperty.JAAS_CONFIG_NAME.toString(),
+                 configurationName);
+@@ -1177,7 +1168,7 @@
+      * @deprecated
+      */
+     @Override
+-    @Deprecated(since = "9.3.0", forRemoval = true)
++    @Deprecated
+     public String getJASSConfigurationName() {
+         return getStringProperty(connectionProps, SQLServerDriverStringProperty.JAAS_CONFIG_NAME.toString(),
+                 SQLServerDriverStringProperty.JAAS_CONFIG_NAME.getDefaultValue());
+@@ -1215,7 +1206,7 @@
+      * @param managedIdentityClientId
+      *        Client ID of the user-assigned Managed Identity.
+      */
+-    @Deprecated(since = "12.1.0", forRemoval = true)
++    @Deprecated
+     @Override
+     public void setMSIClientId(String managedIdentityClientId) {
+         setStringProperty(connectionProps, SQLServerDriverStringProperty.MSI_CLIENT_ID.toString(),
+@@ -1229,7 +1220,7 @@
+      *
+      * @return msiClientId property value
+      */
+-    @Deprecated(since = "12.1.0", forRemoval = true)
++    @Deprecated
+     @Override
+     public String getMSIClientId() {
+         return getStringProperty(connectionProps, SQLServerDriverStringProperty.MSI_CLIENT_ID.toString(),
+@@ -1331,7 +1322,7 @@
+      * @deprecated
+      */
+     @Override
+-    @Deprecated(since = "9.4.1", forRemoval = true)
++    @Deprecated
+     public String getAADSecurePrincipalId() {
+         return getStringProperty(connectionProps, SQLServerDriverStringProperty.AAD_SECURE_PRINCIPAL_ID.toString(),
+                 SQLServerDriverStringProperty.AAD_SECURE_PRINCIPAL_ID.getDefaultValue());
+@@ -1341,7 +1332,7 @@
+      * @deprecated
+      */
+     @Override
+-    @Deprecated(since = "9.4.1", forRemoval = true)
++    @Deprecated
+     public void setAADSecurePrincipalId(String aadSecurePrincipalId) {
+         setStringProperty(connectionProps, SQLServerDriverStringProperty.AAD_SECURE_PRINCIPAL_ID.toString(),
+                 aadSecurePrincipalId);
+@@ -1351,7 +1342,7 @@
+      * @deprecated
+      */
+     @Override
+-    @Deprecated(since = "9.4.1", forRemoval = true)
++    @Deprecated
+     public void setAADSecurePrincipalSecret(String aadSecurePrincipalSecret) {
+         setStringProperty(connectionProps, SQLServerDriverStringProperty.AAD_SECURE_PRINCIPAL_SECRET.toString(),
+                 aadSecurePrincipalSecret);
+@@ -1419,7 +1410,7 @@
+      * @deprecated Time-to-live is no longer supported for the cached Managed Identity tokens.
+      *             This method will always return 0 and is for backwards compatibility only.
+      */
+-    @Deprecated(since = "12.1.0", forRemoval = true)
++    @Deprecated
+     @Override
+     public void setMsiTokenCacheTtl(int timeToLive) {}
+ 
+@@ -1427,7 +1418,7 @@
+      * @deprecated Time-to-live is no longer supported for the cached Managed Identity tokens.
+      *             This method is a no-op for backwards compatibility only.
+      */
+-    @Deprecated(since = "12.1.0", forRemoval = true)
++    @Deprecated
+     @Override
+     public int getMsiTokenCacheTtl() {
+         return 0;
+--- a/com/microsoft/sqlserver/jdbc/SQLServerDriver.java
++++ b/com/microsoft/sqlserver/jdbc/SQLServerDriver.java
+@@ -19,7 +19,6 @@
  import java.util.logging.Level;
  import java.util.logging.Logger;
-@@ -132,14 +132,15 @@
  
-     private static long adjustMemory(long size, long multiplier) throws SQLServerException {
-         checkForNegativeValue(size);
--        if (size * multiplier > 0.9 * getMaxMemory())
-+        // Compare before multiplication to avoid signed long overflow.
-+        if (size > (long) (0.9 * getMaxMemory()) / multiplier)
-             return (long) (0.9 * getMaxMemory());
-         else
-             return size * multiplier;
+-import org.ietf.jgss.GSSCredential;
+ 
+ 
+ /**
+@@ -1311,8 +1310,8 @@
+                 if (null != val) {
+                     // replace with the driver approved name
+                     fixedup.setProperty(newname, val);
+-                } else if ("gsscredential".equalsIgnoreCase(newname) && (props.get(name) instanceof GSSCredential)) {
+-                    fixedup.put(newname, props.get(name));
++                } else if ("gsscredential".equalsIgnoreCase(newname)) {
++                    throw new SQLServerException("This authentication or key-vault feature is not supported by the Android profile", "0A000", 0, null);
+                 } else if ("accessTokenCallback".equalsIgnoreCase(newname)
+                         && (props.get(name) instanceof SQLServerAccessTokenCallback)) {
+                     fixedup.put(newname, props.get(name));
+--- a/com/microsoft/sqlserver/jdbc/SQLServerError.java
++++ b/com/microsoft/sqlserver/jdbc/SQLServerError.java
+@@ -275,7 +275,6 @@
+     // @java.beans.Transient marks this self-referential getter as transient in JavaBeans introspection.
+     // Serializers that honor the transient marker (Jackson, XMLEncoder, DataWeave, etc.) will skip it to avoid recursion.
+     @Override
+-    @java.beans.Transient
+     public SQLServerError getSQLServerMessage() {
+         return this;
+     }
+--- a/com/microsoft/sqlserver/jdbc/SQLServerPreparedStatement.java
++++ b/com/microsoft/sqlserver/jdbc/SQLServerPreparedStatement.java
+@@ -21,7 +21,6 @@
+ import java.sql.RowId;
+ import java.sql.SQLException;
+ import java.sql.SQLTimeoutException;
+-import java.sql.SQLType;
+ import java.sql.SQLXML;
+ import java.sql.Statement;
+ import java.text.MessageFormat;
+@@ -2208,28 +2207,13 @@
+         }
      }
  
-     private static long getMaxMemory() {
--        return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
-+        return Runtime.getRuntime().maxMemory();
+-    @Override
+-    public final void setObject(int index, Object obj, SQLType jdbcType) throws SQLServerException {
+-        setObject(index, obj, jdbcType.getVendorTypeNumber());
+-    }
+-
+-    @Override
+-    public final void setObject(int parameterIndex, Object x, SQLType targetSqlType,
+-            int scaleOrLength) throws SQLServerException {
+-        setObject(parameterIndex, x, targetSqlType.getVendorTypeNumber(), scaleOrLength);
+-    }
+-
+-    @Override
+-    public final void setObject(int parameterIndex, Object x, SQLType targetSqlType, Integer precision,
+-            Integer scale) throws SQLServerException {
+-        setObject(parameterIndex, x, targetSqlType.getVendorTypeNumber(), precision, scale);
+-    }
+-
+-    @Override
+-    public final void setObject(int parameterIndex, Object x, SQLType targetSqlType, Integer precision, Integer scale,
+-            boolean forceEncrypt) throws SQLServerException {
+-        setObject(parameterIndex, x, targetSqlType.getVendorTypeNumber(), precision, scale, forceEncrypt);
+-    }
++
++
++
++
++
++
++
+ 
+     @Override
+     public final void setShort(int index, short x) throws SQLServerException {
+--- a/com/microsoft/sqlserver/jdbc/SQLServerResultSet.java
++++ b/com/microsoft/sqlserver/jdbc/SQLServerResultSet.java
+@@ -20,7 +20,6 @@
+ import java.sql.RowId;
+ import java.sql.SQLException;
+ import java.sql.SQLFeatureNotSupportedException;
+-import java.sql.SQLType;
+ import java.sql.SQLWarning;
+ import java.sql.SQLXML;
+ import java.text.MessageFormat;
+@@ -2300,7 +2299,7 @@
+     /**
+      * @deprecated
+      */
+-    @Deprecated(since = "6.5.4")
++    @Deprecated
+     @Override
+     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLServerException {
+         if (loggerExternal.isLoggable(Level.FINER))
+@@ -2318,7 +2317,7 @@
+     /**
+      * @deprecated
+      */
+-    @Deprecated(since = "6.5.4")
++    @Deprecated
+     @Override
+     public BigDecimal getBigDecimal(String columnName, int scale) throws SQLServerException {
+         if (loggerExternal.isLoggable(Level.FINER))
+@@ -3174,7 +3173,7 @@
+     /**
+      * @deprecated
+      */
+-    @Deprecated(since = "6.5.4")
++    @Deprecated
+     @Override
+     public java.io.InputStream getUnicodeStream(int columnIndex) throws SQLException {
+         if (loggerExternal.isLoggable(Level.FINER)) {
+@@ -3187,7 +3186,7 @@
+     /**
+      * @deprecated
+      */
+-    @Deprecated(since = "6.5.4")
++    @Deprecated
+     @Override
+     public java.io.InputStream getUnicodeStream(String columnName) throws SQLException {
+         if (loggerExternal.isLoggable(Level.FINER)) {
+@@ -6575,106 +6574,16 @@
+         }
      }
  
-     private static void throwNewInvalidMaxResultBufferParameterException(Throwable cause,
+-    @Override
+-    public void updateObject(int index, Object obj, SQLType targetSqlType) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "updateObject", new Object[] {index, obj, targetSqlType});
+-
+-        checkClosed();
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        updateObject(index, obj, null, JDBCType.of(targetSqlType.getVendorTypeNumber()), null, false);
+-
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "updateObject");
+-        }
+-    }
+-
+-    @Override
+-    public void updateObject(int index, Object obj, SQLType targetSqlType, int scale) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "updateObject",
+-                    new Object[] {index, obj, targetSqlType, scale});
+-
+-        checkClosed();
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        updateObject(index, obj, scale, JDBCType.of(targetSqlType.getVendorTypeNumber()), null, false);
+-
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "updateObject");
+-        }
+-    }
+-
+-    @Override
+-    public void updateObject(int index, Object obj, SQLType targetSqlType, int scale,
+-            boolean forceEncrypt) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "updateObject",
+-                    new Object[] {index, obj, targetSqlType, scale, forceEncrypt});
+-
+-        checkClosed();
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        updateObject(index, obj, scale, JDBCType.of(targetSqlType.getVendorTypeNumber()), null, forceEncrypt);
+-
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "updateObject");
+-        }
+-    }
+-
+-    @Override
+-    public void updateObject(String columnName, Object obj, SQLType targetSqlType,
+-            int scale) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "updateObject",
+-                    new Object[] {columnName, obj, targetSqlType, scale});
+-
+-        checkClosed();
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        updateObject(findColumn(columnName), obj, scale, JDBCType.of(targetSqlType.getVendorTypeNumber()), null, false);
+-
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "updateObject");
+-        }
+-    }
+-
+-    @Override
+-    public void updateObject(String columnName, Object obj, SQLType targetSqlType, int scale,
+-            boolean forceEncrypt) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "updateObject",
+-                    new Object[] {columnName, obj, targetSqlType, scale, forceEncrypt});
+-
+-        checkClosed();
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        updateObject(findColumn(columnName), obj, scale, JDBCType.of(targetSqlType.getVendorTypeNumber()), null,
+-                forceEncrypt);
+-
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "updateObject");
+-        }
+-    }
+-
+-    @Override
+-    public void updateObject(String columnName, Object obj, SQLType targetSqlType) throws SQLServerException {
+-
+-        if (loggerExternal.isLoggable(Level.FINER))
+-            loggerExternal.entering(getClassNameLogging(), "updateObject",
+-                    new Object[] {columnName, obj, targetSqlType});
+-
+-        checkClosed();
+-
+-        // getVendorTypeNumber() returns the same constant integer values as in java.sql.Types
+-        updateObject(findColumn(columnName), obj, null, JDBCType.of(targetSqlType.getVendorTypeNumber()), null, false);
+-
+-        if (loggerExternal.isLoggable(Level.FINER)) {
+-            loggerExternal.exiting(getClassNameLogging(), "updateObject");
+-        }
+-    }
++
++
++
++
++
++
++
++
++
++
++
+ 
+ }
 --- a/com/microsoft/sqlserver/jdbc/SQLServerSQLXML.java
 +++ b/com/microsoft/sqlserver/jdbc/SQLServerSQLXML.java
 @@ -3,6 +3,7 @@
@@ -256,114 +1567,297 @@
      private SAXResult getSAXResult() throws SQLException {
          TransformerHandler handler = null;
          try {
---- a/com/microsoft/sqlserver/jdbc/DDC.java
-+++ b/com/microsoft/sqlserver/jdbc/DDC.java
-@@ -35,6 +35,24 @@
-  */
+--- a/com/microsoft/sqlserver/jdbc/SQLServerSecurityUtility.java
++++ b/com/microsoft/sqlserver/jdbc/SQLServerSecurityUtility.java
+@@ -21,12 +21,6 @@
+ import javax.crypto.Mac;
+ import javax.crypto.spec.SecretKeySpec;
  
- final class DDC {
+-import com.azure.core.credential.AccessToken;
+-import com.azure.core.credential.TokenRequestContext;
+-import com.azure.identity.ManagedIdentityCredential;
+-import com.azure.identity.ManagedIdentityCredentialBuilder;
+-import com.azure.identity.DefaultAzureCredential;
+-import com.azure.identity.DefaultAzureCredentialBuilder;
+ 
+ import static com.microsoft.sqlserver.jdbc.Util.getHashedSecret;
+ 
+@@ -54,7 +48,6 @@
+     private static final String ADDITIONALLY_ALLOWED_TENANTS = "ADDITIONALLY_ALLOWED_TENANTS";
+ 
+     // Credential Cache for ManagedIdentityCredential and DefaultAzureCredential
+-    private static final ConcurrentHashMap<String, Credential> CREDENTIAL_CACHE = new ConcurrentHashMap<>();
+ 
+     private static final Lock CREDENTIAL_LOCK = new ReentrantLock();
+ 
+@@ -333,234 +326,4 @@
+         }
+     }
+ 
+-    /**
+-     * Get Managed Identity Authentication token through a ManagedIdentityCredential
+-     * 
+-     * @param resource
+-     *        Token resource.
+-     * @param managedIdentityClientId
+-     *        Client ID of the user-assigned Managed Identity.
+-     * @return fedauth token
+-     * @throws SQLServerException
+-     */
+-    static SqlAuthenticationToken getManagedIdentityCredAuthToken(String resource,
+-            String managedIdentityClientId, long millisecondsRemaining) throws SQLServerException {
+-
+-        if (logger.isLoggable(java.util.logging.Level.FINEST)) {
+-            logger.finest("Getting Managed Identity authentication token for: " + managedIdentityClientId);
+-        }
+-
+-        String key = getHashedSecret(
+-                new String[] {managedIdentityClientId, ManagedIdentityCredential.class.getSimpleName()});
+-        ManagedIdentityCredential mic = (ManagedIdentityCredential) getCredentialFromCache(key);
+-
+-        if (null == mic) {
+-            CREDENTIAL_LOCK.lock();
+-
+-            try {
+-                mic = (ManagedIdentityCredential) getCredentialFromCache(key);
+-                if (null == mic) {
+-                    ManagedIdentityCredentialBuilder micBuilder = new ManagedIdentityCredentialBuilder();
+-
+-                    if (null != managedIdentityClientId && !managedIdentityClientId.isEmpty()) {
+-                        mic = micBuilder.clientId(managedIdentityClientId).build();
+-                    } else {
+-                        mic = micBuilder.build();
+-                    }
+-
+-                    Credential credential = new Credential(mic);
+-                    CREDENTIAL_CACHE.put(key, credential);
+-                }
+-            } finally {
+-                CREDENTIAL_LOCK.unlock();
+-            }
+-        }
+-
+-        TokenRequestContext tokenRequestContext = new TokenRequestContext();
+-        String scope = resource.endsWith(SQLServerMSAL4JUtils.SLASH_DEFAULT) ? resource : resource
+-                + SQLServerMSAL4JUtils.SLASH_DEFAULT;
+-        tokenRequestContext.setScopes(Arrays.asList(scope));
+-
+-        SqlAuthenticationToken sqlFedAuthToken = null;
+-
+-        Optional<AccessToken> accessTokenOptional;
+-        try {
+-            accessTokenOptional = mic.getToken(tokenRequestContext)
+-                    .timeout(Duration.of(Math.min(millisecondsRemaining, TOKEN_WAIT_DURATION_MS), ChronoUnit.MILLIS))
+-                    .blockOptional();
+-        } catch (RuntimeException e) {
+-            // A transient failure (e.g. Managed Identity endpoint outage or timeout) can leave the cached
+-            // credential's internal token state in a failed state, causing every subsequent token request on the
+-            // same instance to keep failing. Evict the cached credential so the next attempt builds a fresh
+-            // instance and can recover, instead of failing persistently until the process is restarted.
+-            removeCredentialFromCache(key, mic);
+-            throw new SQLServerException(SQLServerException.getErrString("R_ManagedIdentityTokenAcquisitionError"), e);
+-        }
+-
+-        if (!accessTokenOptional.isPresent()) {
+-            removeCredentialFromCache(key, mic);
+-            throw new SQLServerException(SQLServerException.getErrString("R_ManagedIdentityTokenAcquisitionFail"),
+-                    null);
+-        } else {
+-            AccessToken accessToken = accessTokenOptional.get();
+-            sqlFedAuthToken = new SqlAuthenticationToken(accessToken.getToken(),
+-                    accessToken.getExpiresAt().toInstant().toEpochMilli());
+-        }
+-
+-        if (logger.isLoggable(java.util.logging.Level.FINEST)) {
+-            logger.finest("Got fedAuth token, expiry: " + sqlFedAuthToken.getExpiresOn().toString());
+-        }
+-
+-        return sqlFedAuthToken;
+-    }
+-
+-    /**
+-     * Get Managed Identity Authentication token through the DefaultAzureCredential
+-     *
+-     * @param resource
+-     *        Token resource.
+-     * @param managedIdentityClientId
+-     *        Client ID of the user-assigned Managed Identity.
+-     * @return fedauth token
+-     * @throws SQLServerException
+-     */
+-    static SqlAuthenticationToken getDefaultAzureCredAuthToken(String resource,
+-            String managedIdentityClientId, int millisecondsRemaining) throws SQLServerException {
+-        String intellijKeepassPath = System.getenv(INTELLIJ_KEEPASS_PASS);
+-        String[] additionallyAllowedTenants = getAdditonallyAllowedTenants();
+-
+-        int secretsLength = null == additionallyAllowedTenants ? 3 : additionallyAllowedTenants.length + 3;
+-        String[] secrets = new String[secretsLength];
+-
+-        if (null != additionallyAllowedTenants && additionallyAllowedTenants.length != 0) {
+-            System.arraycopy(additionallyAllowedTenants, 0, secrets, 3, additionallyAllowedTenants.length);
+-        }
+-
+-        secrets[0] = DefaultAzureCredential.class.getSimpleName();
+-        secrets[1] = managedIdentityClientId;
+-        secrets[2] = intellijKeepassPath;
+-
+-        String key = getHashedSecret(secrets);
+-        DefaultAzureCredential dac = (DefaultAzureCredential) getCredentialFromCache(key);
+-
+-        if (null == dac) {
+-            CREDENTIAL_LOCK.lock();
+-
+-            try {
+-                dac = (DefaultAzureCredential) getCredentialFromCache(key);
+-                if (null == dac) {
+-                    DefaultAzureCredentialBuilder dacBuilder = new DefaultAzureCredentialBuilder();
+-
+-                    if (null != managedIdentityClientId && !managedIdentityClientId.isEmpty()) {
+-                        dacBuilder.managedIdentityClientId(managedIdentityClientId);
+-                    }
+-
+-                    if (null != intellijKeepassPath && !intellijKeepassPath.isEmpty()) {
+-                        dacBuilder.intelliJKeePassDatabasePath(intellijKeepassPath);
+-                    }
+-
+-                    if (null != additionallyAllowedTenants && additionallyAllowedTenants.length != 0) {
+-                        dacBuilder.additionallyAllowedTenants(additionallyAllowedTenants);
+-                    }
+-
+-                    dac = dacBuilder.build(); // CodeQL [SM05141] This is a client library supporting all scenarios (dev, test, prod, etc.), not just prod environments.
+-
+-                    Credential credential = new Credential(dac);
+-                    CREDENTIAL_CACHE.put(key, credential);
+-                }
+-            } finally {
+-                CREDENTIAL_LOCK.unlock();
+-            }
+-        }
+-
+-        TokenRequestContext tokenRequestContext = new TokenRequestContext();
+-        String scope = resource.endsWith(SQLServerMSAL4JUtils.SLASH_DEFAULT) ? resource : resource
+-                + SQLServerMSAL4JUtils.SLASH_DEFAULT;
+-        tokenRequestContext.setScopes(Arrays.asList(scope));
+-
+-        SqlAuthenticationToken sqlFedAuthToken = null;
+-
+-        Optional<AccessToken> accessTokenOptional;
+-        try {
+-            accessTokenOptional = dac.getToken(tokenRequestContext)
+-                    .timeout(Duration.of(Math.min(millisecondsRemaining, TOKEN_WAIT_DURATION_MS), ChronoUnit.MILLIS))
+-                    .blockOptional();
+-        } catch (RuntimeException e) {
+-            // A transient failure (e.g. Managed Identity endpoint outage or timeout) can leave the cached
+-            // credential's internal token state in a failed state, causing every subsequent token request on the
+-            // same instance to keep failing. Evict the cached credential so the next attempt builds a fresh
+-            // instance and can recover, instead of failing persistently until the process is restarted.
+-            removeCredentialFromCache(key, dac);
+-            throw new SQLServerException(SQLServerException.getErrString("R_ManagedIdentityTokenAcquisitionError"), e);
+-        }
+-
+-        if (!accessTokenOptional.isPresent()) {
+-            removeCredentialFromCache(key, dac);
+-            throw new SQLServerException(SQLServerException.getErrString("R_ManagedIdentityTokenAcquisitionFail"),
+-                    null);
+-        } else {
+-            AccessToken accessToken = accessTokenOptional.get();
+-            sqlFedAuthToken = new SqlAuthenticationToken(accessToken.getToken(),
+-                    accessToken.getExpiresAt().toInstant().toEpochMilli());
+-        }
+-
+-        return sqlFedAuthToken;
+-    }
+-
+-    private static String[] getAdditonallyAllowedTenants() {
+-        String additonallyAllowedTenants = System.getenv(ADDITIONALLY_ALLOWED_TENANTS);
+-
+-        if (null != additonallyAllowedTenants && !additonallyAllowedTenants.isEmpty()) {
+-            return System.getenv(ADDITIONALLY_ALLOWED_TENANTS).split(",");
+-        }
+-
+-        return null;
+-    }
+-
+-    private static Object getCredentialFromCache(String key) {
+-        Credential credential = CREDENTIAL_CACHE.get(key);
+-
+-        if (null != credential) {
+-            return credential.tokenCredential;
+-        }
+-
+-        return null;
+-    }
+-
+-    /**
+-     * Removes a cached credential so that a subsequent token request rebuilds a fresh credential instance.
+-     *
+-     * This is used to recover from a poisoned credential whose internal token state has been left in a failed state
+-     * by a transient error (e.g. a Managed Identity endpoint outage or timeout). Without eviction, every pooled
+-     * connection would keep reusing the same failing credential, causing the failure to persist until the process is
+-     * restarted.
+-     *
+-     * The removal is conditional on the currently cached credential still being the same instance that failed. This
+-     * avoids discarding a healthy credential that another thread may have already rebuilt and cached under the same
+-     * key while this thread was waiting on its (now failed) token request.
+-     *
+-     * @param key
+-     *        the credential cache key
+-     * @param expectedCredential
+-     *        the credential instance that failed; only evicted if it is still the cached instance
+-     */
+-    private static void removeCredentialFromCache(String key, Object expectedCredential) {
+-        CREDENTIAL_LOCK.lock();
+-        try {
+-            Credential current = CREDENTIAL_CACHE.get(key);
+-            if (null != current && current.tokenCredential == expectedCredential) {
+-                CREDENTIAL_CACHE.remove(key);
+-            }
+-        } finally {
+-            CREDENTIAL_LOCK.unlock();
+-        }
+-    }
+-
+-    private static class Credential {
+-        Object tokenCredential;
+-
+-        public Credential(Object tokenCredential) {
+-            this.tokenCredential = tokenCredential;
+-        }
+-    }
+ }
+--- a/com/microsoft/sqlserver/jdbc/SSPIAuthentication.java
++++ b/com/microsoft/sqlserver/jdbc/SSPIAuthentication.java
+@@ -14,9 +14,7 @@
+ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
+ 
+-import javax.naming.NamingException;
+-
+-import com.microsoft.sqlserver.jdbc.dns.DNSKerberosLocator;
 +
-+    // Android java.sql has no java.time overloads. These constructors implement the same
-+    // local calendar fields as the JDK valueOf overloads, including nanosecond precision.
-+    @SuppressWarnings("deprecation")
-+    private static java.sql.Timestamp timestampFromLocal(LocalDateTime value) {
-+        return new java.sql.Timestamp(value.getYear() - 1900, value.getMonthValue() - 1,
-+                value.getDayOfMonth(), value.getHour(), value.getMinute(), value.getSecond(), value.getNano());
-+    }
-+
-+    @SuppressWarnings("deprecation")
-+    private static java.sql.Date dateFromLocal(LocalDate value) {
-+        return new java.sql.Date(value.getYear() - 1900, value.getMonthValue() - 1, value.getDayOfMonth());
-+    }
-+
-+    @SuppressWarnings("deprecation")
-+    private static java.sql.Time timeFromLocal(LocalTime value) {
-+        return new java.sql.Time(value.getHour(), value.getMinute(), value.getSecond());
-+    }
  
-     private DDC() {
-         throw new UnsupportedOperationException(SQLServerException.getErrString("R_notSupported"));
-@@ -1169,7 +1187,8 @@
-                                 cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE),
-                                 cal.get(Calendar.SECOND), subSecondNanos);
-                     } else {
--                        return ts2.toLocalDateTime();
-+                        return LocalDateTime.of(ts2.getYear() + 1900, ts2.getMonth() + 1, ts2.getDate(),
-+                                ts2.getHours(), ts2.getMinutes(), ts2.getSeconds(), ts2.getNanos());
-                     }
-                 }
-                 return ts2;
-@@ -1293,11 +1312,11 @@
-             case SQL_VARIANT:
-                 switch (ssType) {
-                     case DATE:
--                        return java.sql.Date.valueOf(ldt.toLocalDate());
-+                        return dateFromLocal(ldt.toLocalDate());
  
-                     case DATETIME:
-                     case DATETIME2:
--                        java.sql.Timestamp ts = java.sql.Timestamp.valueOf(ldt);
-+                        java.sql.Timestamp ts = timestampFromLocal(ldt);
-                         ts.setNanos(subSecondNanos);
-                         return ts;
+ /**
+@@ -75,21 +73,7 @@
+      * @return a not null realm validator
+      */
+     private RealmValidator getRealmValidator() {
+-        if (null != validator) {
+-            return validator;
+-        }
+-
+-        validator = new RealmValidator() {
+-            @Override
+-            public boolean isRealmValid(String realm) {
+-                try {
+-                    return DNSKerberosLocator.isRealmValid(realm);
+-                } catch (NamingException err) {
+-                    return false;
+-                }
+-            }
+-        };
+-        return validator;
++        throw new UnsupportedOperationException("Kerberos is not supported by the Android profile");
+     }
  
-@@ -1305,7 +1324,7 @@
-                         if (subSecondNanos % Nanos.PER_MILLISECOND >= Nanos.PER_MILLISECOND / 2) {
-                             ldt = ldt.plusNanos(1000000);
-                         }
--                        java.sql.Time t = java.sql.Time.valueOf(ldt.toLocalTime());
-+                        java.sql.Time t = timeFromLocal(ldt.toLocalTime());
-                         t.setTime(t.getTime() + (ldt.getNano() / Nanos.PER_MILLISECOND));
-                         return t;
- 
-@@ -1317,13 +1336,13 @@
-                 }
- 
-             case DATE:
--                return java.sql.Date.valueOf(ldt.toLocalDate());
-+                return dateFromLocal(ldt.toLocalDate());
- 
-             case TIME:
-                 if (subSecondNanos % Nanos.PER_MILLISECOND >= Nanos.PER_MILLISECOND / 2) {
-                     ldt = ldt.plusNanos(1000000);
-                 }
--                java.sql.Time t = java.sql.Time.valueOf(ldt.toLocalTime());
-+                java.sql.Time t = timeFromLocal(ldt.toLocalTime());
-                 t.setTime(t.getTime() + (ldt.getNano() / Nanos.PER_MILLISECOND));
-                 return t;
- 
-@@ -1332,7 +1351,7 @@
-                     return ldt;
-                 }
- 
--                java.sql.Timestamp ts = java.sql.Timestamp.valueOf(ldt);
-+                java.sql.Timestamp ts = timestampFromLocal(ldt);
-                 ts.setNanos(subSecondNanos);
-                 return ts;
- 
-@@ -1340,19 +1359,20 @@
-                 switch (ssType) {
-                     case DATE:
-                         return String.format(Locale.US, "%1$tF", // yyyy-mm-dd
--                                java.sql.Timestamp.valueOf(ldt));
-+                                timestampFromLocal(ldt));
- 
-                     case TIME:
--                        return String.format(Locale.US, "%1$tT%2$s", // hh:mm:ss[.nnnnnnn]
--                                ldt, fractionalSecondsString(subSecondNanos, fractionalSecondsScale));
-+                        return String.format(Locale.US, "%1$02d:%2$02d:%3$02d%4$s", // wall-clock hh:mm:ss[.nnnnnnn]
-+                                ldt.getHour(), ldt.getMinute(), ldt.getSecond(),
-+                                fractionalSecondsString(subSecondNanos, fractionalSecondsScale));
- 
-                     case DATETIME2:
-                         return String.format(Locale.US, "%1$tF %1$tT%2$s", // yyyy-mm-dd hh:mm:ss[.nnnnnnn]
--                                java.sql.Timestamp.valueOf(ldt),
-+                                timestampFromLocal(ldt),
-                                 fractionalSecondsString(subSecondNanos, fractionalSecondsScale));
- 
-                     case DATETIME: // and SMALLDATETIME
--                        return (java.sql.Timestamp.valueOf(ldt)).toString();
-+                        return (timestampFromLocal(ldt)).toString();
- 
-                     default:
-                         MessageFormat form = new MessageFormat(
+     /**

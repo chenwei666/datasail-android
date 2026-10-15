@@ -1,0 +1,73 @@
+
+com.example.datasail.SmokeTest:
+Error in jdbcEntryPointsLoadOnAndroid(com.example.datasail.SmokeTest):
+java.lang.LinkageError: Method java.lang.String kotlinx.coroutines.test.TestScopeImpl.toString() overrides final method in class Lo6/w1; (declaration of 'kotlinx.coroutines.test.TestScopeImpl' appears in /data/app/~~hv94Tzp1xIfCqCAKYhmdTg==/com.example.datasail.test-oyV5hfpJ_fTVIjQY6iktEw==/base.apk)
+	at kotlinx.coroutines.test.TestScopeKt.TestScope(TestScope.kt:163)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:427)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+
+Error in metadataRoundTripPreservesConnectionPolicy(com.example.datasail.SmokeTest):
+java.lang.LinkageError: Method java.lang.String kotlinx.coroutines.test.TestScopeImpl.toString() overrides final method in class Lo6/w1; (declaration of 'kotlinx.coroutines.test.TestScopeImpl' appears in /data/app/~~hv94Tzp1xIfCqCAKYhmdTg==/com.example.datasail.test-oyV5hfpJ_fTVIjQY6iktEw==/base.apk)
+	at kotlinx.coroutines.test.TestScopeKt.TestScope(TestScope.kt:163)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:427)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+
+Error in launchShowsHonestNavigation(com.example.datasail.SmokeTest):
+java.lang.LinkageError: Method java.lang.String kotlinx.coroutines.test.TestScopeImpl.toString() overrides final method in class Lo6/w1; (declaration of 'kotlinx.coroutines.test.TestScopeImpl' appears in /data/app/~~hv94Tzp1xIfCqCAKYhmdTg==/com.example.datasail.test-oyV5hfpJ_fTVIjQY6iktEw==/base.apk)
+	at kotlinx.coroutines.test.TestScopeKt.TestScope(TestScope.kt:163)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:427)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+
+
+Time: 0.231
+There were 3 failures:
+1) jdbcEntryPointsLoadOnAndroid(com.example.datasail.SmokeTest)
+java.lang.LinkageError: Method java.lang.String kotlinx.coroutines.test.TestScopeImpl.toString() overrides final method in class Lo6/w1; (declaration of 'kotlinx.coroutines.test.TestScopeImpl' appears in /data/app/~~hv94Tzp1xIfCqCAKYhmdTg==/com.example.datasail.test-oyV5hfpJ_fTVIjQY6iktEw==/base.apk)
+	at kotlinx.coroutines.test.TestScopeKt.TestScope(TestScope.kt:163)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:427)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+2) metadataRoundTripPreservesConnectionPolicy(com.example.datasail.SmokeTest)
+java.lang.LinkageError: Method java.lang.String kotlinx.coroutines.test.TestScopeImpl.toString() overrides final method in class Lo6/w1; (declaration of 'kotlinx.coroutines.test.TestScopeImpl' appears in /data/app/~~hv94Tzp1xIfCqCAKYhmdTg==/com.example.datasail.test-oyV5hfpJ_fTVIjQY6iktEw==/base.apk)
+	at kotlinx.coroutines.test.TestScopeKt.TestScope(TestScope.kt:163)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:427)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+3) launchShowsHonestNavigation(com.example.datasail.SmokeTest)
+java.lang.LinkageError: Method java.lang.String kotlinx.coroutines.test.TestScopeImpl.toString() overrides final method in class Lo6/w1; (declaration of 'kotlinx.coroutines.test.TestScopeImpl' appears in /data/app/~~hv94Tzp1xIfCqCAKYhmdTg==/com.example.datasail.test-oyV5hfpJ_fTVIjQY6iktEw==/base.apk)
+	at kotlinx.coroutines.test.TestScopeKt.TestScope(TestScope.kt:163)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:427)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment.<init>(ComposeUiTest.android.kt:0)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule$special$$inlined$AndroidComposeUiTestEnvironment-exY8QGI$default$1.<init>(ComposeUiTest.android.kt:363)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:435)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.<init>(AndroidComposeTestRule.android.kt:246)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule_androidKt.createAndroidComposeRule(AndroidComposeTestRule.android.kt:125)
+	at com.example.datasail.SmokeTest.<init>(SmokeTest.kt:55)
+
+FAILURES!!!
+Tests run: 3,  Failures: 3
+
+

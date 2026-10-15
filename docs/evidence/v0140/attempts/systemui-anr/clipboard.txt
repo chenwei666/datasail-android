@@ -1,0 +1,19 @@
+--------- beginning of kernel
+--------- beginning of system
+--------- beginning of main
+--------- beginning of crash
+10-15 04:26:23.300   531  4083 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:31:58.284   531   837 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:31:58.422   531   837 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:31:58.455   531  4627 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:31:59.408   531  4627 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:31:59.443   531   837 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:32:00.356   531   837 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:32:00.391   531   859 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:32:00.424   531   859 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:32:00.457   531   600 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:32:00.489   531   859 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:32:02.456   531   859 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:32:02.494   531   600 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:32:02.525   531   859 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0
+10-15 04:32:08.208   531   859 E ClipboardService: Denying clipboard access to com.example.datasail, application is not in focus nor is it a system service for user 0

@@ -1,0 +1,8 @@
+
+com.example.datasail.SmokeTest:...
+
+Time: 26.812
+
+OK (3 tests)
+
+

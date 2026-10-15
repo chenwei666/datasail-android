@@ -14,7 +14,7 @@ fixture="$(mktemp -d "$DATASAIL_ROOT/.local/kv.XXXXXX")"
 container="datasail-kv-$RANDOM-$$"
 cleanup() {
  if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
-  adb shell run-as com.example.datasail rm -f files/kv-fixture.properties files/kv-ca.pem >/dev/null 2>&1 || true
+  python3 scripts/emulator-app-files.py rm -f files/kv-fixture.properties files/kv-ca.pem >/dev/null 2>&1 || true
   if [[ -n "${port:-}" ]]; then adb reverse --remove "tcp:$port" >/dev/null 2>&1 || true; fi
  fi
  docker rm -fv "$container" >/dev/null 2>&1 || true
@@ -77,15 +77,16 @@ keytool -importcert -noprompt -alias fixture-ca -file "$fixture/server/ca.pem" -
 export DATASAIL_TEST_CONFIG="$fixture/database.properties"
 export DATASAIL_TEST_TRUSTSTORE="$fixture/trust.p12"
 ./gradlew :core:keyValueTest --console=plain
-mkdir -p "docs/evidence/v0130/$kind"
-cp core/build/test-results/keyValueTest/TEST-*.xml "docs/evidence/v0130/$kind/"
+mkdir -p "${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/$kind"
+cp core/build/test-results/keyValueTest/TEST-*.xml "${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/$kind/"
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  bash scripts/install-android-test-apks.sh
- adb shell run-as com.example.datasail mkdir -p files
- adb shell run-as com.example.datasail sh -c "'cat > files/kv-fixture.properties'" < "$fixture/database.properties"
- adb shell run-as com.example.datasail sh -c "'cat > files/kv-ca.pem'" < "$fixture/server/ca.pem"
+ python3 scripts/emulator-app-files.py mkdir -p files
+ python3 scripts/emulator-app-files.py sh -c "'cat > files/kv-fixture.properties'" < "$fixture/database.properties"
+ python3 scripts/emulator-app-files.py sh -c "'cat > files/kv-ca.pem'" < "$fixture/server/ca.pem"
  adb reverse "tcp:$port" "tcp:$port"
  adb shell am instrument -w -e class com.example.datasail.KeyValueDeviceTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  rg -q 'OK \(4 tests\)' "$fixture/android-result.txt"
- cp "$fixture/android-result.txt" "docs/evidence/v0130/$kind/android-${ANDROID_SERIAL}.txt"
+ cp "$fixture/android-result.txt" "${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/$kind/android-${ANDROID_SERIAL}.txt"
+ python3 scripts/record-device-evidence.py "${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/$kind/device-${ANDROID_SERIAL}.json"
 fi

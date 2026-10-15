@@ -1,6 +1,8 @@
 * text=auto eol=lf
 *.bat text eol=crlf
 *.jar binary
+# Patch context intentionally preserves upstream blank-line/trailing whitespace.
+**/patches/*.patch -whitespace
 # Preserve pinned upstream legal notices byte-for-byte, including original whitespace.
 sasl-android/src/main/resources/META-INF/datasail-sasl/LICENSE -text -whitespace
 sasl-android/src/main/resources/META-INF/datasail-sasl/NOTICE -text -whitespace

@@ -3,11 +3,16 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 cd "$DATASAIL_ROOT"
+# These server images each need several GiB with the cloud Docker vfs driver.
+# Serialize large fixtures while independent device/AI/small-server tests may run.
+mkdir -p .local
+exec 9> .local/large-database-fixture.lock
+flock 9
 fixture="$(mktemp -d "$DATASAIL_ROOT/.local-sqlserver.XXXXXX")"
 container="datasail-sqlserver-$RANDOM-$$"
 cleanup() {
  if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
-  adb shell run-as com.example.datasail rm -f files/fixture.properties files/fixture-ca.pem >/dev/null 2>&1 || true
+  python3 scripts/emulator-app-files.py rm -f files/fixture.properties files/fixture-ca.pem >/dev/null 2>&1 || true
   if [[ -n "${port:-}" ]]; then adb reverse --remove "tcp:$port" >/dev/null 2>&1 || true; fi
  fi
  docker rm -fv "$container" >/dev/null 2>&1 || true; rm -rf "$fixture"; }
@@ -37,7 +42,8 @@ for f in ['container.env','database.properties']: (p/f).chmod(0o600)
 PY
 tls_mounts=(--mount "type=bind,src=$fixture/tls,dst=/tls,readonly" --mount "type=bind,src=$fixture/mssql.conf,dst=/var/opt/mssql/mssql.conf,readonly")
 if [[ "${DATASAIL_SQLSERVER_AUTOCERT:-0}" == 1 ]]; then tls_mounts=(); fi
-docker run -d --name "$container" --env-file "$fixture/container.env" --memory=3g \
+docker run -d --name "$container" --env-file "$fixture/container.env" --memory=3g --user 0:0 \
+ --tmpfs /var/opt/mssql/data:rw,size=512m \
  -p 127.0.0.1::1433 "${tls_mounts[@]}" \
  mcr.microsoft.com/mssql/server@sha256:45a1a9d13ca5574cf8e0fe4ae73ab77248b66d9c3132ac9658fb6c16dd72a8af >/dev/null
 port="$(docker port "$container" 1433/tcp | sed 's/.*://')"
@@ -45,6 +51,7 @@ printf 'port=%s\n' "$port" >> "$fixture/database.properties"
 ready=false
 for attempt in $(seq 1 90); do
  if docker logs "$container" 2>&1 | rg -q 'SQL Server is now ready for client connections'; then ready=true; break; fi
+ if [[ "$(docker inspect --format '{{.State.Running}}' "$container")" != true ]]; then break; fi
  sleep 1
 done
 [[ "$ready" == true ]] || { echo 'SQL Server fixture did not become ready; no credentials logged.' >&2; docker logs --tail 30 "$container"; exit 1; }
@@ -60,20 +67,21 @@ if [[ "${DATASAIL_SQLSERVER_AUTOCERT:-0}" == 1 ]]; then
  android_count=2; task=sqlServerAutoCertificateTest; suite=SQL_SERVER_AUTOCERT; android_class=com.example.datasail.CertificateTrustUiTest
 fi
 ./gradlew ":core:$task" --console=plain
-mkdir -p "docs/evidence/v0130/$suite"
-cp core/build/test-results/"$task"/TEST-*.xml "docs/evidence/v0130/$suite/"
+mkdir -p "${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/$suite"
+cp core/build/test-results/"$task"/TEST-*.xml "${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/$suite/"
 
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
- ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
+ ./gradlew -Pdatasail.testBuildType="${DATASAIL_TEST_VARIANT:-debug}" ":app:assemble${DATASAIL_TEST_VARIANT_TITLE:-Debug}" ":app:assemble${DATASAIL_TEST_VARIANT_TITLE:-Debug}AndroidTest" --console=plain
  bash scripts/install-android-test-apks.sh
  # Credentials travel via stdin to app-private storage, never CLI arguments, logs or archive.
- adb shell run-as com.example.datasail mkdir -p files
- adb shell run-as com.example.datasail sh -c "'cat > files/fixture.properties'" < "$fixture/database.properties"
- adb shell run-as com.example.datasail sh -c "'cat > files/fixture-ca.pem'" < "$fixture/tls/ca.pem"
+ python3 scripts/emulator-app-files.py mkdir -p files
+ python3 scripts/emulator-app-files.py sh -c "'cat > files/fixture.properties'" < "$fixture/database.properties"
+ python3 scripts/emulator-app-files.py sh -c "'cat > files/fixture-ca.pem'" < "$fixture/tls/ca.pem"
  adb reverse "tcp:$port" "tcp:$port"
  adb shell am instrument -w -e class "$android_class" com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
- adb shell run-as com.example.datasail rm -f files/fixture.properties files/fixture-ca.pem
+ python3 scripts/emulator-app-files.py rm -f files/fixture.properties files/fixture-ca.pem
  rg -q "OK \($android_count tests?\)" "$fixture/android-result.txt"
- cp "$fixture/android-result.txt" "docs/evidence/v0130/$suite/android-${ANDROID_SERIAL}.txt"
- if [[ "$suite" == SQL_SERVER && ( ",$android_class," == *",com.example.datasail.SpreadsheetSqlServerUiTest,"* || "$android_class" == *SpreadsheetSqlServerUiTest#tabCompletionCellCommitNullAndReadonlyQuery* ) ]]; then adb exec-out run-as com.example.datasail cat files/v081-grid.png > "docs/evidence/v0130/$suite/grid-${ANDROID_SERIAL}.png"; fi
+ cp "$fixture/android-result.txt" "${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/$suite/android-${ANDROID_SERIAL}.txt"
+ python3 scripts/record-device-evidence.py "${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/$suite/device-${ANDROID_SERIAL}.json"
+ if [[ "$suite" == SQL_SERVER && ( ",$android_class," == *",com.example.datasail.SpreadsheetSqlServerUiTest,"* || "$android_class" == *SpreadsheetSqlServerUiTest#tabCompletionCellCommitNullAndReadonlyQuery* ) ]]; then python3 scripts/emulator-app-files.py cat files/v081-grid.png > "${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/$suite/grid-${ANDROID_SERIAL}.png"; fi
 fi

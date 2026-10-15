@@ -33,12 +33,31 @@ class JdbcConnector : SqlConnector {
             // SQLPassword validates nonempty credentials before starting TLS. Inspection always
             // aborts in our trust manager; this placeholder is never database authentication.
             properties.setProperty("password", if (profile.certificateReviewToken == null) password else "DataSail-certificate-inspection")
-            try { driver.connect(targetUrl, properties) ?: throw SQLException("Unsupported JDBC scheme", "08001") }
+            try {
+                if (profile.kind in setOf(DatabaseKind.MYSQL, DatabaseKind.MARIADB)) {
+                    verifyMariaDbConfiguration(targetUrl, properties)
+                }
+                driver.connect(targetUrl, properties) ?: throw SQLException("Unsupported JDBC scheme", "08001")
+            }
             finally { properties.remove("password") }
         }
     }
 
     companion object {
+        // Connector/J parses properties reflectively. Fail before opening a socket
+        // if shrinking or a driver change causes credentials/TLS policy to be lost.
+        internal fun verifyMariaDbConfiguration(targetUrl: String, properties: Properties) {
+            val effective = org.mariadb.jdbc.Configuration.parse(targetUrl, properties)
+            val valid = effective != null &&
+                effective.user().orEmpty() == properties.getProperty("user").orEmpty() &&
+                effective.password().orEmpty() == properties.getProperty("password").orEmpty() &&
+                effective.sslMode() == org.mariadb.jdbc.export.SslMode.VERIFY_FULL &&
+                effective.tlsSocketType() == "DATASAIL_VERIFIED" &&
+                effective.connectTimeout() == 15000 && effective.socketTimeout() == 15000 &&
+                !effective.allowLocalInfile() && !effective.allowMultiQueries() &&
+                !effective.allowPublicKeyRetrieval() && effective.useServerPrepStmts()
+            if (!valid) throw SQLException("Database driver did not preserve the required connection policy", "08001")
+        }
         internal fun url(profile: ConnectionProfile): String = when (profile.kind) {
             DatabaseKind.SQL_SERVER -> "jdbc:sqlserver://${profile.host}:${profile.port}"
             DatabaseKind.MYSQL, DatabaseKind.MARIADB -> "jdbc:mariadb://${profile.host}:${profile.port}/${profile.database}"
@@ -63,6 +82,7 @@ class JdbcConnector : SqlConnector {
             DatabaseKind.REDIS, DatabaseKind.VALKEY -> throw WorkspaceRejected("键值引擎使用独立工作台")
             DatabaseKind.SQLITE -> throw WorkspaceRejected("SQLite 不使用 JDBC")
                 DatabaseKind.POSTGRESQL -> {
+                    setProperty("gssEncMode", "disable")
                     setProperty("sslmode", if (profile.certificatePin == null) "verify-full" else "verify-ca")
                     setProperty("sslfactory", PostgreSqlTlsFactory::class.java.name)
                     setProperty("datasailTlsHost", profile.host)

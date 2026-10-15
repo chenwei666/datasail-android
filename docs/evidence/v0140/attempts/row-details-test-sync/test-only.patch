@@ -1,0 +1,15 @@
+--- a/app/src/androidTest/java/com/example/datasail/TablePresentationTest.kt
++++ b/app/src/androidTest/java/com/example/datasail/TablePresentationTest.kt
+@@ -115,7 +115,11 @@
+         compose.onAllNodesWithTag("cell-0-1").onLast().performScrollTo().performTouchInput { click() }
+         compose.mainClock.advanceTimeBy(600)
+         compose.onNode(hasText("整行详情") and hasAnyAncestor(isDialog())).performScrollTo().performClick()
+-        compose.onAllNodesWithText("0007 完整已加载值 中文换行").onLast().assertIsDisplayed()
++        // Wait for the nested details dialog; the same value is already visible
++        // in the underlying grid and cannot prove the click callback completed.
++        compose.waitUntil(10000) { compose.onAllNodesWithText("第 1 行 · 已加载字段").fetchSemanticsNodes().isNotEmpty() }
++        val details = isDialog() and hasAnyDescendant(hasText("第 1 行 · 已加载字段"))
++        compose.onNode(hasText("0007 完整已加载值 中文换行") and hasAnyAncestor(details)).assertIsDisplayed()
+         compose.onNodeWithText("关闭").performClick()
+         if (android.os.Build.VERSION.SDK_INT >= 28) compose.onNodeWithText("退出全屏").onParent().onParent().captureToImage().asAndroidBitmap().let { bitmap -> File(context.filesDir,"table-v091.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG,100,it) } }
+         compose.onNodeWithText("退出全屏").performClick()

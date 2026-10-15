@@ -1,6 +1,6 @@
 # 依赖、来源与再构建
 
-本项目自己的代码采用根目录 Apache-2.0 许可。SQL Server 从 V0.2.2 起使用可审计源码派生构建；MariaDB 保持上游二进制，不动态下载 JAR/dex。版本固定在 `gradle/libs.versions.toml`，下载内容 SHA-256 固定在 `gradle/verification-metadata.xml`；该文件是通过官方 HTTPS 仓库取得的校验基线，不是第三方安全审计结论。
+本项目自己的代码采用根目录 Apache-2.0 许可。SQL Server 从 V0.2.2 起使用可审计源码派生构建；V0.14.0 又为 MariaDB、PostgreSQL 和 MongoDB 提供可重建源码适配，不动态下载 JAR/dex。版本固定在 `gradle/libs.versions.toml`，下载内容 SHA-256 固定在 `gradle/verification-metadata.xml`；该文件是通过官方 HTTPS 仓库取得的校验基线，不是第三方安全审计结论。
 
 | 组件 | 版本 | 许可 | 官方来源 |
 |---|---|---|---|
@@ -22,7 +22,7 @@
 
 许可全文位于 `docs/licenses/`。交付包包含 MariaDB Connector/J 完整发布源码 JAR：`docs/third-party/mariadb-java-client-3.5.10-sources.jar`，SHA-256 `72f28882a0f60a299c07272d573aebef171380d23ea3ee21860ad76807ee7982`，来自 Maven Central 对应发布坐标的 `-sources.jar`。源码上游构建仓库保留在表中。
 
-LGPL 组件未修改，不能将其改称 Apache-2.0。允许为调试 LGPL 修改进行逆向工程。完整应用源码和 Gradle 工程一并交付，用户可以从对应标签取得上游 Maven 构建文件、修改并构建驱动，将 `core` 中的 MariaDB 依赖替换成自己构建的本地 JAR，审查并更新依赖校验，再重建 APK；不要求持有本项目正式签名密钥。自行签名包可能需要不同安装身份或卸载测试包，不能保证覆盖升级。正式公开分发前仍须完成全部依赖许可清单与再链接流程的发行审查。
+V0.13.0 及以前的 LGPL 组件未修改；V0.14.0 的源码修改见 `mariadb-android/`。该组件仍为 LGPL-2.1-or-later，不能将其改称 Apache-2.0。允许为调试 LGPL 修改进行逆向工程。完整应用源码和 Gradle 工程一并交付，用户可以从对应标签取得上游 Maven 构建文件、修改并构建驱动，将 `core` 中的 MariaDB 依赖替换成自己构建的本地 JAR，审查并更新依赖校验，再重建 APK；不要求持有本项目正式签名密钥。自行签名包可能需要不同安装身份或卸载测试包，不能保证覆盖升级。V0.14.0 的依赖清单、修改声明和重新链接步骤随源码归档提供；这不等同第三方法律或安全审计。
 
 默认 TLS 插件源码审查：3.5.10 的 `DefaultTlsSocketPlugin` 既提供 TRUST 模式，也可能用 `MariaDbX509DeferredIdentityTrustManager` 将验证延后至认证阶段。本项目固定使用自己的 `StrictTlsPlugin`，系统 TrustManagerFactory 验证证书链，V0.3.0 起由共享 SAN 匹配器验证主机名；不选择上述路径。`lint.xml` 仅针对该确切 JAR 内未使用的 Trust-All 实现作有依据的例外，应用代码仍受该检查。错误主机名与不受信 CA 的实连回归均必须通过。
 
@@ -36,7 +36,7 @@ V0.2.1 固定引入 `org.conscrypt:conscrypt-android:2.7.0`，AAR SHA-256 `86072
 
 Conscrypt 源码/许可证来自固定标签 2.7.0。AAR 内 `conscrypt.properties` 标明 BoringSSL 提交 `7c1efd8d6ffb36a57feba44e8c73cf674801f3cb`；对应 BoringSSL LICENSE、Conscrypt LICENSE/NOTICE、Harmony/Netty 许可均保存在 `docs/licenses/Conscrypt-2.7.0-*`。原生 arm64 ELF LOAD 段 0x4000 对齐，仅静态检查，不代表已通过 arm64/16 KiB 设备验收。
 
-上游 AAR 自带 JNI keep 与 Android 隐藏/旧版 API 的定向 dontwarn；没有添加驱动缺失类的忽略规则。Release 仍按实际失败记录；上游规则本身也不是运行兼容证明。
+上游 AAR 自带 JNI keep 与 Android 隐藏/旧版 API 的定向 dontwarn；没有添加驱动缺失类的忽略规则。本版 Release 通过情况以最终 DEX 审计与设备测试记录为准；上游规则本身不是运行兼容证明。
 
 V0.2.2 SQL Server 派生版本 `13.6.0.jre8-datasail.1` 的源码来源、精确 patch、校验、签名移除原因、MIT 许可与未适配范围见 `sqlserver-android/README.md`。上表及原驱动 SHA-256 表示上游输入，不代表最终 APK 内未修改的 SQL Server 二进制；交付 manifest 另记录派生 JAR、源码和补丁校验值。
 
@@ -53,7 +53,7 @@ Redis / Valkey 使用自有 Apache-2.0 的 RESP2/TLS 实现，不打包服务器
 
 固定 `org.mongodb:mongodb-driver-sync`、`mongodb-driver-core`、`bson` 5.6.5，Apache-2.0；源码与许可证来源 [MongoDB Java Driver r5.6.5](https://github.com/mongodb/mongo-java-driver/tree/r5.6.5)。许可证保存在 `docs/licenses/MongoDB-Java-5.6.5-LICENSE.txt`。选择固定 5.6 维护线进行本版验证，未声称使用最新主版本。JAR/POM/source JAR 均经 Maven Central HTTPS 官方 SHA-1 对照，再将 SHA-256 写入依赖验证及 `docs/evidence/v050/mongo-artifacts.json`；新增 netty-bom 4.1.87.Final 仅依赖管理 POM，并非引入 Netty 运行时。
 
-主动排除 `bson-record-codec`（Java records 不适用于本版 Android 文档模型），没有引入 Netty、云认证、加密、Unix socket、压缩扩展。驱动默认 BSON registry 的可选探测仍可能引用缺失 API，Release 门禁单独记录；不使用批量 dontwarn。APK 排除 `META-INF/native-image/**` GraalVM 构建配置，解决两个依赖重复资源；不删除许可证或运行代码。官方 Java 驱动不提供本项目的 Android 兼容承诺，须以独立 ART 实测为准。
+主动排除 `bson-record-codec`（Java records 不适用于本版 Android 文档模型），没有引入 Netty、云认证、加密、Unix socket、压缩扩展。上述 V0.5.0 默认 BSON registry 的可选探测曾引用缺失 API；V0.14.0 源码适配明确排除不支持的 provider，不使用批量 dontwarn。APK 排除 `META-INF/native-image/**` GraalVM 构建配置，解决两个依赖重复资源；不删除许可证或运行代码。官方 Java 驱动不提供本项目的 Android 兼容承诺，须以独立 ART 实测为准。
 
 MongoDB Community 8.0.32 服务端仅用于隔离测试（SSPL）；镜像 `mongo@sha256:d0d926f94df099bff534b7ee5b5986458131a22489dfff8664509af0c1e2ca9c`，不打包进 APK。测试专用管理员/failpoint 命令仅在测试源码。
 
@@ -64,3 +64,15 @@ Android SASL API 补充模块 `sasl-android`：只包含 Apache Harmony 的未�
 APK 未新增第三方依赖：HTTP/TLS 使用 Java/Android 平台，JSON/DSL 与搜索能力代码为本项目 Apache-2.0。验证服务器来自 Docker Hub 官方 `library/elasticsearch:8.19.5`（Elastic License 2.0 的发行包）和 `opensearchproject/opensearch:2.19.4`（Apache-2.0 项目，镜像含各组件许可证），固定 amd64 manifest SHA256 见 DRIVER_MATRIX/evidence。服务器镜像仅为隔离测试环境，不打包或重新分发进 APK/源码 ZIP；未把 Elasticsearch 服务端发行版称作 Apache 许可客户端依赖。版本验证不代表最新版或所有服务版本支持。
 
 V0.9.1 派生版本更新为 `13.6.0.jre8-datasail.2`，同一锁定上游增加 DDC 日期转换源码适配；修改沿用上游 MIT 许可。精确源码和补丁哈希见 upstream.lock.json 与交付 manifest。
+
+## V0.14.0 Android 驱动与混淆适配
+
+SQL Server 更新为 `13.6.0.jre8-datasail.3`。新增 `mariadb-android`、`postgresql-android`、`mongodb-core-android`、`mongodb-sync-android` 源码适配模块。每个模块保留完整上游源码、校验锁、补丁与重建说明，未修改字节通过构建校验。原始与派生版本不得混称。详见各模块 README。
+
+运行时补充 ANTLR4 runtime 4.9.3（BSD-3-Clause，微软 JDBC SQL 参数解析所需）、SLF4J API/no-op 2.0.17（MIT，避免驱动日志输出）、JSR305 3.0.2（Apache-2.0）及 Checker Framework annotations 3.55.1（MIT）。这些是真实上游组件，不是平台占位实现；新增二进制及元数据经 Maven Central HTTPS 校验并固定 SHA-256。原依赖自带许可保留，版本目录和验证元数据是确切依赖清单。
+
+MariaDB 已发生源码修改，完整来源为 `mariadb-android/upstream/`，差异为 `patches/android.patch`；修改及重新链接步骤见该模块 README。应用的 Apache-2.0 许可不覆盖 LGPL 组件。
+
+仪器测试 APK 包含 Error Prone 2.30.0 的两个未修改编译器注解源码（CanIgnoreReturnValue、MustBeClosed，Apache-2.0），精确来源及 SHA-256 见 `app/src/androidTest/upstream-annotations.json`，构建校验原始字节。仅补充 AndroidX Test 所需的真实上游注解，不引入依赖 javac 的其余注解，不进入正式应用 APK。
+
+独立发布附件 `THIRD_PARTY_NOTICES.txt` 汇集随包提供的许可全文和第三方声明；新增 ANTLR、SLF4J、Checker Qualifier 原始许可的来源和 SHA-256 见 `docs/licenses/v0140-license-sources.json`。

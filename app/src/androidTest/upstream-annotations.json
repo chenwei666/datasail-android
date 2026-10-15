@@ -1,0 +1,9 @@
+{
+  "upstream": "com.google.errorprone:error_prone_annotations:2.30.0:sources",
+  "sourceJarSha256": "8a05d3e543d7cbefb8e035edc9a92d1b5562d36761754f4d881ae66186c49de1",
+  "license": "Apache-2.0",
+  "files": {
+    "com/google/errorprone/annotations/CanIgnoreReturnValue.java": "66c06b3c92923fb451d38ba059e1a734d61de17dcfd2a11c143b293feae3894d",
+    "com/google/errorprone/annotations/MustBeClosed.java": "55734cbb3c33e5dbbb65cf571b89ac091c5bea9c672df27c38204a08f4aba375"
+  }
+}

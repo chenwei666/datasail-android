@@ -2,12 +2,13 @@
 
 [中文首页](../README.md) · [English overview](../README.en.md) · [GitHub Releases](https://github.com/chenwei666/datasail-android/releases)
 
-收录 **21 个版本（V0.1.0–V0.13.0）**。日期为原始开发记录的 Asia/Bangkok 日期；后补发布的 GitHub 时间可能不同。当前安装包为 Debug 预发布，正式发行门禁尚未完成。旧归档和签名保持不变，历史报告不被本轮说明覆盖。
+收录 **22 个版本（V0.1.0–V0.14.0）**。V0.14.0 首次使用独立正式签名的混淆 Release；之前 21 个版本保留原始 Debug 预发布状态、签名和附件。旧版日期沿用开发记录的 Asia/Bangkok 日期；V0.14.0 日期为 UTC，GitHub 发布时间可能不同。
 
-**21 versions, V0.1.0–V0.13.0.** Dates refer to original development records in Asia/Bangkok; GitHub publication dates may be later. The available APKs are Debug prereleases, and production-release gates remain incomplete. Original archives, signing identity and reports are preserved.
+**22 versions, V0.1.0–V0.14.0.** V0.14.0 introduces an independently production-signed, minified Release. The preceding 21 Debug prereleases retain their original signing identities and artifacts. Older dates follow Asia/Bangkok development records; V0.14.0 uses UTC, and GitHub publication dates may differ.
 
 | Version / build | 原始日期 / Date | 功能 / Highlights | 详情 / Details |
 |---|---|---|---|
+| [V0.14.0](https://github.com/chenwei666/datasail-android/releases/tag/V0.14.0) / 22 | 2026-10-15 | 正式签名、不可调试的混淆 Release；四类网络驱动源码适配、反射入口与连接策略修复、最终 APK 哈希绑定验证。旧 Debug 证书不能直接覆盖升级。<br>Production signing, non-debuggable minified Release, rebuildable Android driver profiles, reflection/policy fixes and APK-bound verification. Historical Debug installations cannot be overwritten by the new certificate. | [中英文说明 / Notes](releases/V0.14.0.md) |
 | [V0.13.0](https://github.com/chenwei666/datasail-android/releases/tag/V0.13.0) / 21 | 2026-10-14 | 模型获取无需先保存；两个 AI 问答工作区、本机加密上下文记忆与直接双击编辑。 补充十种已接入引擎的受限单对象写入；SQL Server 整表删除另行确认。<br>Model discovery without a separate save step, two conversational AI workspaces, encrypted local context memory and direct double-tap editing. Expanded guarded single-object writes across the ten implemented engines; SQL Server table deletion requires separate confirmation. | [中英文说明 / Notes](releases/V0.13.0.md) |
 | [V0.12.2](https://github.com/chenwei666/datasail-android/releases/tag/V0.12.2) / 20 | 2026-10-14 | 修复 nvarchar(max)、varchar(max) 等声明导致整表只读。 完整加载的短值/NULL 可安全编辑；真正超限行仍受保护。<br>Fixed nvarchar(max), varchar(max) and similar declarations making the whole table read-only. Fully loaded short values and NULLs can be edited safely; genuinely incomplete rows remain protected. | [中英文说明 / Notes](releases/V0.12.2.md) |
 | [V0.12.1](https://github.com/chenwei666/datasail-android/releases/tag/V0.12.1) / 19 | 2026-10-14 | 修复 SQL Server float/real 表编辑与并发比较，显示具体只读原因。 AI 新增直接聊天和内存中的多轮追问；本版尚无持久化对话。<br>Fixed SQL Server float/real editing and conflict comparisons, with specific read-only reasons. Added direct AI chat and in-memory follow-up conversations; persistence was not yet available. | [中英文说明 / Notes](releases/V0.12.1.md) |

@@ -1,0 +1,41 @@
+
+com.example.datasail.SmokeTest:
+Error in jdbcEntryPointsLoadOnAndroid(com.example.datasail.SmokeTest):
+java.lang.ExceptionInInitializerError
+	at java.lang.Class.classForName(Native Method)
+	at java.lang.Class.forName(Class.java:454)
+	at java.lang.Class.forName(Class.java:379)
+	at com.example.datasail.SmokeTest.jdbcEntryPointsLoadOnAndroid(SmokeTest.kt:33)
+	... 62 trimmed
+Caused by: java.util.MissingResourceException: Can't find bundle for base name com.microsoft.sqlserver.jdbc.SQLServerResource, locale en_US
+	at java.util.ResourceBundle.throwMissingResourceException(ResourceBundle.java:1561)
+	at java.util.ResourceBundle.getBundleImpl(ResourceBundle.java:1384)
+	at java.util.ResourceBundle.getBundle(ResourceBundle.java:771)
+	at k4.f3.a(r8-map-id-3ce1349e2af001bc35b85d2c78f0de3e8519cdad52d5193f436daac6e8f9771c:3)
+	at i5.b3.<init>(r8-map-id-3ce1349e2af001bc35b85d2c78f0de3e8519cdad52d5193f436daac6e8f9771c:3)
+	at com.microsoft.sqlserver.jdbc.SQLServerDriver.<clinit>(r8-map-id-3ce1349e2af001bc35b85d2c78f0de3e8519cdad52d5193f436daac6e8f9771c:72)
+	... 67 more
+..
+
+Time: 25.63
+There was 1 failure:
+1) jdbcEntryPointsLoadOnAndroid(com.example.datasail.SmokeTest)
+java.lang.ExceptionInInitializerError
+	at java.lang.Class.classForName(Native Method)
+	at java.lang.Class.forName(Class.java:454)
+	at java.lang.Class.forName(Class.java:379)
+	at com.example.datasail.SmokeTest.jdbcEntryPointsLoadOnAndroid(SmokeTest.kt:33)
+	... 62 trimmed
+Caused by: java.util.MissingResourceException: Can't find bundle for base name com.microsoft.sqlserver.jdbc.SQLServerResource, locale en_US
+	at java.util.ResourceBundle.throwMissingResourceException(ResourceBundle.java:1561)
+	at java.util.ResourceBundle.getBundleImpl(ResourceBundle.java:1384)
+	at java.util.ResourceBundle.getBundle(ResourceBundle.java:771)
+	at k4.f3.a(r8-map-id-3ce1349e2af001bc35b85d2c78f0de3e8519cdad52d5193f436daac6e8f9771c:3)
+	at i5.b3.<init>(r8-map-id-3ce1349e2af001bc35b85d2c78f0de3e8519cdad52d5193f436daac6e8f9771c:3)
+	at com.microsoft.sqlserver.jdbc.SQLServerDriver.<clinit>(r8-map-id-3ce1349e2af001bc35b85d2c78f0de3e8519cdad52d5193f436daac6e8f9771c:72)
+	... 67 more
+
+FAILURES!!!
+Tests run: 3,  Failures: 1
+
+

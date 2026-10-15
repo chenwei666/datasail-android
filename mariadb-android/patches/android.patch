@@ -1,0 +1,759 @@
+--- a/org/mariadb/jdbc/BaseCallableStatement.java
++++ b/org/mariadb/jdbc/BaseCallableStatement.java
+@@ -2558,11 +2558,7 @@
+    * @see SQLType
+    * @since 1.8
+    */
+-  @Override
+-  public void setObject(String parameterName, Object x, SQLType targetSqlType, int scaleOrLength)
+-      throws SQLException {
+-    setObject(nameToIndex(parameterName), x, targetSqlType, scaleOrLength);
+-  }
++
+ 
+   /**
+    * Sets the value of the designated parameter with the given object.
+@@ -2583,10 +2579,7 @@
+    * @see SQLType
+    * @since 1.8
+    */
+-  @Override
+-  public void setObject(String parameterName, Object x, SQLType targetSqlType) throws SQLException {
+-    setObject(nameToIndex(parameterName), x, targetSqlType);
+-  }
++
+ 
+   /**
+    * Registers the OUT parameter in ordinal position {@code parameterIndex} to the JDBC type {@code
+@@ -2614,10 +2607,7 @@
+    * @see SQLType
+    * @since 1.8
+    */
+-  @Override
+-  public void registerOutParameter(int parameterIndex, SQLType sqlType) throws SQLException {
+-    registerOutParameter(parameterIndex, 0);
+-  }
++
+ 
+   /**
+    * Registers the parameter in ordinal position {@code parameterIndex} to be of JDBC type {@code
+@@ -2644,11 +2634,7 @@
+    * @see SQLType
+    * @since 1.8
+    */
+-  @Override
+-  public void registerOutParameter(int parameterIndex, SQLType sqlType, int scale)
+-      throws SQLException {
+-    registerOutParameter(parameterIndex, sqlType);
+-  }
++
+ 
+   /**
+    * Registers the designated output parameter. This version of the method {@code
+@@ -2685,11 +2671,7 @@
+    * @see SQLType
+    * @since 1.8
+    */
+-  @Override
+-  public void registerOutParameter(int parameterIndex, SQLType sqlType, String typeName)
+-      throws SQLException {
+-    registerOutParameter(parameterIndex, sqlType);
+-  }
++
+ 
+   /**
+    * Registers the OUT parameter named <code>parameterName</code> to the JDBC type {@code sqlType}.
+@@ -2717,10 +2699,7 @@
+    * @see SQLType
+    * @since 1.8
+    */
+-  @Override
+-  public void registerOutParameter(String parameterName, SQLType sqlType) throws SQLException {
+-    registerOutParameter(nameToIndex(parameterName), sqlType);
+-  }
++
+ 
+   /**
+    * Registers the parameter named <code>parameterName</code> to be of JDBC type {@code sqlType}.
+@@ -2747,11 +2726,7 @@
+    * @see SQLType
+    * @since 1.8
+    */
+-  @Override
+-  public void registerOutParameter(String parameterName, SQLType sqlType, int scale)
+-      throws SQLException {
+-    registerOutParameter(nameToIndex(parameterName), sqlType);
+-  }
++
+ 
+   /**
+    * Registers the designated output parameter. This version of the method {@code
+@@ -2786,11 +2761,7 @@
+    * @see SQLType
+    * @since 1.8
+    */
+-  @Override
+-  public void registerOutParameter(String parameterName, SQLType sqlType, String typeName)
+-      throws SQLException {
+-    registerOutParameter(nameToIndex(parameterName), sqlType);
+-  }
++
+ 
+   @Override
+   public CallableParameterMetaData getParameterMetaData() throws SQLException {
+--- a/org/mariadb/jdbc/BasePreparedStatement.java
++++ b/org/mariadb/jdbc/BasePreparedStatement.java
+@@ -23,7 +23,6 @@
+ import java.sql.RowId;
+ import java.sql.SQLException;
+ import java.sql.SQLFeatureNotSupportedException;
+-import java.sql.SQLType;
+ import java.sql.SQLXML;
+ import java.sql.Time;
+ import java.sql.Timestamp;
+@@ -1667,15 +1666,7 @@
+    * @see SQLType
+    * @since 1.8
+    */
+-  @Override
+-  public void setObject(int parameterIndex, Object x, SQLType targetSqlType, int scaleOrLength)
+-      throws SQLException {
+-    setInternalObject(
+-        parameterIndex,
+-        x,
+-        targetSqlType == null ? null : targetSqlType.getVendorTypeNumber(),
+-        (long) scaleOrLength);
+-  }
++
+ 
+   /**
+    * Sets the value of the designated parameter with the given object.
+@@ -1697,14 +1688,7 @@
+    * @see SQLType
+    * @since 1.8
+    */
+-  @Override
+-  public void setObject(int parameterIndex, Object x, SQLType targetSqlType) throws SQLException {
+-    setInternalObject(
+-        parameterIndex,
+-        x,
+-        targetSqlType == null ? null : targetSqlType.getVendorTypeNumber(),
+-        null);
+-  }
++
+ 
+   protected abstract BatchTypeState executeInternalPreparedBatch() throws SQLException;
+ 
+--- a/org/mariadb/jdbc/FunctionStatement.java
++++ b/org/mariadb/jdbc/FunctionStatement.java
+@@ -41,7 +41,7 @@
+         resultSetType,
+         resultSetConcurrency,
+         0);
+-    registerOutParameter(1, null);
++    registerOutParameter(1, 0); // Same integer overload used by the upstream SQLType overload.
+   }
+ 
+   @Override
+--- a/org/mariadb/jdbc/MariaDbDataSource.java
++++ b/org/mariadb/jdbc/MariaDbDataSource.java
+@@ -10,7 +10,7 @@
+ import javax.sql.*;
+ 
+ /** MariaDB basic datasource */
+-public class MariaDbDataSource implements DataSource, ConnectionPoolDataSource, XADataSource {
++public class MariaDbDataSource implements DataSource, ConnectionPoolDataSource {
+ 
+   /**
+    * Sole state of this datasource. Every setter writes here, so a property can never be lost by
+@@ -208,15 +208,9 @@
+     return poolConnection;
+   }
+ 
+-  @Override
+-  public XAConnection getXAConnection() throws SQLException {
+-    return (MariaDbPoolConnection) getPooledConnection();
+-  }
+-
+-  @Override
+-  public XAConnection getXAConnection(String username, String password) throws SQLException {
+-    return (MariaDbPoolConnection) getPooledConnection(username, password);
+-  }
++
++
++
+ 
+   /**
+    * Returns the URL for this datasource
+--- a/org/mariadb/jdbc/MariaDbPoolConnection.java
++++ b/org/mariadb/jdbc/MariaDbPoolConnection.java
+@@ -10,13 +10,10 @@
+ import java.util.List;
+ import java.util.concurrent.CopyOnWriteArrayList;
+ import javax.sql.*;
+-import javax.transaction.xa.XAException;
+-import javax.transaction.xa.XAResource;
+-import javax.transaction.xa.Xid;
+ import org.mariadb.jdbc.util.StringUtils;
+ 
+ /** MariaDB pool connection implementation */
+-public class MariaDbPoolConnection implements XAConnection {
++public class MariaDbPoolConnection implements PooledConnection {
+ 
+   private final Connection connection;
+   private final List<ConnectionEventListener> connectionEventListeners;
+@@ -43,14 +40,7 @@
+    * @param xid xid value
+    * @return XID string
+    */
+-  public static String xidToString(Xid xid) {
+-    return "0x"
+-        + StringUtils.byteArrayToHexString(xid.getGlobalTransactionId())
+-        + ",0x"
+-        + StringUtils.byteArrayToHexString(xid.getBranchQualifier())
+-        + ",0x"
+-        + Integer.toHexString(xid.getFormatId());
+-  }
++
+ 
+   @Override
+   public Connection getConnection() {
+@@ -141,175 +131,17 @@
+     connection.close();
+   }
+ 
+-  @Override
+-  public XAResource getXAResource() {
+-    return new MariaDbXAResource();
+-  }
+ 
+-  protected static XAException mapXaException(SQLException sqle) {
+-    int xaErrorCode;
+ 
+-    switch (sqle.getErrorCode()) {
+-      case 1397:
+-        xaErrorCode = XAException.XAER_NOTA;
+-        break;
+-      case 1398:
+-        xaErrorCode = XAException.XAER_INVAL;
+-        break;
+-      case 1399:
+-        xaErrorCode = XAException.XAER_RMFAIL;
+-        break;
+-      case 1400:
+-        xaErrorCode = XAException.XAER_OUTSIDE;
+-        break;
+-      case 1401:
+-        xaErrorCode = XAException.XAER_RMERR;
+-        break;
+-      case 1440:
+-        xaErrorCode = XAException.XAER_DUPID;
+-        break;
+-      case 1402:
+-        xaErrorCode = XAException.XA_RBROLLBACK;
+-        break;
+-      case 1613:
+-        xaErrorCode = XAException.XA_RBTIMEOUT;
+-        break;
+-      case 1614:
+-        xaErrorCode = XAException.XA_RBDEADLOCK;
+-        break;
+-      default:
+-        xaErrorCode = 0;
+-        break;
+-    }
+-    XAException xaException = new XAException(sqle.getMessage());
+-    xaException.errorCode = xaErrorCode;
+-    xaException.initCause(sqle);
+-    return xaException;
+-  }
++
+ 
+   protected static String flagsToString(int flags) {
+-    switch (flags) {
+-      case XAResource.TMJOIN:
+-        return "JOIN";
+-      case XAResource.TMONEPHASE:
+-        return "ONE PHASE";
+-      case XAResource.TMRESUME:
+-        return "RESUME";
+-      case XAResource.TMSUSPEND:
+-        return "SUSPEND";
+-      default:
+-        return "";
++    throw new UnsupportedOperationException("XA is unavailable in the Android profile");
+     }
+-  }
+ 
+   public boolean isClosed() {
+     return closed;
+   }
+ 
+-  private class MariaDbXAResource implements XAResource {
+-
+-    private void execute(String command) throws XAException {
+-      try {
+-        connection.createStatement().execute(command);
+-      } catch (SQLException sqle) {
+-        throw mapXaException(sqle);
+-      }
+-    }
+-
+-    @Override
+-    public void commit(Xid xid, boolean onePhase) throws XAException {
+-      execute("XA COMMIT " + xidToString(xid) + ((onePhase) ? " ONE PHASE" : ""));
+-    }
+-
+-    @Override
+-    public void end(Xid xid, int flags) throws XAException {
+-      if (flags != TMSUCCESS && flags != TMSUSPEND && flags != TMFAIL) {
+-        throw new XAException(XAException.XAER_INVAL);
+-      }
+-
+-      execute("XA END " + xidToString(xid) + " " + flagsToString(flags));
+-    }
+-
+-    @Override
+-    public void forget(Xid xid) {
+-      // Not implemented by the server
+-    }
+-
+-    @Override
+-    public int getTransactionTimeout() {
+-      // not implemented
+-      return 0;
+-    }
+-
+-    public Configuration getConf() {
+-      return connection.getContext().getConf();
+-    }
+-
+-    @Override
+-    public boolean isSameRM(XAResource xaResource) {
+-      if (xaResource instanceof MariaDbXAResource) {
+-        MariaDbXAResource other = (MariaDbXAResource) xaResource;
+-        return other.getConf().equals(this.getConf());
+-      }
+-      return false;
+-    }
+-
+-    @Override
+-    public int prepare(Xid xid) throws XAException {
+-      execute("XA PREPARE " + xidToString(xid));
+-      return XA_OK;
+-    }
+-
+-    @Override
+-    public Xid[] recover(int flags) throws XAException {
+-      if (((flags & TMSTARTRSCAN) == 0) && ((flags & TMENDRSCAN) == 0) && (flags != TMNOFLAGS)) {
+-        throw new XAException(XAException.XAER_INVAL);
+-      }
+-
+-      if ((flags & TMSTARTRSCAN) == 0) {
+-        return new MariaDbXid[0];
+-      }
+-
+-      try {
+-        ResultSet rs = connection.createStatement().executeQuery("XA RECOVER");
+-        ArrayList<MariaDbXid> xidList = new ArrayList<>();
+-
+-        while (rs.next()) {
+-          int formatId = rs.getInt(1);
+-          int len1 = rs.getInt(2);
+-          int len2 = rs.getInt(3);
+-          byte[] arr = rs.getBytes(4);
+-
+-          byte[] globalTransactionId = new byte[len1];
+-          byte[] branchQualifier = new byte[len2];
+-          System.arraycopy(arr, 0, globalTransactionId, 0, len1);
+-          System.arraycopy(arr, len1, branchQualifier, 0, len2);
+-          xidList.add(new MariaDbXid(formatId, globalTransactionId, branchQualifier));
+-        }
+-        Xid[] xids = new Xid[xidList.size()];
+-        xidList.toArray(xids);
+-        return xids;
+-      } catch (SQLException sqle) {
+-        throw mapXaException(sqle);
+-      }
+-    }
+-
+-    @Override
+-    public void rollback(Xid xid) throws XAException {
+-      execute("XA ROLLBACK " + xidToString(xid));
+-    }
+-
+-    @Override
+-    public boolean setTransactionTimeout(int i) {
+-      return false;
+-    }
+-
+-    @Override
+-    public void start(Xid xid, int flags) throws XAException {
+-      if (flags != TMJOIN && flags != TMRESUME && flags != TMNOFLAGS) {
+-        throw new XAException(XAException.XAER_INVAL);
+-      }
+-      execute("XA START " + xidToString(xid) + " " + flagsToString(flags));
+-    }
+-  }
++  
+ }
+--- a/org/mariadb/jdbc/MariaDbPoolDataSource.java
++++ b/org/mariadb/jdbc/MariaDbPoolDataSource.java
+@@ -17,7 +17,7 @@
+ 
+ /** MariaDB pool datasource. This use mariadb internal pool. */
+ public class MariaDbPoolDataSource
+-    implements DataSource, ConnectionPoolDataSource, XADataSource, Closeable, AutoCloseable {
++    implements DataSource, ConnectionPoolDataSource, Closeable, AutoCloseable {
+ 
+   /**
+    * Sole state of this datasource. Every setter writes here, so a property can never be lost by
+@@ -210,15 +210,9 @@
+     return pool().getPoolConnection(username, password);
+   }
+ 
+-  @Override
+-  public XAConnection getXAConnection() throws SQLException {
+-    return pool().getPoolConnection();
+-  }
+-
+-  @Override
+-  public XAConnection getXAConnection(String username, String password) throws SQLException {
+-    return pool().getPoolConnection(username, password);
+-  }
++
++
++
+ 
+   /**
+    * Returns the URL for this datasource
+--- a/org/mariadb/jdbc/client/result/Result.java
++++ b/org/mariadb/jdbc/client/result/Result.java
+@@ -1759,28 +1759,13 @@
+     return iface.isInstance(this);
+   }
+ 
+-  @Override
+-  public void updateObject(int columnIndex, Object x, SQLType targetSqlType, int scaleOrLength)
+-      throws SQLException {
+-    throw exceptionFactory.notSupported("Not supported when using CONCUR_READ_ONLY concurrency");
+-  }
+-
+-  @Override
+-  public void updateObject(String columnLabel, Object x, SQLType targetSqlType, int scaleOrLength)
+-      throws SQLException {
+-    throw exceptionFactory.notSupported("Not supported when using CONCUR_READ_ONLY concurrency");
+-  }
+-
+-  @Override
+-  public void updateObject(int columnIndex, Object x, SQLType targetSqlType) throws SQLException {
+-    throw exceptionFactory.notSupported("Not supported when using CONCUR_READ_ONLY concurrency");
+-  }
+-
+-  @Override
+-  public void updateObject(String columnLabel, Object x, SQLType targetSqlType)
+-      throws SQLException {
+-    throw exceptionFactory.notSupported("Not supported when using CONCUR_READ_ONLY concurrency");
+-  }
++
++
++
++
++
++
++
+ 
+   /** Set row buffer to null (no row) */
+   protected void setNullRowBuf() {
+--- a/org/mariadb/jdbc/client/result/UpdatableResult.java
++++ b/org/mariadb/jdbc/client/result/UpdatableResult.java
+@@ -1039,11 +1039,7 @@
+     updateClob(columnLabel, reader);
+   }
+ 
+-  @Override
+-  public void updateObject(int columnIndex, Object x, SQLType targetSqlType, int scaleOrLength)
+-      throws SQLException {
+-    updateInternalObject(columnIndex, x, (long) scaleOrLength);
+-  }
++
+ 
+   @SuppressWarnings({"unchecked", "rawtypes"})
+   private void updateInternalObject(int columnIndex, Object x, Long scaleOrLength)
+@@ -1065,22 +1061,11 @@
+     throw new SQLException(String.format("Type %s not supported type", x.getClass().getName()));
+   }
+ 
+-  @Override
+-  public void updateObject(String columnLabel, Object x, SQLType targetSqlType, int scaleOrLength)
+-      throws SQLException {
+-    updateObject(findColumn(columnLabel), x, targetSqlType, scaleOrLength);
+-  }
+-
+-  @Override
+-  public void updateObject(int columnIndex, Object x, SQLType targetSqlType) throws SQLException {
+-    updateInternalObject(columnIndex, x, null);
+-  }
+-
+-  @Override
+-  public void updateObject(String columnLabel, Object x, SQLType targetSqlType)
+-      throws SQLException {
+-    updateObject(findColumn(columnLabel), x, targetSqlType);
+-  }
++
++
++
++
++
+ 
+   @Override
+   public int getConcurrency() {
+--- a/org/mariadb/jdbc/client/socket/impl/SocketUtility.java
++++ b/org/mariadb/jdbc/client/socket/impl/SocketUtility.java
+@@ -3,7 +3,6 @@
+ // Copyright (c) 2015-2026 MariaDB Corporation Ab
+ package org.mariadb.jdbc.client.socket.impl;
+ 
+-import com.sun.jna.Platform;
+ import java.io.IOException;
+ import org.mariadb.jdbc.client.impl.ConnectionHelper;
+ 
+@@ -21,21 +20,11 @@
+    */
+   @SuppressWarnings("unchecked")
+   public static SocketHandlerFunction getSocketHandler() {
+-    // forcing use of JNA to ensure AOT compilation
+-    Platform.getOSType();
+-
+     return (conf, hostAddress) -> {
+-      if (hostAddress.pipe != null) {
+-        return new NamedPipeSocket(hostAddress.host, hostAddress.pipe);
+-      } else if (hostAddress.localSocket != null) {
+-        try {
+-          return new UnixDomainSocket(hostAddress.localSocket);
+-        } catch (RuntimeException re) {
+-          throw new IOException(re.getMessage(), re.getCause());
+-        }
+-      } else {
+-        return ConnectionHelper.standardSocket(conf, hostAddress);
++      if (hostAddress.pipe != null || hostAddress.localSocket != null) {
++        throw new IOException("Native pipes and Unix sockets are not supported by the Android profile");
+       }
++      return ConnectionHelper.standardSocket(conf, hostAddress);
+     };
+-  }
++    }
+ }
+--- a/org/mariadb/jdbc/client/tls/HostnameVerifier.java
++++ b/org/mariadb/jdbc/client/tls/HostnameVerifier.java
+@@ -9,9 +9,6 @@
+ import java.security.cert.X509Certificate;
+ import java.util.*;
+ import java.util.regex.Pattern;
+-import javax.naming.InvalidNameException;
+-import javax.naming.ldap.LdapName;
+-import javax.naming.ldap.Rdn;
+ import javax.net.ssl.SSLException;
+ import javax.security.auth.x500.X500Principal;
+ import org.mariadb.jdbc.util.IPUtility;
+@@ -103,25 +100,8 @@
+   }
+ 
+   private static String extractCommonName(String principal) throws SSLException {
+-    if (principal == null) {
+-      return null;
+-    }
+-    try {
+-      LdapName ldapName = new LdapName(principal);
+-
+-      for (Rdn rdn : ldapName.getRdns()) {
+-        if (rdn.getType().equalsIgnoreCase("CN")) {
+-          Object obj = rdn.getValue();
+-          if (obj != null) {
+-            return obj.toString();
+-          }
+-        }
+-      }
+-      return null;
+-    } catch (InvalidNameException e) {
+-      throw new SSLException("DN value \"" + principal + "\" is invalid");
+-    }
+-  }
++    throw new SSLException("A matching subjectAltName is required; CN fallback is disabled");
++    }
+ 
+   private static String normaliseAddress(String hostname) {
+     try {
+--- a/org/mariadb/jdbc/plugin/authentication/addon/SendGssApiAuthPacketFactory.java
++++ b/org/mariadb/jdbc/plugin/authentication/addon/SendGssApiAuthPacketFactory.java
+@@ -26,6 +26,6 @@
+    */
+   public AuthenticationPlugin initialize(
+       String authenticationData, byte[] seed, Configuration conf, HostAddress hostAddress) {
+-    return new SendGssApiAuthPacket(seed, conf);
+-  }
++    throw new UnsupportedOperationException("GSSAPI authentication is unavailable on Android");
++    }
+ }
+--- a/org/mariadb/jdbc/plugin/authentication/addon/gssapi/GssUtility.java
++++ b/org/mariadb/jdbc/plugin/authentication/addon/gssapi/GssUtility.java
+@@ -3,7 +3,6 @@
+ // Copyright (c) 2015-2026 MariaDB Corporation Ab
+ package org.mariadb.jdbc.plugin.authentication.addon.gssapi;
+ 
+-import com.sun.jna.Platform;
+ 
+ /** GSSAPI utility */
+ public class GssUtility {
+@@ -15,20 +14,6 @@
+    * @return authentication method
+    */
+   public static GssapiAuth getAuthenticationMethod() {
+-    try {
+-      // Waffle-jna has jna as dependency, so if not available on classpath, just use standard
+-      // authentication
+-      if (Platform.isWindows()) {
+-        try {
+-          Class.forName("waffle.windows.auth.impl.WindowsAuthProviderImpl");
+-          return new WindowsNativeSspiAuthentication();
+-        } catch (ClassNotFoundException cle) {
+-          // waffle not in the classpath
+-        }
+-      }
+-    } catch (Throwable cle) {
+-      // jna jar's are not in classpath
++    throw new UnsupportedOperationException("GSSAPI authentication is unavailable on Android");
+     }
+-    return new StandardGssapiAuthentication();
+-  }
+ }
+--- a/org/mariadb/jdbc/plugin/authentication/standard/ParsecPasswordPluginFactory.java
++++ b/org/mariadb/jdbc/plugin/authentication/standard/ParsecPasswordPluginFactory.java
+@@ -26,6 +26,6 @@
+    */
+   public AuthenticationPlugin initialize(
+       String authenticationData, byte[] seed, Configuration conf, HostAddress hostAddress) {
+-    return new ParsecPasswordPlugin(authenticationData, seed);
+-  }
++    throw new UnsupportedOperationException("Parsec authentication requires an unavailable Ed25519 provider on Android");
++    }
+ }
+--- a/org/mariadb/jdbc/plugin/credential/aws/AwsCredentialGenerator.java
++++ b/org/mariadb/jdbc/plugin/credential/aws/AwsCredentialGenerator.java
+@@ -6,13 +6,6 @@
+ import java.util.Properties;
+ import org.mariadb.jdbc.HostAddress;
+ import org.mariadb.jdbc.plugin.Credential;
+-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+-import software.amazon.awssdk.regions.Region;
+-import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
+-import software.amazon.awssdk.services.rds.RdsUtilities;
+ 
+ /** AWS credential generator */
+ public class AwsCredentialGenerator {
+@@ -29,38 +22,8 @@
+    */
+   public AwsCredentialGenerator(
+       Properties nonMappedOptions, String userName, HostAddress hostAddress) {
+-    // Build RDS IAM-auth token generator
+-    this.userName = userName;
+-    AwsCredentialsProvider awsCredentialsProvider;
+-    String accessKeyId = nonMappedOptions.getProperty("accessKeyId");
+-    String secretKey = nonMappedOptions.getProperty("secretKey");
+-    String region = nonMappedOptions.getProperty("region");
+-
+-    if (accessKeyId != null && secretKey != null) {
+-      awsCredentialsProvider =
+-          StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyId, secretKey));
+-    } else {
+-      awsCredentialsProvider = DefaultCredentialsProvider.builder().build();
++    throw new UnsupportedOperationException("AWS IAM credential generation is unavailable on Android");
+     }
+-
+-    RdsUtilities utilities =
+-        RdsUtilities.builder()
+-            .credentialsProvider(awsCredentialsProvider)
+-            .region(
+-                region != null
+-                    ? Region.of(region)
+-                    : new DefaultAwsRegionProviderChain().getRegion())
+-            .build();
+-
+-    this.authenticationToken =
+-        utilities.generateAuthenticationToken(
+-            builder ->
+-                builder
+-                    .username(userName)
+-                    .hostname(hostAddress.host)
+-                    .port(hostAddress.port)
+-                    .credentialsProvider(awsCredentialsProvider));
+-  }
+ 
+   /**
+    * Generate authentication token
+--- a/org/mariadb/jdbc/pool/Pool.java
++++ b/org/mariadb/jdbc/pool/Pool.java
+@@ -3,7 +3,6 @@
+ // Copyright (c) 2015-2026 MariaDB Corporation Ab
+ package org.mariadb.jdbc.pool;
+ 
+-import java.lang.management.ManagementFactory;
+ import java.sql.ResultSet;
+ import java.sql.SQLException;
+ import java.text.NumberFormat;
+@@ -14,8 +13,6 @@
+ import java.util.Locale;
+ import java.util.concurrent.*;
+ import java.util.concurrent.atomic.AtomicInteger;
+-import javax.management.MBeanServer;
+-import javax.management.ObjectName;
+ import javax.sql.ConnectionEvent;
+ import javax.sql.ConnectionEventListener;
+ import org.mariadb.jdbc.Configuration;
+@@ -58,6 +55,10 @@
+    */
+   @SuppressWarnings({"this-escape"})
+   public Pool(Configuration conf, int poolIndex, ScheduledThreadPoolExecutor poolExecutor) {
++    if (conf.registerJmxPool()) {
++      throw new IllegalArgumentException("JMX is unavailable on Android");
++    }
++
+ 
+     this.conf = conf;
+     poolTag = generatePoolTag(poolIndex);
+@@ -543,28 +544,12 @@
+   }
+ 
+   private void registerJmx() throws Exception {
+-    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-    String jmxName = poolTag.replace(":", "_");
+-    ObjectName name = new ObjectName("org.mariadb.jdbc.pool:type=" + jmxName);
+-
+-    synchronized (mbs) {
+-      if (!mbs.isRegistered(name)) {
+-        mbs.registerMBean(this, name);
+-      }
+-    }
+-  }
++    throw new UnsupportedOperationException("JMX is unavailable on Android");
++    }
+ 
+   private void unRegisterJmx() throws Exception {
+-    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-    String jmxName = poolTag.replace(":", "_");
+-    ObjectName name = new ObjectName("org.mariadb.jdbc.pool:type=" + jmxName);
+-
+-    synchronized (mbs) {
+-      if (mbs.isRegistered(name)) {
+-        mbs.unregisterMBean(name);
+-      }
+-    }
+-  }
++    throw new UnsupportedOperationException("JMX is unavailable on Android");
++    }
+ 
+   /**
+    * For testing purpose only.

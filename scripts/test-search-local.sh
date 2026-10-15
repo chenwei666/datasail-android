@@ -3,6 +3,11 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 cd "$DATASAIL_ROOT"
+# These server images each need several GiB with the cloud Docker vfs driver.
+# Serialize large fixtures while independent device/AI/small-server tests may run.
+mkdir -p .local
+exec 9> .local/large-database-fixture.lock
+flock 9
 kind="${1:?ELASTICSEARCH or OPENSEARCH}"
 case "$kind" in
  ELASTICSEARCH) image='elasticsearch@sha256:7a159fec8fc8a7b15ae74dcc01f418b39147a93ae097236774fec0b23e40364a'; server_home=/usr/share/elasticsearch;;
@@ -16,7 +21,7 @@ cleanup() {
  local result=$?
  docker logs "$container" > "/tmp/datasail-search-server-$kind.log" 2>&1 || true
  if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
-  adb shell run-as com.example.datasail rm -f files/search-fixture.properties files/search-ca.pem >/dev/null 2>&1 || true
+  python3 scripts/emulator-app-files.py rm -f files/search-fixture.properties files/search-ca.pem >/dev/null 2>&1 || true
   for target in "${port:-}" "${fault_port:-}"; do [[ -z "$target" ]] || adb reverse --remove "tcp:$target" >/dev/null 2>&1 || true; done
  fi
  [[ -z "${fault_pid:-}" ]] || kill "$fault_pid" 2>/dev/null || true
@@ -112,7 +117,7 @@ fault_port="$(cat "$fixture/fault-port")"
 printf 'port=%s\nfaultPort=%s\n' "$port" "$fault_port" >> "$fixture/database.properties"
 keytool -importcert -noprompt -alias fixture-ca -file "$fixture/server/ca.pem" -keystore "$fixture/trust.p12" -storepass changeit >/dev/null 2>&1
 export DATASAIL_TEST_CONFIG="$fixture/database.properties" DATASAIL_TEST_TRUSTSTORE="$fixture/trust.p12"
-evidence="docs/evidence/v0130/$kind"; mkdir -p "$evidence"
+evidence="${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/$kind"; mkdir -p "$evidence"
 cp "$fixture/server-version.json" "$evidence/"
 if [[ "${DATASAIL_SKIP_JVM:-0}" != 1 ]]; then
  if ! ./gradlew :core:searchTest --console=plain; then docker logs "$container" > /tmp/datasail-search-server-diagnostic.log 2>&1; exit 1; fi
@@ -121,23 +126,16 @@ fi
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
  for device in ${DATASAIL_ANDROID_SERIALS:-${ANDROID_SERIAL:-emulator-5554}}; do
  export ANDROID_SERIAL="$device"
- install_verified() {
-  local package="$1" apk="$2" remote installed expected
-  remote="$(adb shell pm path "$package" | tr -d '\r' | sed -n 's/^package://p' | head -1)"
-  expected="$(sha256sum "$apk" | cut -d ' ' -f1)"; installed=""
-  if [[ "$remote" =~ ^/data/app/[A-Za-z0-9_./+=~-]+$ ]]; then installed="$(adb shell sha256sum "$remote" | cut -d ' ' -f1 | tr -d '\r')"; fi
-  if [[ "$installed" == "$expected" ]]; then printf 'Verified existing APK: %s\n' "$package"; else adb install -r "$apk"; fi
- }
- install_verified com.example.datasail app/build/outputs/apk/debug/app-debug.apk
- install_verified com.example.datasail.test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
- adb shell run-as com.example.datasail mkdir -p files
- adb shell run-as com.example.datasail sh -c "'cat > files/search-fixture.properties'" < "$fixture/database.properties"
- adb shell run-as com.example.datasail sh -c "'cat > files/search-ca.pem'" < "$fixture/server/ca.pem"
+ bash scripts/install-android-test-apks.sh
+ python3 scripts/emulator-app-files.py mkdir -p files
+ python3 scripts/emulator-app-files.py sh -c "'cat > files/search-fixture.properties'" < "$fixture/database.properties"
+ python3 scripts/emulator-app-files.py sh -c "'cat > files/search-ca.pem'" < "$fixture/server/ca.pem"
  adb reverse "tcp:$port" "tcp:$port"; adb reverse "tcp:$fault_port" "tcp:$fault_port"
  adb shell am instrument -w -e class com.example.datasail.SearchDeviceTest,com.example.datasail.SearchUiTest com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  cp "$fixture/android-result.txt" "$evidence/android-${ANDROID_SERIAL}.txt"
  rg -q 'OK \(6 tests\)' "$fixture/android-result.txt"
- adb shell run-as com.example.datasail rm -f files/search-fixture.properties files/search-ca.pem
+ python3 scripts/record-device-evidence.py "$evidence/device-${ANDROID_SERIAL}.json"
+ python3 scripts/emulator-app-files.py rm -f files/search-fixture.properties files/search-ca.pem
  adb reverse --remove "tcp:$port"; adb reverse --remove "tcp:$fault_port"
  done
 fi

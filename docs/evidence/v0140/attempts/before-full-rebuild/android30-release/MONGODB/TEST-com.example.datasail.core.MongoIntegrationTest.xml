@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.MongoIntegrationTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-15T03:42:44.008Z" hostname="b6e64093f9ae" time="157.24">
+  <properties/>
+  <testcase name="readsAndBounds" classname="com.example.datasail.core.MongoIntegrationTest" time="86.773"/>
+  <testcase name="deadlinesAndCancellation" classname="com.example.datasail.core.MongoIntegrationTest" time="40.214"/>
+  <testcase name="singleObjectWritesAndConflicts" classname="com.example.datasail.core.MongoIntegrationTest" time="0.134"/>
+  <testcase name="strictIdentityAndAuthentication" classname="com.example.datasail.core.MongoIntegrationTest" time="30.116"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

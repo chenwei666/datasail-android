@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.DatabaseIntegrationTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-15T04:17:13.339Z" hostname="b6e64093f9ae" time="4.542">
+  <properties/>
+  <testcase name="real cancellation stays unknown instead of claiming server stopped" classname="com.example.datasail.core.DatabaseIntegrationTest" time="1.424"/>
+  <testcase name="certificate hostname mismatch is rejected" classname="com.example.datasail.core.DatabaseIntegrationTest" time="0.012"/>
+  <testcase name="invalid credentials fail authentication" classname="com.example.datasail.core.DatabaseIntegrationTest" time="0.018"/>
+  <testcase name="real driver enforces query timeout" classname="com.example.datasail.core.DatabaseIntegrationTest" time="3.038"/>
+  <testcase name="server confirms encrypted session" classname="com.example.datasail.core.DatabaseIntegrationTest" time="0.024"/>
+  <testcase name="real server synthetic values round trip and connection closes" classname="com.example.datasail.core.DatabaseIntegrationTest" time="0.024"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

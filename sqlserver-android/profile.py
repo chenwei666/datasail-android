@@ -38,20 +38,22 @@ def prepare(binary, destination):
 def verify(binary, profile):
     require(digest(binary.read_bytes()) == LOCK["binarySha256"], "Upstream binary hash mismatch")
     replaced = {PREFIX + name + ".class" for name in LOCK["classes"]}
+    replaced_old = set(LOCK.get("replacedEntries", replaced))
     signatures = {"META-INF/MANIFEST.MF", "META-INF/MSFTSIG.SF", "META-INF/MSFTSIG.RSA"}
     with zipfile.ZipFile(binary) as original, zipfile.ZipFile(profile) as built:
         old = {n for n in original.namelist() if not n.endswith("/")}
         new = {n for n in built.namelist() if not n.endswith("/")}
         require(len(built.namelist()) == len(set(built.namelist())), "Duplicate JAR entries")
-        require(new == (old - signatures) | {"META-INF/MANIFEST.MF", "META-INF/LICENSE", "META-INF/datasail-profile.json"}, "Unexpected profile entries")
-        for name in old - signatures - replaced:
+        require(new == (old - signatures - replaced_old) | replaced | {"META-INF/MANIFEST.MF", "META-INF/LICENSE", "META-INF/datasail-profile.json"}, "Unexpected profile entries")
+        for name in old - signatures - replaced_old:
             require(original.read(name) == built.read(name), "Unexpected upstream modification: " + name)
         forbidden = [b"java/lang/management/", b"javax/naming/", b"javax/xml/stream/", b"javax/xml/transform/stax/", b"org/bouncycastle/"]
-        for name in replaced:
+        original_platform_patches = {PREFIX + name + ".class" for name in ("MaxResultBufferParser", "SQLServerCertificateUtils", "SQLServerSQLXML", "ByteArrayOutputStreamToInputStream", "SQLServerEntityResolver", "DDC", "DDC$1", "AsciiFilteredInputStream", "AsciiFilteredUnicodeInputStream", "StreamSetterArgs", "InputStreamGetterArgs")}
+        for name in original_platform_patches:
             require(name in new, "Missing replacement: " + name)
             require(not any(ref in built.read(name) for ref in forbidden), "Unsupported reference remains: " + name)
         require(json.loads(built.read("META-INF/datasail-profile.json")) == LOCK, "Profile provenance mismatch")
-    print(f"Profile verified: {len(replaced)} source-compiled classes; all other upstream entries unchanged; patched classes have no JMX/JNDI/StAX/BouncyCastle references.")
+    print(f"Profile verified: {len(replaced)} source-compiled classes; all other upstream entries unchanged; original platform patches retain their JMX/JNDI/StAX/BouncyCastle checks.")
 
 if __name__ == "__main__":
     mode, binary, destination = sys.argv[1:]

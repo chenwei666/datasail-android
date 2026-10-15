@@ -1,6 +1,6 @@
 # 可复现验证
 
-V0.13.0 当前套件：核心与 app 单元、SQL Server 24 项、MySQL/MariaDB/PostgreSQL 各 10 项、Redis/Valkey/MongoDB/Elasticsearch/OpenSearch 各 4 项 JVM 合同；各引擎独立 Android 验证。AI HTTPS 5 项、加密记忆 3 项、SQLite 3 项，以及工作台触摸、筛选排序、宽表和升级测试。实际执行与准确计数见 TEST_REPORT，不把下面历史版本说明当作本轮通过证据。
+V0.14.0 当前套件：核心与 app 单元、SQL Server 24 项、MySQL/MariaDB/PostgreSQL 各 10 项、Redis/Valkey/MongoDB/Elasticsearch/OpenSearch 各 4 项 JVM 合同；各引擎独立 Android 验证。AI HTTPS 5 项、加密记忆 3 项、SQLite 3 项，以及工作台触摸、筛选排序、宽表和升级测试。实际执行与准确计数见 TEST_REPORT，不把下面历史版本说明当作本轮通过证据。
 
 当前 Android 完整合同：SQL Server 4 项（2 个驱动 + 2 个 UI），JDBC 各 4 项，Redis/Valkey 各 4 项，MongoDB 5 项，搜索引擎各 6 项。新增写入只使用独立临时 writer 权限；reader 拒绝写入的反例保留。搜索的响应丢失测试另用本机故障服务器，验证写请求只到达一次；不冒充真实集群断网。
 
@@ -28,13 +28,13 @@ DATASAIL_ANDROID_TESTS=1 bash scripts/test-sqlserver-local.sh
 ./gradlew :app:connectedDebugAndroidTest
 ```
 
-Android 数据库测试显式启用；不由默认 UI 测试顺带连接。脚本仅把合成凭据经 stdin 写入 app-private 文件，公有 CA 在 Android 原生 KeyStore 内建成专用信任库；测试完成清理。`adb reverse` 为 localhost 正向连接及 127.0.0.1 错误主机名反例提供同一临时端口映射，退出移除；避免模拟器宿主路由因 API/版本不同而变化，仍保留完整 TLS/SAN 校验。不要同时运行两组设备测试，Gradle connected 测试结束可能卸载 APK，干扰另一个 instrumentation。
+Android 数据库测试显式启用；不由默认 UI 测试顺带连接。脚本仅把合成凭据经 stdin 写入 app-private 文件，公有 CA 在 Android 原生 KeyStore 内建成专用信任库；测试完成清理。`adb reverse` 为 localhost 正向连接及 127.0.0.1 错误主机名反例提供同一临时端口映射，退出移除；避免模拟器宿主路由因 API/版本不同而变化，仍保留完整 TLS/SAN 校验。不要在同一设备同时运行两组设备测试，Gradle connected 测试结束可能卸载 APK，干扰另一个 instrumentation。
 
 `SqlServerDeviceTest` 的两个测试验证 ART 上可信 TLS、不受信 CA、错误主机名、表读取和真实单行增改删/冲突，以及固定探针超时/取消、关闭和无自动重连。V0.2.2 增加 ART 容量溢出参数检查与真实 SQLXML 往返。`SmokeTest` 验证中文导航、禁用的未实现入口、驱动入口加载及非秘密配置往返。均不等同完整手工操作、真机或性能验收。
 
-## 覆盖升级
+## 历史 Debug 覆盖升级记录
 
-仅在可清空的合成模拟器执行（脚本拒绝真机）：
+以下命令属于 V0.13.0 历史流程，重现时须使用该标签源码和对应 Debug 签名，仅在可清空的合成模拟器执行（脚本拒绝真机）。不要用它证明 V0.14.0 的正式签名迁移：
 
 ```bash
 bash scripts/test-android-upgrade.sh --reset-synthetic-emulator
@@ -44,7 +44,7 @@ bash scripts/test-android-upgrade.sh --reset-synthetic-emulator
 
 ## Release 与未验证项
 
-`./gradlew :app:assembleRelease` 仍是失败的 R8 门禁。不得批量忽略缺失类。修复后需运行真正的混淆 Release 设备测试；当前没有 Release APK或正式签名。Android 真机/arm64、前后台/弱网/进程重建/TalkBack/性能等仍需独立验收。
+V0.14.0 使用独立正式签名，正常 R8 构建通过。Release 构建、真实安装包测试、SELinux 标签正确的合成夹具传送、逐套 APK 哈希证据与归档步骤见 [RELEASE_BUILD](RELEASE_BUILD.md)。不得批量忽略缺失类。历史 Debug 证书无法覆盖到新证书，预期的签名拒绝不是升级成功；当前没有完整配置迁移工具。Android 真机/arm64、完整弱网/TalkBack/性能矩阵仍需独立验收。
 
 API26 使用同样步骤，将系统镜像改为 `system-images;android-26;default;x86_64`，AVD 名称设为 datasail-api26。多台模拟器时设置 ANDROID_SERIAL，数据库仪器测试和安装/升级过程必须串行。
 
@@ -97,7 +97,7 @@ DATASAIL_SKIP_JVM=1 DATASAIL_ANDROID_TESTS=1 ANDROID_SERIAL=emulator-5554 bash s
 
 MongoContract 三项分别覆盖 205 文档的 100/100/5 游标分页（第一页后停留 11 秒）、EJSON 类型与过滤、超大文档提示，错误 SAN/CA/密码/authSource 和服务端拒绝写入，以及真实 find 阻塞下客户端截止与已借出 socket 取消。测试控制连接的 30 秒预算仅用于等待服务器释放 20 秒故障点；读取仍为 10 秒驱动/12 秒每页总截止，登录单独为 30 秒预算。MongoUiTest 通过真实连接测试首页认证数据库、集合选择、下一页、修改筛选禁用续页和精确查询。不要在定时 ART 测试同时跑重编译。
 
-构建时排除 MongoDB 两份重复 GraalVM 元数据，正式 R8 单独失败记录，不等同 Android Debug 已通过即可发行。CI 添加此 JVM 夹具，本轮本地执行不代表 GitHub Actions 已运行。
+构建时排除 MongoDB 两份重复 GraalVM 元数据，历史 R8 失败记录保留；V0.14.0 使用源码适配及真实混淆包单独验收，不等同 Android Debug 已通过即可发行。CI 添加此 JVM 夹具，本轮本地执行不代表 GitHub Actions 已运行。
 
 MongoDB 脚本在安装前比较本机构建与设备 APK 的 SHA-256，相同则复用已验证安装；不同才覆盖安装。`DATASAIL_MONGO_UI_ONLY=1` 仅供定位界面问题，完整验收必须去掉此标志；V0.13.0 应得到 5 项通过。相关诊断失败保存在 evidence 的 diagnostics 下，不计入通过总数。
 

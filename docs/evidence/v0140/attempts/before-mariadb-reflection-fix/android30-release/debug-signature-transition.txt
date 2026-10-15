@@ -1,0 +1,3 @@
+app/build/outputs/apk/release/app-release.apk: 1 file pushed, 0 skipped. 5.6 MB/s (13028563 bytes in 2.223s)
+Performing Push Install
+Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Package com.example.datasail signatures do not match previously installed version; ignoring!]

@@ -1,0 +1,210 @@
+--- a/com/mongodb/MongoClientSettings.java
++++ b/com/mongodb/MongoClientSettings.java
+@@ -84,8 +84,6 @@
+                     new JsonObjectCodecProvider(),
+                     new BsonCodecProvider(),
+                     new ExpressionCodecProvider(),
+-                    new Jep395RecordCodecProvider(),
+-                    new KotlinCodecProvider(),
+                     new EnumCodecProvider()));
+ 
+     private final ReadPreference readPreference;
+--- a/com/mongodb/connection/TransportSettings.java
++++ b/com/mongodb/connection/TransportSettings.java
+@@ -32,9 +32,7 @@
+      *
+      * @return a builder for {@link NettyTransportSettings}
+      */
+-    public static NettyTransportSettings.Builder nettyBuilder() {
+-        return NettyTransportSettings.builder();
+-    }
++
+ 
+     /**
+      * A builder for {@link AsyncTransportSettings}.
+--- a/com/mongodb/internal/connection/InternalStreamConnection.java
++++ b/com/mongodb/internal/connection/InternalStreamConnection.java
+@@ -339,16 +339,8 @@
+     }
+ 
+     private Compressor createCompressor(final MongoCompressor mongoCompressor) {
+-        switch (mongoCompressor.getName()) {
+-            case "zlib":
+-                return new ZlibCompressor(mongoCompressor);
+-            case "snappy":
+-                return new SnappyCompressor();
+-            case "zstd":
+-                return new ZstdCompressor();
+-            default:
+-                throw new MongoClientException("Unsupported compressor " + mongoCompressor.getName());
+-        }
++        if ("zlib".equals(mongoCompressor.getName())) return new ZlibCompressor(mongoCompressor);
++        throw new MongoClientException("Unsupported compressor in the Android profile: " + mongoCompressor.getName());
+     }
+ 
+     @Override
+--- a/com/mongodb/internal/connection/InternalStreamConnectionFactory.java
++++ b/com/mongodb/internal/connection/InternalStreamConnectionFactory.java
+@@ -82,26 +82,14 @@
+     }
+ 
+     private Authenticator createAuthenticator(final MongoCredentialWithCache credential) {
+-        AuthenticationMechanism authenticationMechanism = credential.getAuthenticationMechanism();
+-        if (authenticationMechanism == null) {
+-            return new DefaultAuthenticator(credential, clusterConnectionMode, serverApi);
+-        }
+-        switch (authenticationMechanism) {
+-            case GSSAPI:
+-                return new GSSAPIAuthenticator(credential, clusterConnectionMode, serverApi);
+-            case PLAIN:
+-                return new PlainAuthenticator(credential, clusterConnectionMode, serverApi);
+-            case MONGODB_X509:
+-                return new X509Authenticator(credential, clusterConnectionMode, serverApi);
++        AuthenticationMechanism mechanism = credential.getAuthenticationMechanism();
++        if (mechanism == null) return new DefaultAuthenticator(credential, clusterConnectionMode, serverApi);
++        switch (mechanism) {
+             case SCRAM_SHA_1:
+             case SCRAM_SHA_256:
+                 return new ScramShaAuthenticator(credential, clusterConnectionMode, serverApi);
+-            case MONGODB_AWS:
+-                return new AwsAuthenticator(credential, clusterConnectionMode, serverApi);
+-            case MONGODB_OIDC:
+-                return new OidcAuthenticator(credential, clusterConnectionMode, serverApi);
+             default:
+-                throw new IllegalArgumentException("Unsupported authentication mechanism " + authenticationMechanism);
++                throw new IllegalArgumentException("Unsupported authentication mechanism in the Android profile: " + mechanism);
+         }
+     }
+ }
+--- a/com/mongodb/internal/connection/SocketStreamFactory.java
++++ b/com/mongodb/internal/connection/SocketStreamFactory.java
+@@ -60,7 +60,7 @@
+             if (sslSettings.isEnabled()) {
+                 throw new MongoClientException("Socket based connections do not support ssl");
+             }
+-            stream = new UnixSocketChannelStream((UnixServerAddress) serverAddress, settings, sslSettings, bufferProvider);
++            throw new UnsupportedOperationException("Unix sockets are unavailable in the Android profile");
+         } else {
+             if (sslSettings.isEnabled()) {
+                 stream = new SocketStream(serverAddress, inetAddressResolver, settings, sslSettings, getSslContext().getSocketFactory(),
+--- a/com/mongodb/internal/connection/StreamFactoryHelper.java
++++ b/com/mongodb/internal/connection/StreamFactoryHelper.java
+@@ -19,11 +19,9 @@
+ import com.mongodb.MongoClientException;
+ import com.mongodb.MongoClientSettings;
+ import com.mongodb.connection.AsyncTransportSettings;
+-import com.mongodb.connection.NettyTransportSettings;
+ import com.mongodb.connection.SocketSettings;
+ import com.mongodb.connection.SslSettings;
+ import com.mongodb.connection.TransportSettings;
+-import com.mongodb.internal.connection.netty.NettyStreamFactoryFactory;
+ import com.mongodb.lang.Nullable;
+ import com.mongodb.spi.dns.InetAddressResolver;
+ 
+@@ -39,61 +37,23 @@
+     public static StreamFactoryFactory getSyncStreamFactoryFactory(
+             @Nullable final TransportSettings transportSettings,
+             final InetAddressResolver inetAddressResolver) {
+-
+-        if (transportSettings == null) {
+-            return new StreamFactoryFactory() {
+-                @Override
+-                public StreamFactory create(final SocketSettings socketSettings, final SslSettings sslSettings) {
+-                    return new SocketStreamFactory(inetAddressResolver, socketSettings, sslSettings);
+-                }
+-
+-                @Override
+-                public void close() {
+-                    //NOP
+-                }
+-            };
+-        } else if (transportSettings instanceof AsyncTransportSettings) {
+-            throw new MongoClientException("Unsupported transport settings in sync: " + transportSettings.getClass().getName());
+-        } else if (transportSettings instanceof NettyTransportSettings) {
+-            return getNettyStreamFactoryFactory(inetAddressResolver, (NettyTransportSettings) transportSettings);
+-        } else {
+-            throw new MongoClientException("Unsupported transport settings: " + transportSettings.getClass().getName());
++        if (transportSettings != null) {
++            throw new MongoClientException("Custom and Netty transports are unavailable on Android");
+         }
++        return new StreamFactoryFactory() {
++            @Override public StreamFactory create(final SocketSettings socketSettings, final SslSettings sslSettings) {
++                return new SocketStreamFactory(inetAddressResolver, socketSettings, sslSettings);
++            }
++            @Override public void close() { /* This factory owns no sockets or executors. */ }
++        };
+     }
+ 
+     public static StreamFactoryFactory getAsyncStreamFactoryFactory(final MongoClientSettings settings,
+             final InetAddressResolver inetAddressResolver) {
+-        TransportSettings transportSettings = settings.getTransportSettings();
+-        if (transportSettings == null || transportSettings instanceof AsyncTransportSettings) {
+-            ExecutorService executorService = transportSettings == null
+-                    ? null
+-                    : ((AsyncTransportSettings) transportSettings).getExecutorService();
+-            if (settings.getSslSettings().isEnabled()) {
+-                return new TlsChannelStreamFactoryFactory(inetAddressResolver, executorService);
+-            }
+-            AsynchronousChannelGroup group = null;
+-            if (executorService != null) {
+-                try {
+-                    group = AsynchronousChannelGroup.withThreadPool(executorService);
+-                } catch (IOException e) {
+-                    throw new MongoClientException("Unable to create an asynchronous channel group", e);
+-                }
+-            }
+-            return new AsynchronousSocketChannelStreamFactoryFactory(inetAddressResolver, group);
+-        } else  if (transportSettings instanceof NettyTransportSettings) {
+-            return getNettyStreamFactoryFactory(inetAddressResolver, (NettyTransportSettings) transportSettings);
+-        } else {
+-            throw new MongoClientException("Unsupported transport settings: " + transportSettings.getClass().getName());
+-        }
++        throw new MongoClientException("Async transport is unavailable in the Android synchronous driver profile");
+     }
+ 
+-    private static NettyStreamFactoryFactory getNettyStreamFactoryFactory(final InetAddressResolver inetAddressResolver,
+-            final NettyTransportSettings transportSettings) {
+-        return NettyStreamFactoryFactory.builder()
+-                .applySettings(transportSettings)
+-                .inetAddressResolver(inetAddressResolver)
+-                .build();
+-    }
++
+ 
+     private StreamFactoryHelper() {
+     }
+--- a/com/mongodb/internal/dns/DefaultDnsResolver.java
++++ b/com/mongodb/internal/dns/DefaultDnsResolver.java
+@@ -40,10 +40,9 @@
+     private static final DnsClient DEFAULT_DNS_CLIENT;
+ 
+     static {
+-        DEFAULT_DNS_CLIENT = StreamSupport.stream(ServiceLoader.load(DnsClientProvider.class).spliterator(), false)
+-                .findFirst()
+-                .map(DnsClientProvider::create)
+-                .orElse(new JndiDnsClient());
++        DEFAULT_DNS_CLIENT = (name, type) -> {
++            throw new MongoConfigurationException("SRV/TXT discovery is unavailable in the Android direct-host profile");
++        };
+     }
+ 
+     private final DnsClient dnsClient;
+--- a/com/mongodb/management/MBeanServerFactory.java
++++ b/com/mongodb/management/MBeanServerFactory.java
+@@ -25,14 +25,8 @@
+     }
+ 
+     static {
+-        MBeanServer tmp;
+-        try {
+-            tmp = new JMXMBeanServer();
+-        } catch (Throwable e) {
+-            tmp = new NullMBeanServer();
+-        }
+-
+-        M_BEAN_SERVER = tmp;
++        // Use the upstream Android no-JMX implementation without loading desktop classes.
++        M_BEAN_SERVER = new NullMBeanServer();
+     }
+ 
+     /**

@@ -3,13 +3,18 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 cd "$DATASAIL_ROOT"
+# These server images each need several GiB with the cloud Docker vfs driver.
+# Serialize large fixtures while independent device/AI/small-server tests may run.
+mkdir -p .local
+exec 9> .local/large-database-fixture.lock
+flock 9
 image='mongo@sha256:d0d926f94df099bff534b7ee5b5986458131a22489dfff8664509af0c1e2ca9c'
 mkdir -p .local
 fixture="$(mktemp -d "$DATASAIL_ROOT/.local/mongo.XXXXXX")"
 container="datasail-mongo-$RANDOM-$$"
 cleanup() {
  if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
-  adb shell run-as com.example.datasail rm -f files/mongo-fixture.properties files/mongo-ca.pem >/dev/null 2>&1 || true
+  python3 scripts/emulator-app-files.py rm -f files/mongo-fixture.properties files/mongo-ca.pem >/dev/null 2>&1 || true
   if [[ -n "${port:-}" ]]; then adb reverse --remove "tcp:$port" >/dev/null 2>&1 || true; fi
  fi
  docker rm -fv "$container" >/dev/null 2>&1 || true
@@ -56,30 +61,22 @@ docker exec --user 0 "$container" mongosh --quiet --host localhost --tls --tlsCA
 keytool -importcert -noprompt -alias fixture-ca -file "$fixture/server/ca.pem" -keystore "$fixture/trust.p12" -storepass changeit >/dev/null 2>&1
 export DATASAIL_TEST_CONFIG="$fixture/database.properties"
 export DATASAIL_TEST_TRUSTSTORE="$fixture/trust.p12"
-evidence="docs/evidence/v0130/MONGODB"
+evidence="${DATASAIL_EVIDENCE_DIR:-docs/evidence/v0140}/MONGODB"
 mkdir -p "$evidence"
 if [[ "${DATASAIL_SKIP_JVM:-0}" != 1 ]]; then
  ./gradlew :core:mongoTest --console=plain
  cp core/build/test-results/mongoTest/TEST-*.xml "$evidence/"
 fi
 if [[ "${DATASAIL_ANDROID_TESTS:-0}" == 1 ]]; then
- install_verified() {
-  local package="$1" apk="$2" remote installed expected
-  remote="$(adb shell pm path "$package" | tr -d '\r' | sed -n 's/^package://p' | head -1)"
-  expected="$(sha256sum "$apk" | cut -d ' ' -f1)"
-  installed=""
-  if [[ "$remote" =~ ^/data/app/[A-Za-z0-9_./+=~-]+$ ]]; then installed="$(adb shell sha256sum "$remote" | cut -d ' ' -f1 | tr -d '\r')"; fi
-  if [[ "$installed" == "$expected" ]]; then printf 'Verified existing APK: %s\n' "$package"; else adb install -r "$apk"; fi
- }
- install_verified com.example.datasail app/build/outputs/apk/debug/app-debug.apk
- install_verified com.example.datasail.test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
- adb shell run-as com.example.datasail mkdir -p files
- adb shell run-as com.example.datasail sh -c "'cat > files/mongo-fixture.properties'" < "$fixture/database.properties"
- adb shell run-as com.example.datasail sh -c "'cat > files/mongo-ca.pem'" < "$fixture/server/ca.pem"
+ bash scripts/install-android-test-apks.sh
+ python3 scripts/emulator-app-files.py mkdir -p files
+ python3 scripts/emulator-app-files.py sh -c "'cat > files/mongo-fixture.properties'" < "$fixture/database.properties"
+ python3 scripts/emulator-app-files.py sh -c "'cat > files/mongo-ca.pem'" < "$fixture/server/ca.pem"
  adb reverse "tcp:$port" "tcp:$port"
  classes=com.example.datasail.MongoDeviceTest,com.example.datasail.MongoUiTest; expected=5
  if [[ "${DATASAIL_MONGO_UI_ONLY:-0}" == 1 ]]; then classes=com.example.datasail.MongoUiTest; expected=1; fi
  adb shell am instrument -w -e class "$classes" com.example.datasail.test/androidx.test.runner.AndroidJUnitRunner | tee "$fixture/android-result.txt"
  cp "$fixture/android-result.txt" "$evidence/android-${ANDROID_SERIAL}.txt"
  rg -q "OK \($expected tests\)" "$fixture/android-result.txt"
+ python3 scripts/record-device-evidence.py "$evidence/device-${ANDROID_SERIAL}.json"
 fi

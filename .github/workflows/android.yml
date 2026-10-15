@@ -1,6 +1,7 @@
 name: Android verification
 on:
   push:
+    branches-ignore: ['release-assets/**']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -19,7 +20,7 @@ jobs:
         shell: bash
         run: |
           source scripts/env.sh
-          ./gradlew :sqlserver-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
+          ./gradlew :sqlserver-android:check :postgresql-android:check :mariadb-android:check :mongodb-core-android:check :mongodb-sync-android:check :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
       - name: MySQL TLS and synthetic probes (JVM, not Android)
         run: bash scripts/test-mysql-local.sh
       - name: SQL Server TLS, browse and transaction tests (JVM)
@@ -47,7 +48,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: DataSail-V0.13.0-build-${{ github.run_number }}
+          name: DataSail-V0.14.0-build-${{ github.run_number }}
           if-no-files-found: error
           path: |
             app/build/outputs/apk/
@@ -60,11 +61,10 @@ jobs:
             docs/evidence/v090/*/TEST-*.xml
             docs/evidence/v0100/*/TEST-*.xml
             docs/evidence/v0130/*/TEST-*.xml
-            sqlserver-android/build/test-results/
+            docs/evidence/v0140/*/TEST-*.xml
+            *-android/build/test-results/
   release-r8-gate:
-    # Deliberately opt-in and failing until driver Android API gaps are resolved.
-    # No continue-on-error, no -dontwarn blanket. This is a release blocker.
-    if: github.event_name == 'workflow_dispatch'
+    # Required unsigned R8 build on every change; production signing stays outside PR jobs.
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -74,6 +74,7 @@ jobs:
         run: |
           source scripts/env.sh
           ./gradlew :app:assembleRelease --console=plain
+          python3 scripts/verify-release-dex.py app/build/outputs/apk/release/app-release-unsigned.apk
       - if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

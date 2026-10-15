@@ -58,6 +58,7 @@ class CertificateTrustUiTest {
         compose.onNodeWithText("连接服务器并扫描").performScrollTo().performClick()
         compose.waitUntil(45000) { !model.discovery.value.busy }
         assertTrue(model.discovery.value.message, "master" in model.discovery.value.result!!.names)
+        compose.onNodeWithTag("discovered-database-picker").performScrollTo().performClick()
         compose.onNodeWithText("master").performScrollTo().performClick()
         compose.onNodeWithText("连接数据库").performScrollTo().performClick()
         compose.waitUntil(45000) { model.state.value.let { it.connected && !it.busy } }

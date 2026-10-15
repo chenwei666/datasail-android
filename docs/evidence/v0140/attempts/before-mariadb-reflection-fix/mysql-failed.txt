@@ -1,0 +1,191 @@
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :mariadb-android:prepareProfile UP-TO-DATE
+> Task :mariadb-android:compileJava UP-TO-DATE
+> Task :mariadb-android:processResources NO-SOURCE
+> Task :mariadb-android:classes UP-TO-DATE
+> Task :mariadb-android:jar UP-TO-DATE
+
+> Task :mariadb-android:verifyProfile
+Verified source overlay: 3.5.10-datasail.1 21 compiled classes; other upstream bytes unchanged
+
+> Task :mongodb-core-android:prepareProfile UP-TO-DATE
+> Task :mongodb-core-android:compileJava UP-TO-DATE
+> Task :mongodb-core-android:processResources NO-SOURCE
+> Task :mongodb-core-android:classes UP-TO-DATE
+> Task :mongodb-core-android:jar UP-TO-DATE
+
+> Task :mongodb-core-android:verifyProfile
+Verified source overlay: 5.6.5-datasail.1 16 compiled classes; other upstream bytes unchanged
+
+> Task :mongodb-sync-android:prepareProfile UP-TO-DATE
+> Task :mongodb-sync-android:compileJava UP-TO-DATE
+> Task :mongodb-sync-android:processResources NO-SOURCE
+> Task :mongodb-sync-android:classes UP-TO-DATE
+> Task :mongodb-sync-android:jar UP-TO-DATE
+
+> Task :mongodb-sync-android:verifyProfile
+Verified source overlay: 5.6.5-datasail.1 1 compiled classes; other upstream bytes unchanged
+
+> Task :postgresql-android:prepareProfile UP-TO-DATE
+> Task :postgresql-android:compileJava UP-TO-DATE
+> Task :postgresql-android:processResources NO-SOURCE
+> Task :postgresql-android:classes UP-TO-DATE
+> Task :postgresql-android:jar UP-TO-DATE
+
+> Task :postgresql-android:verifyProfile
+Verified source overlay: 42.7.14-datasail.1 21 compiled classes; other upstream bytes unchanged
+
+> Task :sqlserver-android:prepareProfile UP-TO-DATE
+> Task :sqlserver-android:compileJava UP-TO-DATE
+> Task :sqlserver-android:processResources NO-SOURCE
+> Task :sqlserver-android:classes UP-TO-DATE
+> Task :sqlserver-android:jar UP-TO-DATE
+
+> Task :sqlserver-android:verifyProfile
+Profile verified: 81 source-compiled classes; all other upstream entries unchanged; original platform patches retain their JMX/JNDI/StAX/BouncyCastle checks.
+
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:compileIntegrationTestKotlin UP-TO-DATE
+> Task :core:compileIntegrationTestJava NO-SOURCE
+> Task :core:processIntegrationTestResources NO-SOURCE
+> Task :core:integrationTestClasses UP-TO-DATE
+
+> Task :core:jdbcWorkspaceTest
+Picked up JAVA_TOOL_OPTIONS:  -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttp.nonProxyHosts=localhost|127.*|[::1] -Djavax.net.ssl.trustStore=/workspace/toolchains/trust/cacerts
+
+JdbcWorkspaceIntegrationTest > exactLargeIntegerFilteringUsesServerMetadata PASSED
+
+JdbcWorkspaceIntegrationTest > writesUseBoundValuesFullRowConflictsAndOneUseTokens PASSED
+
+JdbcWorkspaceIntegrationTest > wideTableWindowsReachLastColumnWithExactType PASSED
+
+JdbcWorkspaceIntegrationTest > serverSideFilteringSortingAndTemporalParameters PASSED
+
+JdbcWorkspaceIntegrationTest > floatsAndBinaryTextComparisonDoNotLoseConcurrentChanges PASSED
+
+JdbcWorkspaceIntegrationTest > serverEnforcesReadonlyBeyondSyntaxAndCannotPoisonNextTransaction PASSED
+
+JdbcWorkspaceIntegrationTest > unusualIdentifiersAreQuotedAndExactMetadataDoesNotMatchWildcards PASSED
+
+JdbcWorkspaceIntegrationTest > rejectsWriteSyntaxAndExecutableComments PASSED
+
+JdbcWorkspaceIntegrationTest > browsingPreservesTypesAndPaginationAndClosesTransactions PASSED
+
+JdbcWorkspaceIntegrationTest > rejectsWrongHostnameUntrustedCaAndWrongPassword PASSED
+
+BUILD SUCCESSFUL in 3s
+24 actionable tasks: 6 executed, 18 up-to-date
+Exact com.example.datasail APK already installed.
+Exact com.example.datasail.test APK already installed.
+32866
+
+com.example.datasail.JdbcWorkspaceDeviceTest:
+Error in timeoutAndCancellationCloseResourcesWithoutReplay(com.example.datasail.JdbcWorkspaceDeviceTest):
+java.sql.SQLInvalidAuthorizationSpecException: (conn=33) Access denied for user 'root'@'172.17.0.1' (using password: NO)
+	at d8.c.d(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:454)
+	at v7.h.E(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:1632)
+	at v7.h.<init>(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:121)
+	at org.mariadb.jdbc.Driver.connect(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:12)
+	at org.mariadb.jdbc.Driver.connect(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:67)
+	at org.mariadb.jdbc.Driver.connect(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:1)
+	at a0.o0.i(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:395)
+	at i4.d0.c(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:18)
+	at i4.n1.c(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:684)
+	at i4.n1.b(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:12)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$26$connect(JdbcWorkspaceDeviceTest.kt:62)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$26(JdbcWorkspaceDeviceTest.kt:64)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$k5V5z9H-vqxBOgnI4U_eceLUilA(JdbcWorkspaceDeviceTest.kt:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda5.n(R8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay(JdbcWorkspaceDeviceTest.kt:61)
+
+Error in tlsIdentityAndWorkbenchReadOnArt(com.example.datasail.JdbcWorkspaceDeviceTest):
+java.lang.AssertionError: expected:<TLS> but was:<AUTHENTICATION>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.example.datasail.fixture.CertificateTrustContract.verify(CertificateTrustContract.kt:14)
+	at com.example.datasail.fixture.DiscoveryContract.verify(DiscoveryContract.kt:9)
+	at com.example.datasail.fixture.DiscoveryContract.verify$default(DiscoveryContract.kt:8)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt$lambda$16(JdbcWorkspaceDeviceTest.kt:29)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$HlJoM03IZk72Ok83s-GWccvZsgE(JdbcWorkspaceDeviceTest.kt:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda6.n(R8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt(JdbcWorkspaceDeviceTest.kt:28)
+
+com.example.datasail.DiscoveryUiTest:
+Error in editingEndpointInvalidatesDiscoveredTargetsAndAuthorization(com.example.datasail.DiscoveryUiTest):
+java.lang.AssertionError: 认证失败，请核对测试账号。未取得列表；可检查扫描参数或权限，或手动填写已知目标。
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertNotNull(Assert.java:713)
+	at com.example.datasail.DiscoveryUiTest.scan(DiscoveryUiTest.kt:43)
+	at com.example.datasail.DiscoveryUiTest.editingEndpointInvalidatesDiscoveredTargetsAndAuthorization(DiscoveryUiTest.kt:61)
+
+Error in scanSelectAndConnectWithoutKnowingDatabaseName(com.example.datasail.DiscoveryUiTest):
+java.lang.AssertionError: 认证失败，请核对测试账号。未取得列表；可检查扫描参数或权限，或手动填写已知目标。
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertNotNull(Assert.java:713)
+	at com.example.datasail.DiscoveryUiTest.scan(DiscoveryUiTest.kt:43)
+	at com.example.datasail.DiscoveryUiTest.scanSelectAndConnectWithoutKnowingDatabaseName(DiscoveryUiTest.kt:48)
+
+
+Time: 38.607
+There were 4 failures:
+1) timeoutAndCancellationCloseResourcesWithoutReplay(com.example.datasail.JdbcWorkspaceDeviceTest)
+java.sql.SQLInvalidAuthorizationSpecException: (conn=33) Access denied for user 'root'@'172.17.0.1' (using password: NO)
+	at d8.c.d(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:454)
+	at v7.h.E(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:1632)
+	at v7.h.<init>(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:121)
+	at org.mariadb.jdbc.Driver.connect(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:12)
+	at org.mariadb.jdbc.Driver.connect(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:67)
+	at org.mariadb.jdbc.Driver.connect(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:1)
+	at a0.o0.i(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:395)
+	at i4.d0.c(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:18)
+	at i4.n1.c(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:684)
+	at i4.n1.b(r8-map-id-50dabcd96369a672e90671e8b8792e1145e010e6ffaad43bf136aae70e457fe2:12)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$26$connect(JdbcWorkspaceDeviceTest.kt:62)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay$lambda$26(JdbcWorkspaceDeviceTest.kt:64)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$k5V5z9H-vqxBOgnI4U_eceLUilA(JdbcWorkspaceDeviceTest.kt:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda5.n(R8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.timeoutAndCancellationCloseResourcesWithoutReplay(JdbcWorkspaceDeviceTest.kt:61)
+2) tlsIdentityAndWorkbenchReadOnArt(com.example.datasail.JdbcWorkspaceDeviceTest)
+java.lang.AssertionError: expected:<TLS> but was:<AUTHENTICATION>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.example.datasail.fixture.CertificateTrustContract.verify(CertificateTrustContract.kt:14)
+	at com.example.datasail.fixture.DiscoveryContract.verify(DiscoveryContract.kt:9)
+	at com.example.datasail.fixture.DiscoveryContract.verify$default(DiscoveryContract.kt:8)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt$lambda$16(JdbcWorkspaceDeviceTest.kt:29)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.$r8$lambda$HlJoM03IZk72Ok83s-GWccvZsgE(JdbcWorkspaceDeviceTest.kt:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest$$ExternalSyntheticLambda6.n(R8$$SyntheticClass:0)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.fixture(JdbcWorkspaceDeviceTest.kt:24)
+	at com.example.datasail.JdbcWorkspaceDeviceTest.tlsIdentityAndWorkbenchReadOnArt(JdbcWorkspaceDeviceTest.kt:28)
+3) editingEndpointInvalidatesDiscoveredTargetsAndAuthorization(com.example.datasail.DiscoveryUiTest)
+java.lang.AssertionError: 认证失败，请核对测试账号。未取得列表；可检查扫描参数或权限，或手动填写已知目标。
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertNotNull(Assert.java:713)
+	at com.example.datasail.DiscoveryUiTest.scan(DiscoveryUiTest.kt:43)
+	at com.example.datasail.DiscoveryUiTest.editingEndpointInvalidatesDiscoveredTargetsAndAuthorization(DiscoveryUiTest.kt:61)
+4) scanSelectAndConnectWithoutKnowingDatabaseName(com.example.datasail.DiscoveryUiTest)
+java.lang.AssertionError: 认证失败，请核对测试账号。未取得列表；可检查扫描参数或权限，或手动填写已知目标。
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertNotNull(Assert.java:713)
+	at com.example.datasail.DiscoveryUiTest.scan(DiscoveryUiTest.kt:43)
+	at com.example.datasail.DiscoveryUiTest.scanSelectAndConnectWithoutKnowingDatabaseName(DiscoveryUiTest.kt:48)
+
+FAILURES!!!
+Tests run: 4,  Failures: 4
+
+

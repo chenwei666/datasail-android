@@ -1,0 +1,46 @@
+{
+  "applicationSha256": "2decdb05b4d0b6382095ed96b6f2c220d3e56b5a813626a4444c17fbb0a6b5f1",
+  "currentTestApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790",
+  "priorRunners": [
+    {
+      "sha256": "f30178dd537876bc32fa444dce0542b79f9c3832c30839c52c23bad2cbf6f007",
+      "localPath": ".local/release-test-runners/before-row-details-sync.apk",
+      "reports": [
+        "android26-release/MARIADB/android-emulator-5556.txt",
+        "android26-release/MYSQL/android-emulator-5556.txt",
+        "android26-release/POSTGRESQL/android-emulator-5556.txt",
+        "android26-release/REDIS/android-emulator-5556.txt",
+        "android26-release/SQL_SERVER/android-emulator-5556.txt",
+        "android26-release/SQL_SERVER_AUTOCERT/android-emulator-5556.txt"
+      ],
+      "testOnlyPatch": "attempts/row-details-test-sync/test-only.patch",
+      "testOnlyPatchSha256": "beec892a1d07ba5f0a3da9c70329d791c6be5a8d6d81b6fd37ea53bb5ca1155e",
+      "supersededBy": "8c3e8dfd6c77b0ce2c6baff80d4ff5a69e658f08bf3faa9e564958b2fabb7a4d"
+    },
+    {
+      "sha256": "8c3e8dfd6c77b0ce2c6baff80d4ff5a69e658f08bf3faa9e564958b2fabb7a4d",
+      "localPath": ".local/release-test-runners/before-form-scroll-sync.apk",
+      "reports": [
+        "android26-release/MONGODB/android-emulator-5556.txt",
+        "android26-release/VALKEY/android-emulator-5556.txt"
+      ],
+      "testOnlyPatch": "attempts/form-scroll-test-sync/test-only.patch",
+      "testOnlyPatchSha256": "24f47450c65cb741465b8235a4a71ca9631642a946f76230aa7a453d65a16ba1",
+      "supersededBy": "02af809aad6f00e94926cfe8aaba1032917d0f93c5650c450658507d08cbfaef"
+    },
+    {
+      "sha256": "02af809aad6f00e94926cfe8aaba1032917d0f93c5650c450658507d08cbfaef",
+      "localPath": ".local/release-test-runners/before-ime-isolation.apk",
+      "reports": [
+        "android26-release/ELASTICSEARCH/android-emulator-5556.txt",
+        "android26-release/OPENSEARCH/android-emulator-5556.txt",
+        "android26-release/ai-emulator-5556.txt",
+        "android30-release/ai-emulator-5554.txt"
+      ],
+      "testOnlyPatch": "attempts/input-method-test-isolation/test-only.patch",
+      "testOnlyPatchSha256": "aeec98833ea4bb16cf2aa963a7515ee48f3ae93857844ec23b2bc4713e9fb3fd",
+      "supersededBy": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+    }
+  ],
+  "reason": "Only UI-test synchronization and visible toolbar targeting changed. The delivered application APK and completed database test code are unchanged; all UI suites use the final runner. Every runner and exact test-only patch is archived."
+}

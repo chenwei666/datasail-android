@@ -3,9 +3,15 @@ kotlin { jvmToolchain(21); compilerOptions { jvmTarget.set(org.jetbrains.kotlin.
 java { sourceCompatibility = JavaVersion.VERSION_1_8; targetCompatibility = JavaVersion.VERSION_1_8 }
 dependencies {
     implementation(project(path = ":sqlserver-android", configuration = "profile"))
-    implementation(libs.mariadb)
-    implementation(libs.postgresql)
-    implementation(libs.mongodb) { exclude(group = "org.mongodb", module = "bson-record-codec") }
+    implementation(project(path = ":mariadb-android", configuration = "profile"))
+    implementation(project(path = ":postgresql-android", configuration = "profile"))
+    implementation(project(path = ":mongodb-core-android", configuration = "profile"))
+    implementation(project(path = ":mongodb-sync-android", configuration = "profile"))
+    implementation(libs.bson)
+    implementation(libs.antlr.runtime)
+    implementation(libs.slf4j.nop)
+    implementation(libs.jsr305)
+    implementation("org.checkerframework:checker-qual:3.55.1")
     testImplementation(libs.junit)
 }
 tasks.test { useJUnit(); testLogging { events("passed", "skipped", "failed") } }

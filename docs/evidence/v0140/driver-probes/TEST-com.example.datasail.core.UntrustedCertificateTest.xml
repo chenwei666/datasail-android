@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.datasail.core.UntrustedCertificateTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-15T04:17:18.278Z" hostname="b6e64093f9ae" time="0.346">
+  <properties/>
+  <testcase name="untrusted CA is rejected before credentials can authenticate" classname="com.example.datasail.core.UntrustedCertificateTest" time="0.346"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
