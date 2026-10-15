@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Verify publication integrity rules
+        run: python3 -m unittest discover -s scripts/tests -v
       - name: Install pinned Android toolchain
         run: bash scripts/setup-cloud.sh
       - name: Test, lint and build Debug and instrumentation APKs
