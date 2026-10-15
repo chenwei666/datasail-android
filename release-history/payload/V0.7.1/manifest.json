@@ -1,0 +1,147 @@
+{
+  "version": "V0.7.1",
+  "versionCode": 10,
+  "applicationId": "com.example.datasail",
+  "gitSha": "00574c1e4d38cfd4d0cff282bfbe50e743b68d82",
+  "sourceStatus": "clean committed snapshot",
+  "published": false,
+  "signing": {
+    "type": "local debug only",
+    "certificateSha256": "1c0f10a1cc14cc44b1eefc18a78de23b34ce30761b70dae039bea7f302cc78db"
+  },
+  "toolchain": {
+    "jdk": "Temurin 21.0.8+9",
+    "agp": "8.13.0",
+    "gradle": "8.13",
+    "kotlin": "2.2.10",
+    "composeBom": "2025.08.01",
+    "compileSdk": 36,
+    "minSdk": 26,
+    "buildTools": "36.0.0"
+  },
+  "androidTlsProvider": "Conscrypt 2.7.0, engine sockets, platform trust manager",
+  "drivers": {
+    "mssql-jdbc": "13.6.0.jre8",
+    "mariadb-java-client": "3.5.10",
+    "postgresql": "42.7.14",
+    "mongodb-driver-sync": "5.6.5",
+    "android-sasl-api": "Apache Harmony 02970cb7227a335edd2c8457ebdde0195a735733 (two unmodified API types)",
+    "sqlite": "Android platform",
+    "redis-valkey": "DataSail bounded RESP2/TLS implementation",
+    "elasticsearch-opensearch": "DataSail bounded platform HTTPS/JSON implementation"
+  },
+  "sqlServerAndroidProfile": {
+    "version": "13.6.0.jre8-datasail.1",
+    "jarSha256": "e659cab033b57ba0d5e85e6479100789b866f7b061658f7f1b6b2b6639e4f463",
+    "upstreamSourceSha256": "317ba534f470fbceefcf6c0db3465a4fda413b2fd023dfa60b1b16ec3e800728",
+    "patchSha256": "a218c65fe64f223be3674a22e8157c09ea96c9d230dc3f8b369086f4ed929d24"
+  },
+  "verification": {
+    "version": "0.7.1",
+    "versionCode": 10,
+    "date": "2026-10-13",
+    "timezone": "Asia/Bangkok",
+    "finalApkSha256": "9520c3345315cbffbb0961248de6722ea4a1f37a8094378c732af98ac23fe182",
+    "testApkSha256": "4e2dd3401ad327cd243602424029aa15465426959f7866e43f5036ed866d1802",
+    "jvm": {
+      "unit-core": 54,
+      "unit-app": 9,
+      "SQL_SERVER": 15,
+      "SQL_SERVER_AUTOCERT": 1,
+      "MYSQL": 5,
+      "MARIADB": 5,
+      "POSTGRESQL": 5,
+      "REDIS": 3,
+      "VALKEY": 3,
+      "MONGODB": 3,
+      "ELASTICSEARCH": 3,
+      "OPENSEARCH": 3
+    },
+    "jvmPassed": 109,
+    "android": {
+      "SQL_SERVER/emulator-5556": 2,
+      "SQL_SERVER_AUTOCERT/emulator-5554": 2,
+      "MYSQL/emulator-5556": 4,
+      "MARIADB/emulator-5556": 4,
+      "POSTGRESQL/emulator-5556": 4,
+      "REDIS/emulator-5556": 3,
+      "VALKEY/emulator-5556": 3,
+      "MONGODB/emulator-5556": 4,
+      "ELASTICSEARCH/emulator-5556": 5,
+      "OPENSEARCH/emulator-5556": 5,
+      "mobile/emulator-5556": 8,
+      "upgrade/emulator-5556": 4,
+      "mobile/emulator-5554": 8,
+      "upgrade/emulator-5554": 4
+    },
+    "androidPassed": 60,
+    "requiredJvmReports": [
+      "test",
+      "sqlServerTest",
+      "sqlServerAutoCertificateTest",
+      "jdbcWorkspaceTest",
+      "keyValueTest",
+      "mongoTest",
+      "searchTest"
+    ],
+    "checks": {
+      "unit": 0,
+      "lintDebug": 0,
+      "assembleDebug": 0,
+      "assembleDebugAndroidTest": 0,
+      "assembleRelease": 1
+    },
+    "releaseMissingClasses": 193,
+    "releaseAddedMissingClasses": 0,
+    "upgradeBaseline": {
+      "version": "0.7.0",
+      "versionCode": 9
+    },
+    "intermediateAndroid": {
+      "tests": 2,
+      "evidence": "diagnostics/intermediate-autocert-api26.txt",
+      "countedInFinalApkTests": false,
+      "reason": "Earlier build before source comment line-number changes; APK hash was not captured."
+    },
+    "driverProfileTests": "11 cached unchanged tests; integrity verifyProfile rerun; excluded from new JVM count",
+    "limitations": [
+      "Debug only; Release R8 remains blocked by 193 missing classes",
+      "No physical/arm64 or user-server test",
+      "Servers must support TLS; no plaintext or legacy TLS downgrade",
+      "Only the nine implemented network engines; SQLite is a local file",
+      "No independent archive rebuild or fresh cloud restoration"
+    ],
+    "published": false
+  },
+  "devices": {
+    "emulator-5556": {
+      "api": "26",
+      "fingerprint": "Android/sdk_phone_x86_64/generic_x86_64:8.0.0/OSR1.180418.004/4931640:userdebug/test-keys",
+      "abi": "x86_64",
+      "emulator": "1",
+      "installedApkSha256": "9520c3345315cbffbb0961248de6722ea4a1f37a8094378c732af98ac23fe182"
+    },
+    "emulator-5554": {
+      "api": "30",
+      "fingerprint": "Android/sdk_phone_x86_64/generic_x86_64:11/RSR1.210722.013.A2/10067904:userdebug/test-keys",
+      "abi": "x86_64",
+      "emulator": "1",
+      "installedApkSha256": "9520c3345315cbffbb0961248de6722ea4a1f37a8094378c732af98ac23fe182"
+    }
+  },
+  "limitations": [
+    "Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence",
+    "New engines are read-only; other catalog entries are planned and cannot connect",
+    "Release/R8 fails on missing APIs; no release APK"
+  ],
+  "artifacts": {
+    "DataSail-V0.7.1-androidTest.apk": {
+      "bytes": 1204505,
+      "sha256": "4e2dd3401ad327cd243602424029aa15465426959f7866e43f5036ed866d1802"
+    },
+    "DataSail-V0.7.1-debug.apk": {
+      "bytes": 23997984,
+      "sha256": "9520c3345315cbffbb0961248de6722ea4a1f37a8094378c732af98ac23fe182"
+    }
+  }
+}

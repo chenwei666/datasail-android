@@ -1,0 +1,12 @@
+{
+  "tag": "V0.5.0",
+  "sourceCommit": "18617446b0610fed16e84f478eadf195997c667a",
+  "versionCode": 7,
+  "verifiedFiles": 477,
+  "archiveSha256": "363ea19742150c873173a1061d7b8fff1150bf8f4cf7dca86e19e9a4cf661205",
+  "apkSha256": "44e83ff562458b147be9c1655e7d923de0189875af401827a62e43416b393314",
+  "zipCrcVerified": true,
+  "signingSha256": "1c0f10a1cc14cc44b1eefc18a78de23b34ce30761b70dae039bea7f302cc78db",
+  "historicalArtifactsUnchanged": true,
+  "rebuilt": false
+}

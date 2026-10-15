@@ -1,0 +1,41 @@
+{
+  "version": "V0.2.0",
+  "versionCode": 2,
+  "applicationId": "com.example.datasail",
+  "gitSha": "4c613c16ec03db7ea53caeb1521e7e39a07262de",
+  "sourceStatus": "clean committed snapshot",
+  "published": false,
+  "signing": {
+    "type": "local debug only",
+    "certificateSha256": "1c0f10a1cc14cc44b1eefc18a78de23b34ce30761b70dae039bea7f302cc78db"
+  },
+  "toolchain": {
+    "jdk": "Temurin 21.0.8+9",
+    "agp": "8.13.0",
+    "gradle": "8.13",
+    "kotlin": "2.2.10",
+    "composeBom": "2025.08.01",
+    "compileSdk": 36,
+    "minSdk": 26,
+    "buildTools": "36.0.0"
+  },
+  "drivers": {
+    "mssql-jdbc": "13.6.0.jre8",
+    "mariadb-java-client": "3.5.10"
+  },
+  "limitations": [
+    "Physical devices and API26 not tested; consult TEST_REPORT for exact API30 evidence",
+    "MySQL Android database runtime remains unverified",
+    "Release/R8 fails on missing APIs; no release APK"
+  ],
+  "artifacts": {
+    "DataSail-V0.2.0-androidTest.apk": {
+      "bytes": 1082292,
+      "sha256": "34a1814d899f0af9c02885d541641f91cd92012436c09abb4f8472d202839cd4"
+    },
+    "DataSail-V0.2.0-debug.apk": {
+      "bytes": 11436470,
+      "sha256": "3d32fb3de90fdfd5ce4accad33ade2ac6f66c4d678271e59acd8e1996b3eedf2"
+    }
+  }
+}

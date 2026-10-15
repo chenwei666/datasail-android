@@ -1,0 +1,5 @@
+bf4c94cba29d9730f48475295bfa7c565ebc87543a7d4240b14df795c56d8a01  DataSail-V0.6.0-debug.apk
+f558c9f1ba4ce04be78af303d65f65a87486fdd05c1c21f9bcd6845fecfe5a5b  DataSail-V0.6.0.zip
+6574c53c8c3a29d812fcd9a85491f361ffea21396efaaceabc1d6ecc1081f3ff  TEST_REPORT.md
+594eb487f322b1c4315ee57e3bcecdfe439b463a9e28cc2e9112e65ab40390be  V0.6.0-verification.json
+e6d8afdae8987b39a0e92b49b76e09716df3f77d190208d0a8fb3d2a01af5559  manifest.json

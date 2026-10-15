@@ -2,7 +2,7 @@ name: Publish and verify DataSail release history
 on:
   push:
     branches: [release-assets/history-20261015]
-    paths: ['.github/workflows/release-history.yml', 'scripts/release-history.py', 'release-history/**']
+    paths: ['.github/workflows/release-history.yml', 'scripts/release-history.py', 'scripts/publish-history.py', 'release-history/**']
   workflow_dispatch:
 permissions:
   contents: write
@@ -19,7 +19,12 @@ jobs:
       - name: Inspect or publish verified historical artifacts
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/release-history.py
+        run: |
+          if [ "$(cat release-history/mode.txt)" = visibility ]; then
+            python3 scripts/publish-history.py --refresh-visibility
+          else
+            python3 scripts/publish-history.py
+          fi
       - name: Record actual result
         if: always()
         run: |

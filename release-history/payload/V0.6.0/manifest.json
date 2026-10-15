@@ -1,0 +1,124 @@
+{
+  "version": "V0.6.0",
+  "versionCode": 8,
+  "applicationId": "com.example.datasail",
+  "gitSha": "87bae12b0fa932a74bae6ef7445484371a7373d1",
+  "sourceStatus": "clean committed snapshot",
+  "published": false,
+  "signing": {
+    "type": "local debug only",
+    "certificateSha256": "1c0f10a1cc14cc44b1eefc18a78de23b34ce30761b70dae039bea7f302cc78db"
+  },
+  "toolchain": {
+    "jdk": "Temurin 21.0.8+9",
+    "agp": "8.13.0",
+    "gradle": "8.13",
+    "kotlin": "2.2.10",
+    "composeBom": "2025.08.01",
+    "compileSdk": 36,
+    "minSdk": 26,
+    "buildTools": "36.0.0"
+  },
+  "androidTlsProvider": "Conscrypt 2.7.0, engine sockets, platform trust manager",
+  "drivers": {
+    "mssql-jdbc": "13.6.0.jre8",
+    "mariadb-java-client": "3.5.10",
+    "postgresql": "42.7.14",
+    "mongodb-driver-sync": "5.6.5",
+    "android-sasl-api": "Apache Harmony 02970cb7227a335edd2c8457ebdde0195a735733 (two unmodified API types)",
+    "sqlite": "Android platform",
+    "redis-valkey": "DataSail bounded RESP2/TLS implementation",
+    "elasticsearch-opensearch": "DataSail bounded platform HTTPS/JSON implementation"
+  },
+  "sqlServerAndroidProfile": {
+    "version": "13.6.0.jre8-datasail.1",
+    "jarSha256": "e659cab033b57ba0d5e85e6479100789b866f7b061658f7f1b6b2b6639e4f463",
+    "upstreamSourceSha256": "317ba534f470fbceefcf6c0db3465a4fda413b2fd023dfa60b1b16ec3e800728",
+    "patchSha256": "a218c65fe64f223be3674a22e8157c09ea96c9d230dc3f8b369086f4ed929d24"
+  },
+  "verification": {
+    "version": "0.6.0",
+    "versionCode": 8,
+    "requiredJvmReports": [
+      "test",
+      "searchTest"
+    ],
+    "jvm": {
+      "coreUnit": 43,
+      "appUnit": 4,
+      "ELASTICSEARCH": 3,
+      "OPENSEARCH": 3
+    },
+    "jvmTotal": 53,
+    "cachedDriverUnit": 11,
+    "driverTaskStatus": "UP-TO-DATE; profile integrity verification executed",
+    "android": {
+      "emulator-5556": {
+        "ELASTICSEARCH": 5,
+        "OPENSEARCH": 5,
+        "upgradeAndSmoke": 4
+      },
+      "emulator-5554": {
+        "ELASTICSEARCH": 5,
+        "OPENSEARCH": 5,
+        "upgradeAndSmoke": 4
+      }
+    },
+    "androidTotal": 28,
+    "debug": "passed",
+    "lintDebug": "passed",
+    "release": {
+      "status": "failed",
+      "missingClasses": 193,
+      "addedSinceV050": 0,
+      "blanketSuppressionsAdded": false
+    },
+    "finalApkSha256": "bf4c94cba29d9730f48475295bfa7c565ebc87543a7d4240b14df795c56d8a01",
+    "androidTestApkSha256": "7744725451716859e895c0fd9d6329fc9a0d39266574a4964168ac732c72c680",
+    "preMappingFixMobile": {
+      "apkSha256": "f51f1b59117d68893bbe69111857e4b6c3379745bee41a58de299afc0d358f7e",
+      "checks": 16,
+      "status": "passed before mapping title identity fix; unchanged mobile/SQLite code; not counted in final APK total"
+    },
+    "searchTransportFaultTests": "Separate local adversarial HTTPS peer, not real engine slow-query injection",
+    "openSearchReadStressRounds": 10,
+    "initialOpenSearchEof": "One failed first JVM run; diagnostic repeat and ten read rounds passed; cause unconfirmed, retained as a known limitation; no application retry added",
+    "limitations": [
+      "Physical devices/arm64 and release APK unverified",
+      "Previous eight engines remain implemented; old network engine suites not rerun this iteration (immutable V050 evidence retained); SQLite/mobile workflows passed before mapping title fix; see preMappingFixMobile, not final APK count",
+      "Search is HTTPS/Basic/read-only on the exact tested versions; no cloud auth, scripts, aggregation, PIT/scroll or writes",
+      "Original source archive not rebuilt independently; no remote CI, push, public release or environment publication claimed"
+    ]
+  },
+  "devices": {
+    "emulator-5556": {
+      "api": "26",
+      "fingerprint": "Android/sdk_phone_x86_64/generic_x86_64:8.0.0/OSR1.180418.004/4931640:userdebug/test-keys",
+      "abi": "x86_64",
+      "emulator": "1",
+      "installedApkSha256": "bf4c94cba29d9730f48475295bfa7c565ebc87543a7d4240b14df795c56d8a01"
+    },
+    "emulator-5554": {
+      "api": "30",
+      "fingerprint": "Android/sdk_phone_x86_64/generic_x86_64:11/RSR1.210722.013.A2/10067904:userdebug/test-keys",
+      "abi": "x86_64",
+      "emulator": "1",
+      "installedApkSha256": "bf4c94cba29d9730f48475295bfa7c565ebc87543a7d4240b14df795c56d8a01"
+    }
+  },
+  "limitations": [
+    "Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence",
+    "New engines are read-only; other catalog entries are planned and cannot connect",
+    "Release/R8 fails on missing APIs; no release APK"
+  ],
+  "artifacts": {
+    "DataSail-V0.6.0-androidTest.apk": {
+      "bytes": 1144900,
+      "sha256": "7744725451716859e895c0fd9d6329fc9a0d39266574a4964168ac732c72c680"
+    },
+    "DataSail-V0.6.0-debug.apk": {
+      "bytes": 24189634,
+      "sha256": "bf4c94cba29d9730f48475295bfa7c565ebc87543a7d4240b14df795c56d8a01"
+    }
+  }
+}

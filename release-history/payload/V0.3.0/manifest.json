@@ -1,0 +1,50 @@
+{
+  "version": "V0.3.0",
+  "versionCode": 5,
+  "applicationId": "com.example.datasail",
+  "gitSha": "aeb4413096df5507832d10f4013eade0fc09fa21",
+  "sourceStatus": "clean committed snapshot",
+  "published": false,
+  "signing": {
+    "type": "local debug only",
+    "certificateSha256": "1c0f10a1cc14cc44b1eefc18a78de23b34ce30761b70dae039bea7f302cc78db"
+  },
+  "toolchain": {
+    "jdk": "Temurin 21.0.8+9",
+    "agp": "8.13.0",
+    "gradle": "8.13",
+    "kotlin": "2.2.10",
+    "composeBom": "2025.08.01",
+    "compileSdk": 36,
+    "minSdk": 26,
+    "buildTools": "36.0.0"
+  },
+  "androidTlsProvider": "Conscrypt 2.7.0, engine sockets, platform trust manager",
+  "drivers": {
+    "mssql-jdbc": "13.6.0.jre8",
+    "mariadb-java-client": "3.5.10",
+    "postgresql": "42.7.14",
+    "sqlite": "Android platform"
+  },
+  "sqlServerAndroidProfile": {
+    "version": "13.6.0.jre8-datasail.1",
+    "jarSha256": "e659cab033b57ba0d5e85e6479100789b866f7b061658f7f1b6b2b6639e4f463",
+    "upstreamSourceSha256": "317ba534f470fbceefcf6c0db3465a4fda413b2fd023dfa60b1b16ec3e800728",
+    "patchSha256": "a218c65fe64f223be3674a22e8157c09ea96c9d230dc3f8b369086f4ed929d24"
+  },
+  "limitations": [
+    "Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence",
+    "New engines are read-only; other catalog entries are planned and cannot connect",
+    "Release/R8 fails on missing APIs; no release APK"
+  ],
+  "artifacts": {
+    "DataSail-V0.3.0-androidTest.apk": {
+      "bytes": 1112484,
+      "sha256": "6d3ef0aeac756e10bc151206d282214f7ad6bf5e6d9c02f9db6efc6633da6b3c"
+    },
+    "DataSail-V0.3.0-debug.apk": {
+      "bytes": 22703556,
+      "sha256": "514ea53a552240476925aacaed718c42dbb228ff465d81ae8169ab4949214048"
+    }
+  }
+}
