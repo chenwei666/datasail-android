@@ -133,11 +133,19 @@ def publish(plan, receipt):
                 'created': created, 'prerelease': release['prerelease'], 'publishedAt': release['published_at'],
                 'notesSha256': version['notesSha256'], 'assets': version['assets']})
             print('Verified and published', tag, flush=True)
+    receipt['repositoryPrivate'] = api('repos/' + REPO)['private']
     receipt['status'] = 'published'
 
 if __name__ == '__main__':
     plan = json.loads(PLAN.read_text())
-    if '--verify-local' in sys.argv:
+    if '--refresh-visibility' in sys.argv:
+        if os.environ.get('GITHUB_REPOSITORY') != REPO: raise RuntimeError('Unexpected repository context')
+        receipt = json.loads(RECEIPT.read_text())
+        if receipt['status'] != 'published' or len(receipt['versions']) != 21: raise RuntimeError('Release publication incomplete')
+        receipt['repositoryPrivate'] = api('repos/' + REPO)['private']
+        receipt['visibilityRunId'] = os.environ.get('GITHUB_RUN_ID')
+        RECEIPT.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + '\n')
+    elif '--verify-local' in sys.argv:
         print('Validated', len(validate_plan(plan)), 'versions; publication was not executed')
     else:
         receipt = {'status': 'running', 'runId': os.environ.get('GITHUB_RUN_ID'), 'versions': []}
