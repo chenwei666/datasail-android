@@ -23,7 +23,7 @@ def gh(*args, output=None):
                             stderr=subprocess.PIPE, timeout=180)
     if result.returncode:
         error = result.stderr if isinstance(result.stderr, str) else result.stderr.decode(errors='replace')
-        raise RuntimeError('GitHub command failed: ' + error.strip()[:1500])
+        raise RuntimeError('GitHub command failed (' + ' '.join(args[:5]) + '): ' + error.strip()[:1500])
     return result.stdout
 
 def api(path, method='GET', data=None):
