@@ -1,0 +1,33 @@
+name: Publish and verify DataSail release history
+on:
+  push:
+    branches: [release-assets/history-20261015]
+    paths: ['.github/workflows/release-history.yml', 'scripts/release-history.py', 'release-history/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: datasail-release-history
+  cancel-in-progress: false
+jobs:
+  history:
+    if: github.repository == 'chenwei666/datasail-android' && github.ref == 'refs/heads/release-assets/history-20261015'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Inspect or publish verified historical artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/release-history.py
+      - name: Record actual result
+        if: always()
+        run: |
+          if [ ! -f publication/history-20261015.json ]; then exit 1; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add publication/history-20261015.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record verified release history status'
+            git push origin HEAD:release-assets/history-20261015
+          fi
