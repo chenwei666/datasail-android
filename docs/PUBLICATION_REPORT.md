@@ -48,3 +48,19 @@ The repository administrator changed visibility to **Public**. Independent unaut
 本次权限排障：自动变更仓库可见性返回 403，由仓库管理员完成公开。创建旧版 Release 时显式指定旧提交也返回 403；先通过 Git 补齐并核验原始标签，再基于已有标签创建 Release。没有请求扩大令牌权限，没有改动旧标签或附件。
 
 Permission troubleshooting: the visibility API returned 403, so the repository administrator made it public. Creating historical releases while explicitly targeting old commits also returned 403. Original tags were pushed and verified through Git, then releases were created from those existing tags. Token permissions were not broadened, and historical tags and attachments were not replaced.
+
+## V0.14.0 正式发布 / Production release
+
+- 发布地址 / Release: https://github.com/chenwei666/datasail-android/releases/tag/V0.14.0
+- 实际发布时间 / Published: `2026-10-15T07:27:39Z`
+- 版本与构建号 / Version and code: `0.14.0 / 22`
+- 源码提交 / Source commit: `ebb4f466a4cb2f1190252a4ac8d681a1a025f947`
+- 自动发布运行 / Workflow: https://github.com/chenwei666/datasail-android/actions/runs/38698829841
+- 正式签名、不可调试、R8 混淆和资源收缩；非预发布，已设置为最新版本。七个附件均在发布后不携带认证重新下载，并核对完整 SHA-256 与大小。
+- Production-signed, non-debuggable, R8-minified release with resource shrinking, published as stable/latest. All seven assets were downloaded again without authentication and verified by full SHA-256 and size.
+- 公开下载核对原始记录 / Public-download receipt: [production-20261015.json](releases/production-20261015.json)。
+- 原有 21 个历史版本及其附件保持原样；正式签名私钥和密码未上传。旧 Debug 版无法直接覆盖，安装迁移和实测边界见 [TEST_REPORT.md](TEST_REPORT.md)。
+
+首次发布尝试因 Git 自动转换许可证附件换行符而被完整性校验拦截，尚未创建正式 Release。附件分支已设置保留原始字节，重试通过后才公开发布。原失败记录见 [运行 38698673667](https://github.com/chenwei666/datasail-android/actions/runs/38698673667)。
+
+V0.14.0 不可变源码快照中的 SLF4J 许可证采用 Git 规范化的 LF 换行，许可文字未改变；许可证来源清单的 SHA-256 指原始上游字节。ZIP 内部文件以其 `SHA256SUMS` 核对，公开 `THIRD_PARTY_NOTICES.txt` 附件保留原始换行。后续主线已固定许可证原始字节，不修改既有 ZIP。

@@ -6,3 +6,7 @@
 # Preserve pinned upstream legal notices byte-for-byte, including original whitespace.
 sasl-android/src/main/resources/META-INF/datasail-sasl/LICENSE -text -whitespace
 sasl-android/src/main/resources/META-INF/datasail-sasl/NOTICE -text -whitespace
+
+# Legal notice provenance hashes describe the original upstream bytes.
+docs/licenses/*.txt -text -whitespace
+docs/THIRD_PARTY_NOTICES.txt -text -whitespace

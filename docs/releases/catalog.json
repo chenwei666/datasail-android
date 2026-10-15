@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "latest": "V0.13.0",
+  "latest": "V0.14.0",
   "versions": [
     {
       "tag": "V0.1.0",
@@ -295,6 +295,20 @@
       "apkSha256": "0f03dbd7408d2c015f0e12fa71a14e0f61403462624723e7e1a309242cdb72f5",
       "archiveSha256": "b51990cf01baa49c2f24a202314045418400296024a655225b20b16f8d1ca3c5",
       "prerelease": true
+    },
+    {
+      "tag": "V0.14.0",
+      "versionCode": 22,
+      "sourceCommit": "ebb4f466a4cb2f1190252a4ac8d681a1a025f947",
+      "historicalDate": "2026-10-15",
+      "title": "数舟 DataSail V0.14.0 · 正式签名与混淆发行 / Signed and minified Release",
+      "summaryZh": "首次使用正式证书发布不可调试、R8 混淆和资源收缩安装包；修复多个数据库驱动的 Android 与反射兼容性。完整源码、测试证据、签名指纹与校验值随包公开。",
+      "summaryEn": "First production-signed, non-debuggable APK with R8 minification and resource shrinking. Fixes Android and reflection compatibility in multiple drivers and publishes complete source, evidence, certificate identity and checksums.",
+      "notes": "docs/releases/V0.14.0.md",
+      "signingSha256": "86d3ec30bb7bb3ab44a41b1268d40003a746c2ecda078b7db5ad249ce02ae93c",
+      "apkSha256": "2decdb05b4d0b6382095ed96b6f2c220d3e56b5a813626a4444c17fbb0a6b5f1",
+      "archiveSha256": "fef06d1e270a0a995bf58e476980a83224e6dfa85971a73475288317b7b69a91",
+      "prerelease": false
     }
   ]
 }
