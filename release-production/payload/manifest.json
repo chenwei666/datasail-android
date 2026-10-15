@@ -1,0 +1,489 @@
+{
+  "version": "V0.14.0",
+  "versionCode": 22,
+  "applicationId": "com.example.datasail",
+  "gitSha": "ebb4f466a4cb2f1190252a4ac8d681a1a025f947",
+  "sourceStatus": "clean committed snapshot",
+  "published": false,
+  "variant": "release",
+  "signing": {
+    "type": "production",
+    "certificateSha256": "86d3ec30bb7bb3ab44a41b1268d40003a746c2ecda078b7db5ad249ce02ae93c"
+  },
+  "toolchain": {
+    "jdk": "Temurin 21.0.8+9",
+    "agp": "8.13.0",
+    "gradle": "8.13",
+    "kotlin": "2.2.10",
+    "composeBom": "2025.08.01",
+    "compileSdk": 36,
+    "minSdk": 26,
+    "buildTools": "36.0.0"
+  },
+  "androidTlsProvider": "Conscrypt 2.7.0, engine sockets, platform trust manager",
+  "drivers": {
+    "mssql-jdbc": "13.6.0.jre8",
+    "mariadb-java-client": "3.5.10",
+    "postgresql": "42.7.14",
+    "mongodb-driver-sync": "5.6.5",
+    "android-sasl-api": "Apache Harmony 02970cb7227a335edd2c8457ebdde0195a735733 (two unmodified API types)",
+    "sqlite": "Android platform",
+    "redis-valkey": "DataSail bounded RESP2/TLS implementation",
+    "elasticsearch-opensearch": "DataSail bounded platform HTTPS/JSON implementation"
+  },
+  "sqlServerAndroidProfile": {
+    "version": "13.6.0.jre8-datasail.3",
+    "jarSha256": "a22a2f5753245c03c3a35d5a2e464fe1bbf8bdc7f9df386148df95f121ce7b0c",
+    "upstreamSourceSha256": "317ba534f470fbceefcf6c0db3465a4fda413b2fd023dfa60b1b16ec3e800728",
+    "patchSha256": "ec942a3475f5e1ea75646c07b3b22c6a9e5aa25e8ed2658360543e1f831e173b"
+  },
+  "verification": {
+    "debugSmokeTests": 3,
+    "debugSmokeDevice": {
+      "serial": "emulator-5556",
+      "variant": "debug",
+      "installedApkSha256": "4423cb2152523ab1389f55ec43dcd879b57f6fcaf75e99f4b7bffb4797328bdc",
+      "installedTestApkSha256": "dc3be6f714b4800469a43b06271aa6643f73cda8c1dc9bbd439b3d0c45116ea3",
+      "api": "26",
+      "androidVersion": "8.0.0",
+      "abi": "x86_64",
+      "buildFingerprint": "Android/sdk_phone_x86_64/generic_x86_64:8.0.0/OSR1.180418.004/4931640:userdebug/test-keys",
+      "emulator": "1"
+    },
+    "version": "0.14.0",
+    "versionCode": 22,
+    "variant": "release",
+    "finalApkSha256": "2decdb05b4d0b6382095ed96b6f2c220d3e56b5a813626a4444c17fbb0a6b5f1",
+    "finalTestApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790",
+    "requiredJvmReports": [
+      "test",
+      "sqlServerTest",
+      "sqlServerAutoCertificateTest",
+      "jdbcWorkspaceTest",
+      "keyValueTest",
+      "mongoTest",
+      "searchTest",
+      "integrationTest",
+      "untrustedTlsTest"
+    ],
+    "testRunnerHistory": {
+      "applicationSha256": "2decdb05b4d0b6382095ed96b6f2c220d3e56b5a813626a4444c17fbb0a6b5f1",
+      "currentTestApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790",
+      "priorRunners": [
+        {
+          "sha256": "f30178dd537876bc32fa444dce0542b79f9c3832c30839c52c23bad2cbf6f007",
+          "localPath": ".local/release-test-runners/before-row-details-sync.apk",
+          "reports": [
+            "android26-release/MARIADB/android-emulator-5556.txt",
+            "android26-release/MYSQL/android-emulator-5556.txt",
+            "android26-release/POSTGRESQL/android-emulator-5556.txt",
+            "android26-release/REDIS/android-emulator-5556.txt",
+            "android26-release/SQL_SERVER/android-emulator-5556.txt",
+            "android26-release/SQL_SERVER_AUTOCERT/android-emulator-5556.txt"
+          ],
+          "testOnlyPatch": "attempts/row-details-test-sync/test-only.patch",
+          "testOnlyPatchSha256": "beec892a1d07ba5f0a3da9c70329d791c6be5a8d6d81b6fd37ea53bb5ca1155e",
+          "supersededBy": "8c3e8dfd6c77b0ce2c6baff80d4ff5a69e658f08bf3faa9e564958b2fabb7a4d"
+        },
+        {
+          "sha256": "8c3e8dfd6c77b0ce2c6baff80d4ff5a69e658f08bf3faa9e564958b2fabb7a4d",
+          "localPath": ".local/release-test-runners/before-form-scroll-sync.apk",
+          "reports": [
+            "android26-release/MONGODB/android-emulator-5556.txt",
+            "android26-release/VALKEY/android-emulator-5556.txt"
+          ],
+          "testOnlyPatch": "attempts/form-scroll-test-sync/test-only.patch",
+          "testOnlyPatchSha256": "24f47450c65cb741465b8235a4a71ca9631642a946f76230aa7a453d65a16ba1",
+          "supersededBy": "02af809aad6f00e94926cfe8aaba1032917d0f93c5650c450658507d08cbfaef"
+        },
+        {
+          "sha256": "02af809aad6f00e94926cfe8aaba1032917d0f93c5650c450658507d08cbfaef",
+          "localPath": ".local/release-test-runners/before-ime-isolation.apk",
+          "reports": [
+            "android26-release/ELASTICSEARCH/android-emulator-5556.txt",
+            "android26-release/OPENSEARCH/android-emulator-5556.txt",
+            "android26-release/ai-emulator-5556.txt",
+            "android30-release/ai-emulator-5554.txt"
+          ],
+          "testOnlyPatch": "attempts/input-method-test-isolation/test-only.patch",
+          "testOnlyPatchSha256": "aeec98833ea4bb16cf2aa963a7515ee48f3ae93857844ec23b2bc4713e9fb3fd",
+          "supersededBy": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+        }
+      ],
+      "reason": "Only UI-test synchronization and visible toolbar targeting changed. The delivered application APK and completed database test code are unchanged; all UI suites use the final runner. Every runner and exact test-only patch is archived."
+    },
+    "androidReports": [
+      {
+        "report": "android26-release/SQL_SERVER/android-emulator-5556.txt",
+        "device": "android26-release/SQL_SERVER/device-emulator-5556.json",
+        "tests": 4,
+        "api": 26,
+        "testApkSha256": "f30178dd537876bc32fa444dce0542b79f9c3832c30839c52c23bad2cbf6f007"
+      },
+      {
+        "report": "android26-release/SQL_SERVER_AUTOCERT/android-emulator-5556.txt",
+        "device": "android26-release/SQL_SERVER_AUTOCERT/device-emulator-5556.json",
+        "tests": 2,
+        "api": 26,
+        "testApkSha256": "f30178dd537876bc32fa444dce0542b79f9c3832c30839c52c23bad2cbf6f007"
+      },
+      {
+        "report": "android26-release/MYSQL/android-emulator-5556.txt",
+        "device": "android26-release/MYSQL/device-emulator-5556.json",
+        "tests": 4,
+        "api": 26,
+        "testApkSha256": "f30178dd537876bc32fa444dce0542b79f9c3832c30839c52c23bad2cbf6f007"
+      },
+      {
+        "report": "android26-release/MARIADB/android-emulator-5556.txt",
+        "device": "android26-release/MARIADB/device-emulator-5556.json",
+        "tests": 4,
+        "api": 26,
+        "testApkSha256": "f30178dd537876bc32fa444dce0542b79f9c3832c30839c52c23bad2cbf6f007"
+      },
+      {
+        "report": "android26-release/POSTGRESQL/android-emulator-5556.txt",
+        "device": "android26-release/POSTGRESQL/device-emulator-5556.json",
+        "tests": 4,
+        "api": 26,
+        "testApkSha256": "f30178dd537876bc32fa444dce0542b79f9c3832c30839c52c23bad2cbf6f007"
+      },
+      {
+        "report": "android26-release/REDIS/android-emulator-5556.txt",
+        "device": "android26-release/REDIS/device-emulator-5556.json",
+        "tests": 4,
+        "api": 26,
+        "testApkSha256": "f30178dd537876bc32fa444dce0542b79f9c3832c30839c52c23bad2cbf6f007"
+      },
+      {
+        "report": "android26-release/VALKEY/android-emulator-5556.txt",
+        "device": "android26-release/VALKEY/device-emulator-5556.json",
+        "tests": 4,
+        "api": 26,
+        "testApkSha256": "8c3e8dfd6c77b0ce2c6baff80d4ff5a69e658f08bf3faa9e564958b2fabb7a4d"
+      },
+      {
+        "report": "android26-release/MONGODB/android-emulator-5556.txt",
+        "device": "android26-release/MONGODB/device-emulator-5556.json",
+        "tests": 5,
+        "api": 26,
+        "testApkSha256": "8c3e8dfd6c77b0ce2c6baff80d4ff5a69e658f08bf3faa9e564958b2fabb7a4d"
+      },
+      {
+        "report": "android26-release/ELASTICSEARCH/android-emulator-5556.txt",
+        "device": "android26-release/ELASTICSEARCH/device-emulator-5556.json",
+        "tests": 6,
+        "api": 26,
+        "testApkSha256": "02af809aad6f00e94926cfe8aaba1032917d0f93c5650c450658507d08cbfaef"
+      },
+      {
+        "report": "android26-release/OPENSEARCH/android-emulator-5556.txt",
+        "device": "android26-release/OPENSEARCH/device-emulator-5556.json",
+        "tests": 6,
+        "api": 26,
+        "testApkSha256": "02af809aad6f00e94926cfe8aaba1032917d0f93c5650c450658507d08cbfaef"
+      },
+      {
+        "report": "android26-release/ai-emulator-5556.txt",
+        "device": "android26-release/ai-device-emulator-5556.json",
+        "tests": 5,
+        "api": 26,
+        "testApkSha256": "02af809aad6f00e94926cfe8aaba1032917d0f93c5650c450658507d08cbfaef"
+      },
+      {
+        "report": "android26-release/local-ui.txt",
+        "device": "android26-release/local-ui-device.json",
+        "tests": 33,
+        "api": 26,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/SQL_SERVER/android-emulator-5554.txt",
+        "device": "android30-release/SQL_SERVER/device-emulator-5554.json",
+        "tests": 4,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/SQL_SERVER_AUTOCERT/android-emulator-5554.txt",
+        "device": "android30-release/SQL_SERVER_AUTOCERT/device-emulator-5554.json",
+        "tests": 2,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/MYSQL/android-emulator-5554.txt",
+        "device": "android30-release/MYSQL/device-emulator-5554.json",
+        "tests": 4,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/MARIADB/android-emulator-5554.txt",
+        "device": "android30-release/MARIADB/device-emulator-5554.json",
+        "tests": 4,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/POSTGRESQL/android-emulator-5554.txt",
+        "device": "android30-release/POSTGRESQL/device-emulator-5554.json",
+        "tests": 4,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/REDIS/android-emulator-5554.txt",
+        "device": "android30-release/REDIS/device-emulator-5554.json",
+        "tests": 4,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/VALKEY/android-emulator-5554.txt",
+        "device": "android30-release/VALKEY/device-emulator-5554.json",
+        "tests": 4,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/MONGODB/android-emulator-5554.txt",
+        "device": "android30-release/MONGODB/device-emulator-5554.json",
+        "tests": 5,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/ELASTICSEARCH/android-emulator-5554.txt",
+        "device": "android30-release/ELASTICSEARCH/device-emulator-5554.json",
+        "tests": 6,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/OPENSEARCH/android-emulator-5554.txt",
+        "device": "android30-release/OPENSEARCH/device-emulator-5554.json",
+        "tests": 6,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      },
+      {
+        "report": "android30-release/ai-emulator-5554.txt",
+        "device": "android30-release/ai-device-emulator-5554.json",
+        "tests": 5,
+        "api": 30,
+        "testApkSha256": "02af809aad6f00e94926cfe8aaba1032917d0f93c5650c450658507d08cbfaef"
+      },
+      {
+        "report": "android30-release/local-ui.txt",
+        "device": "android30-release/local-ui-device.json",
+        "tests": 33,
+        "api": 30,
+        "testApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+      }
+    ],
+    "androidTests": 162,
+    "jvmUnits": {
+      "core": {
+        "tests": 97,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "app-debug": {
+        "tests": 17,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "sqlserver-profile": {
+        "tests": 15,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "postgresql-profile": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "mariadb-profile": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "mongodb-profile": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "jvmEngines": {
+      "SQL_SERVER": {
+        "tests": 24,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "SQL_SERVER_AUTOCERT": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "MYSQL": {
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "MARIADB": {
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "POSTGRESQL": {
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "REDIS": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "VALKEY": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "MONGODB": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ELASTICSEARCH": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "OPENSEARCH": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "jvmEngineReportDirectories": {
+      "SQL_SERVER": "android30-release/SQL_SERVER",
+      "SQL_SERVER_AUTOCERT": "android30-release/SQL_SERVER_AUTOCERT",
+      "MYSQL": "android30-release/MYSQL",
+      "MARIADB": "android30-release/MARIADB",
+      "POSTGRESQL": "android30-release/POSTGRESQL",
+      "REDIS": "android30-release/REDIS",
+      "VALKEY": "android30-release/VALKEY",
+      "MONGODB": "android26-release/MONGODB",
+      "ELASTICSEARCH": "android26-release/ELASTICSEARCH",
+      "OPENSEARCH": "android26-release/OPENSEARCH"
+    },
+    "driverProbes": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "jvmTests": 217,
+    "pythonScriptTests": 24,
+    "lintDebugIssues": 0,
+    "physicalDevicesTested": false,
+    "arm64Tested": false,
+    "liveAiVendorsTested": false,
+    "historicalDebugUpgrade": "New production certificate cannot overwrite historical Debug installs; expected rejection evidence retained under attempts, not a successful upgrade."
+  },
+  "devices": {
+    "emulator-5556": {
+      "serial": "emulator-5556",
+      "variant": "release",
+      "installedApkSha256": "2decdb05b4d0b6382095ed96b6f2c220d3e56b5a813626a4444c17fbb0a6b5f1",
+      "installedTestApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790",
+      "api": "26",
+      "androidVersion": "8.0.0",
+      "abi": "x86_64",
+      "buildFingerprint": "Android/sdk_phone_x86_64/generic_x86_64:8.0.0/OSR1.180418.004/4931640:userdebug/test-keys",
+      "emulator": "1"
+    },
+    "emulator-5554": {
+      "serial": "emulator-5554",
+      "variant": "release",
+      "installedApkSha256": "2decdb05b4d0b6382095ed96b6f2c220d3e56b5a813626a4444c17fbb0a6b5f1",
+      "installedTestApkSha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790",
+      "api": "30",
+      "androidVersion": "11",
+      "abi": "x86_64",
+      "buildFingerprint": "Android/sdk_phone_x86_64/generic_x86_64:11/RSR1.210722.013.A2/10067904:userdebug/test-keys",
+      "emulator": "1"
+    }
+  },
+  "androidDriverProfiles": {
+    "mariadb-android": {
+      "version": "3.5.10-datasail.1",
+      "jarSha256": "e598e7a0e9c334e8b6c5a0a0f3b1084ffd0d808241856e43199e40a4d71bb1fc",
+      "upstreamSourceSha256": "72f28882a0f60a299c07272d573aebef171380d23ea3ee21860ad76807ee7982",
+      "patchSha256": "61724e6fb133c784a0b2e1cd6aba4cbc1839e7e3e4db6037ead7d8874aeded7e"
+    },
+    "postgresql-android": {
+      "version": "42.7.14-datasail.1",
+      "jarSha256": "eb61586341a64319d3f3fef24ce06a1bfd418bb8795713e757ec0f66f40198c0",
+      "upstreamSourceSha256": "c0cdfff01ebb10cc05f57d43bc16b9c9cad0c92bbd4946fe41a389cf57739193",
+      "patchSha256": "abc781d9abafc15cec442cebc1e8fef68f149e959e4889112801f281aea62ff8"
+    },
+    "mongodb-core-android": {
+      "version": "5.6.5-datasail.1",
+      "jarSha256": "4e74fc8bce83124de81715e3c922b4b747773c444de386e44b32131f7b9474eb",
+      "upstreamSourceSha256": "d38c9728891f85ceb6faf02dbcf48488cccfc6c5cd0a77b93bd511466132316e",
+      "patchSha256": "20ac1ce0326a1b9402a70a2dc44821ac8281771ce5a9941cc64468ae80fa0bfb"
+    },
+    "mongodb-sync-android": {
+      "version": "5.6.5-datasail.1",
+      "jarSha256": "24dda0c48e3fb13b6e7055f1589418888179351b2555274e1d512ea085ba76f4",
+      "upstreamSourceSha256": "358da9ede6b3551473a67c5d25c39bb6c252a95440f81ab53c916d7aa1c2f3cb",
+      "patchSha256": "1bfbcf5e5fa7d371d6bee92bebf2b6b93631f6bc86e7b7dc9c798425ae1fc9c0"
+    }
+  },
+  "limitations": [
+    "Physical devices not tested; consult TEST_REPORT for exact emulator/API evidence",
+    "Writes are restricted to documented types and single objects; planned engines cannot connect",
+    "Production certificate cannot overwrite historical Debug-signed installs"
+  ],
+  "artifacts": {
+    "DataSail-V0.14.0-androidTest-prior-1.apk": {
+      "bytes": 937624,
+      "sha256": "f30178dd537876bc32fa444dce0542b79f9c3832c30839c52c23bad2cbf6f007"
+    },
+    "DataSail-V0.14.0-androidTest-prior-2.apk": {
+      "bytes": 937892,
+      "sha256": "8c3e8dfd6c77b0ce2c6baff80d4ff5a69e658f08bf3faa9e564958b2fabb7a4d"
+    },
+    "DataSail-V0.14.0-androidTest-prior-3.apk": {
+      "bytes": 937796,
+      "sha256": "02af809aad6f00e94926cfe8aaba1032917d0f93c5650c450658507d08cbfaef"
+    },
+    "DataSail-V0.14.0-androidTest.apk": {
+      "bytes": 938288,
+      "sha256": "a6982509ce0e9c78cb4090b694d9e44b579e776287034813f00e61a45ab50790"
+    },
+    "DataSail-V0.14.0-release.apk": {
+      "bytes": 13394952,
+      "sha256": "2decdb05b4d0b6382095ed96b6f2c220d3e56b5a813626a4444c17fbb0a6b5f1"
+    }
+  }
+}

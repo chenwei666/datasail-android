@@ -1,0 +1,45 @@
+{
+  "tag": "V0.14.0",
+  "title": "数舟 DataSail V0.14.0 · 正式签名与混淆发行 / Signed and minified Release",
+  "sourceCommit": "ebb4f466a4cb2f1190252a4ac8d681a1a025f947",
+  "prerelease": false,
+  "notes": "docs/releases/V0.14.0.md",
+  "notesSha256": "a76e491d5b34407793aee62ee00fe878a784bdfebbb03fb42156602f0346508e",
+  "assets": [
+    {
+      "name": "DataSail-V0.14.0-release.apk",
+      "size": 13394952,
+      "sha256": "2decdb05b4d0b6382095ed96b6f2c220d3e56b5a813626a4444c17fbb0a6b5f1"
+    },
+    {
+      "name": "DataSail-V0.14.0.zip",
+      "size": 42287166,
+      "sha256": "fef06d1e270a0a995bf58e476980a83224e6dfa85971a73475288317b7b69a91"
+    },
+    {
+      "name": "RELEASE_NOTES.md",
+      "size": 4347,
+      "sha256": "a76e491d5b34407793aee62ee00fe878a784bdfebbb03fb42156602f0346508e"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 516,
+      "sha256": "b35b65d0293fad665a9873be9ea2a4281eca566cd2354ef6a25039752ff63f2f"
+    },
+    {
+      "name": "TEST_REPORT.md",
+      "size": 10937,
+      "sha256": "07b721b9162f15cd4591cb62d72596e8a0efe399ea0f42aeb79f7fbf7fd21980"
+    },
+    {
+      "name": "THIRD_PARTY_NOTICES.txt",
+      "size": 169684,
+      "sha256": "f32573136f89cc4f57eec4be2192291232096edf11db5582ecb138e5ef5a7212"
+    },
+    {
+      "name": "manifest.json",
+      "size": 18914,
+      "sha256": "bc092b44e95d0b85167d5e7388d7d33ed09699e0cfd61409d220a3e6347d3463"
+    }
+  ]
+}
