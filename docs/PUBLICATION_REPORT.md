@@ -34,10 +34,17 @@ Release/R8 实际退出 1，仍缺失 193 个类；未产出正式 Release APK�
 
 The initial audit found 10 existing releases and 11 missing versions (V0.1.0–V0.7.2). The publisher verifies existing attachments before mutations, fills missing releases and updates bilingual notes without overwriting tags or assets. Each release points to its original source and report.
 
-最终 GitHub 回执在完成后记录于 `docs/releases/publication-20261015.json`，包含实际可见性、发布状态、来源提交和逐附件校验。仓库是否公开以该回执为准，不能从上传成功推断。
+已发布并核验全部 **21 个 Release、126 个附件**：补齐最初缺失的 11 版，并更新原有 10 版的中英文说明。全部标签指向原始源码提交；全部附件下载后逐字节核对 SHA-256，未覆盖历史原件。
 
-The final GitHub receipt is recorded in `docs/releases/publication-20261015.json` after completion. It records actual visibility, release state, source commits and asset checksums. Successful uploads alone do not establish public access.
+All **21 releases and 126 attachments** are published and verified. The 11 initially missing versions have been added, and the 10 existing versions now have bilingual notes. Original source tags and artifact bytes are preserved; every attachment was downloaded and checked against its expected SHA-256.
 
-公开操作已获用户授权；实际 GitHub API 返回 `403 Resource not accessible by integration`。当前 Actions 集成缺少仓库管理权限，需仓库管理员在 Settings → General → Danger Zone → Change repository visibility 中设为 Public。无需向聊天发送令牌。最终可见性仍需远端复核。
+仓库管理员已将仓库改为 **Public**。独立的匿名请求确认：全部 21 版可见，126 个附件下载链接返回 HTTP 200 且大小匹配；最新版 APK 匿名完整下载后的 SHA-256 与原件一致。该检查未使用 GitHub 令牌或登录 Cookie。
 
-The user authorized public visibility, but GitHub returned `403 Resource not accessible by integration`. The Actions integration cannot administer repository visibility. A repository administrator must use Settings → General → Danger Zone → Change repository visibility → Public. No token should be shared in chat. Final visibility requires a remote check.
+The repository administrator changed visibility to **Public**. Independent unauthenticated requests verified all 21 release pages in the public API and HTTP 200 downloads with matching sizes for all 126 attachments. The latest APK was fully downloaded anonymously and its SHA-256 matched the original. No GitHub token or login cookie was used for this check.
+
+- [发布与附件校验回执 / Publication and artifact receipt](releases/publication-20261015.json)
+- [匿名公开下载回执 / Anonymous public-download receipt](releases/public-access-20261015.json)
+
+本次权限排障：自动变更仓库可见性返回 403，由仓库管理员完成公开。创建旧版 Release 时显式指定旧提交也返回 403；先通过 Git 补齐并核验原始标签，再基于已有标签创建 Release。没有请求扩大令牌权限，没有改动旧标签或附件。
+
+Permission troubleshooting: the visibility API returned 403, so the repository administrator made it public. Creating historical releases while explicitly targeting old commits also returned 403. Original tags were pushed and verified through Git, then releases were created from those existing tags. Token permissions were not broadened, and historical tags and attachments were not replaced.

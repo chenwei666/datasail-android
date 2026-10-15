@@ -1,0 +1,869 @@
+{
+  "status": "published",
+  "runId": "38666073495",
+  "versions": [
+    {
+      "tag": "V0.1.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.1.0",
+      "sourceCommit": "adde8a29cebb649f02636b7ffacf9da2d9be71c0",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:32:48Z",
+      "notesSha256": "ff5643a7e967c71f627855add8a5ecfe8513076bc1a5df4b3a439726c22c4315",
+      "assets": [
+        {
+          "name": "DataSail-V0.1.0-debug.apk",
+          "size": 11216061,
+          "sha256": "293db4cf1ad977c19f7e0e64c3bb3619571e2be8da82f97639ac1a4937f23597"
+        },
+        {
+          "name": "DataSail-V0.1.0.zip",
+          "size": 12964564,
+          "sha256": "37f3b665a7774c18bb5f46919421652a813a66e3b766f0e7f32c1a7e818966e7"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "31a504325f611f9ebdf70a732fd5099ab2131e4807f781b6901b97727a3557fe"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 4885,
+          "sha256": "64c0aa0a09921d6c9b52020a87695b57648de1ebb30faea9749867b1073fa1ea"
+        },
+        {
+          "name": "V0.1.0-verification.json",
+          "size": 470,
+          "sha256": "95187cc556b330be0b16973726bba98ebe8f7f10cea0bf84419c94a2f9ad3540"
+        },
+        {
+          "name": "manifest.json",
+          "size": 1189,
+          "sha256": "81daded4247683f6bac9abe68e189bd6cc7d025e7e8ed22cbe7fbbf7db341493"
+        }
+      ]
+    },
+    {
+      "tag": "V0.2.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.2.0",
+      "sourceCommit": "4c613c16ec03db7ea53caeb1521e7e39a07262de",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:33:04Z",
+      "notesSha256": "e08e139793de82be2e137bc3391fa106afd22a67aaf2cdf7639155567b88a997",
+      "assets": [
+        {
+          "name": "DataSail-V0.2.0-debug.apk",
+          "size": 11436470,
+          "sha256": "3d32fb3de90fdfd5ce4accad33ade2ac6f66c4d678271e59acd8e1996b3eedf2"
+        },
+        {
+          "name": "DataSail-V0.2.0.zip",
+          "size": 13172328,
+          "sha256": "654e1b28cfb8987187fa07cb4742aaa0d20898ca87a96277978a73cbff820e39"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "38ed22447528679c0f40116ae19fc303a4d6ddb69b21930f2c68177e8e716c1c"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 4277,
+          "sha256": "14259490736ebbe6c93c90a7fa4b74766344508778320b164f1d98dfa3b240e3"
+        },
+        {
+          "name": "V0.2.0-verification.json",
+          "size": 471,
+          "sha256": "087675f8047efa7ab9438f7208451e19f38c2f9c2c0da5c24f0c9f33ebc7dd7b"
+        },
+        {
+          "name": "manifest.json",
+          "size": 1218,
+          "sha256": "4dbfd34baa5e8a2d5054364021d5cf55679b10ee67ef938a8051f33bade4f994"
+        }
+      ]
+    },
+    {
+      "tag": "V0.2.1",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.2.1",
+      "sourceCommit": "2136f7b254b95f8cbec25889c109da6dcf53d355",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:33:23Z",
+      "notesSha256": "96f005d6639862e03a3fbc393f9dbf399ee2010fbe9073a512a825c4f08eb726",
+      "assets": [
+        {
+          "name": "DataSail-V0.2.1-debug.apk",
+          "size": 21903012,
+          "sha256": "2f26e68cd7e2315f61222539734d683413f57c877ba2fced60e171378079c27b"
+        },
+        {
+          "name": "DataSail-V0.2.1.zip",
+          "size": 17875209,
+          "sha256": "76ba36d1244b0992184d7f80e53209015cb3369602b8a77fad11e5c5d23e7fd7"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "43118f668efafa6ef30268fbd1979402d6ae72dd08513ba722d2b7f97c5b478e"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 4604,
+          "sha256": "ca88cee704d335d69838a76f7b57e80fd1bf48d64241a8678651fee2607ba928"
+        },
+        {
+          "name": "V0.2.1-verification.json",
+          "size": 471,
+          "sha256": "0f2daaa66a0ce10fbc96f4b1e6788ad6ebb882cb807ee36c999233cd98d2932a"
+        },
+        {
+          "name": "manifest.json",
+          "size": 1298,
+          "sha256": "1dea62ada6098a545488f6b890ec77cd0d3f78d6609fcc89109618106449e8e9"
+        }
+      ]
+    },
+    {
+      "tag": "V0.2.2",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.2.2",
+      "sourceCommit": "342196111efc8ba9e13270329ee31ac9e3a0f782",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:33:41Z",
+      "notesSha256": "d7431fe396506a15b4e84d9da4795160a507ded148f8888f809ce3e26007a7f6",
+      "assets": [
+        {
+          "name": "DataSail-V0.2.2-debug.apk",
+          "size": 21903650,
+          "sha256": "1813016c798c54160e4940642c5dcb22eb4d0ce3864f47082860a4529e173bf4"
+        },
+        {
+          "name": "DataSail-V0.2.2.zip",
+          "size": 20423071,
+          "sha256": "d82b9ad4defe3956ea3f8e3ba74c3b00fcda031debdc42e28a5a8419677bf194"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "64554e6d6bd8d6a9ed109cda37586142eed6954f33e5a805a5a0e6dfdee43371"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 4965,
+          "sha256": "9e47bd1d37b5048769355df669b5b44cc2963ac9e46e9ee618b09650b91cb5ce"
+        },
+        {
+          "name": "V0.2.2-verification.json",
+          "size": 471,
+          "sha256": "f833b013b0a0219cd63150e998f754c1f1af57e40af5abbfd844a646e1af598d"
+        },
+        {
+          "name": "manifest.json",
+          "size": 1642,
+          "sha256": "948466b9b922299db290e3399e4fb9be94bed88e49be3e5468cd05b7b062b392"
+        }
+      ]
+    },
+    {
+      "tag": "V0.3.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.3.0",
+      "sourceCommit": "aeb4413096df5507832d10f4013eade0fc09fa21",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:33:57Z",
+      "notesSha256": "85e688652ba6cfbc9565d66a0ffe8c0e2a20a0366230ee4b06c1a1c698cdfaaf",
+      "assets": [
+        {
+          "name": "DataSail-V0.3.0-debug.apk",
+          "size": 22703556,
+          "sha256": "514ea53a552240476925aacaed718c42dbb228ff465d81ae8169ab4949214048"
+        },
+        {
+          "name": "DataSail-V0.3.0.zip",
+          "size": 21192509,
+          "sha256": "a1734e40b720ad1173f6217423139c78c220d17f192a89f00eff5552c93fa272"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "18fedcaa6ef35960d81de2c5cb5b2501107a4ea10b0e3d28742bc78c9525c77c"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 6601,
+          "sha256": "c9d473b74b6dde33e84039828c444e7dc0511e7844ec456c322bd1fb15cd4b8b"
+        },
+        {
+          "name": "V0.3.0-verification.json",
+          "size": 471,
+          "sha256": "af9bf71388049af10759c6b5ae1cdf650f0649ba6c473419a5c096762adee188"
+        },
+        {
+          "name": "manifest.json",
+          "size": 1735,
+          "sha256": "34c90ec0aa1fbae272d514ff61e6aa86a7166c07c235f8db85e8b0d72f7892b6"
+        }
+      ]
+    },
+    {
+      "tag": "V0.4.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.4.0",
+      "sourceCommit": "3d584bb50bf79af20aab770b18de89acecfb2a6e",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:34:14Z",
+      "notesSha256": "908aff142e590904f95126fa82c0b8ec9d8465fb6eefe331562964e260824811",
+      "assets": [
+        {
+          "name": "DataSail-V0.4.0-debug.apk",
+          "size": 22830573,
+          "sha256": "9a5d61d8172c7d89ec318592d5075c394bcd18eb528b41a7834a134a7f87949b"
+        },
+        {
+          "name": "DataSail-V0.4.0.zip",
+          "size": 21385763,
+          "sha256": "4843174c000022cbe6d5642082f909296cc13ec82759e66bd06da653cdb01c85"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "e865dd145958b2025977cc72ce86b32a73fb8c636f4fae901e76775a6c6ca24d"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 7655,
+          "sha256": "77b0e66ab574f608e474119cc35c86885666496f19d04818205af2a393b6497f"
+        },
+        {
+          "name": "V0.4.0-verification.json",
+          "size": 471,
+          "sha256": "1947e6d1172337804839d8dbc9a3b09e31fc073ef23f619c92ca4e3526909bf2"
+        },
+        {
+          "name": "manifest.json",
+          "size": 3761,
+          "sha256": "172e03716650db7b59273f386e5dae6c58084398cc533ea24ba6f1c21ba1e6af"
+        }
+      ]
+    },
+    {
+      "tag": "V0.5.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.5.0",
+      "sourceCommit": "18617446b0610fed16e84f478eadf195997c667a",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:34:32Z",
+      "notesSha256": "699e262367d29eac087388e7f0bacf0f7872639defc7b8de0daf8d6f40332a4f",
+      "assets": [
+        {
+          "name": "DataSail-V0.5.0-debug.apk",
+          "size": 23976558,
+          "sha256": "44e83ff562458b147be9c1655e7d923de0189875af401827a62e43416b393314"
+        },
+        {
+          "name": "DataSail-V0.5.0.zip",
+          "size": 22670888,
+          "sha256": "363ea19742150c873173a1061d7b8fff1150bf8f4cf7dca86e19e9a4cf661205"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "c505c43b20e4803b4edda05b46b09b0140e2d85088068e2344a93229d737653c"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 6524,
+          "sha256": "1eafc3d2530255fc3ec4b7da0ada3fc6300c0a84eb6cb0920691452af68ab5ab"
+        },
+        {
+          "name": "V0.5.0-verification.json",
+          "size": 471,
+          "sha256": "385006fb42a9898048eb523c91de5c181e23563c975f8c9623acf335c5635076"
+        },
+        {
+          "name": "manifest.json",
+          "size": 4176,
+          "sha256": "1231bd003cfe634f158ba583ceb5a8878f5474bb7739f8117ed582e765750cb2"
+        }
+      ]
+    },
+    {
+      "tag": "V0.6.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.6.0",
+      "sourceCommit": "87bae12b0fa932a74bae6ef7445484371a7373d1",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:34:50Z",
+      "notesSha256": "524a843ff73f3269f310ed3474fc1f97ee4e9b5620d44d7bde2b4c1cc5b14cb6",
+      "assets": [
+        {
+          "name": "DataSail-V0.6.0-debug.apk",
+          "size": 24189634,
+          "sha256": "bf4c94cba29d9730f48475295bfa7c565ebc87543a7d4240b14df795c56d8a01"
+        },
+        {
+          "name": "DataSail-V0.6.0.zip",
+          "size": 22811453,
+          "sha256": "f558c9f1ba4ce04be78af303d65f65a87486fdd05c1c21f9bcd6845fecfe5a5b"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "e730b787b1dabee5d2ad3747f6ce4cb9e7935004a8508eb3965a120edbe651ab"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 6613,
+          "sha256": "6574c53c8c3a29d812fcd9a85491f361ffea21396efaaceabc1d6ecc1081f3ff"
+        },
+        {
+          "name": "V0.6.0-verification.json",
+          "size": 471,
+          "sha256": "594eb487f322b1c4315ee57e3bcecdfe439b463a9e28cc2e9112e65ab40390be"
+        },
+        {
+          "name": "manifest.json",
+          "size": 4878,
+          "sha256": "e6d8afdae8987b39a0e92b49b76e09716df3f77d190208d0a8fb3d2a01af5559"
+        }
+      ]
+    },
+    {
+      "tag": "V0.7.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.7.0",
+      "sourceCommit": "79a4c28892e21fbf5e2e0c5429498d9394ef8de9",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:35:09Z",
+      "notesSha256": "5e5e11af5a5021a3997fcdc0c2c92771a9ace7c9a64b34a9a48ae4bbccb96999",
+      "assets": [
+        {
+          "name": "DataSail-V0.7.0-debug.apk",
+          "size": 24069869,
+          "sha256": "a0783e3967e9925d44ba2d4d2cd13200798b6f4c6a59a9686d716897263ff3e2"
+        },
+        {
+          "name": "DataSail-V0.7.0.zip",
+          "size": 22924140,
+          "sha256": "c19a15ede198aab9b5de2b9e146fd87809b1b83ea025dd2569fe4d80e40e9940"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "6eb79db587668d570b99b1005cfb7c97c83b6f74219b6fdb3fec25cdde32879a"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 7560,
+          "sha256": "6024ed134863caba7e7cf51f5eefcb35791513c2a816ec692f2ad609fe0c3b7d"
+        },
+        {
+          "name": "V0.7.0-verification.json",
+          "size": 471,
+          "sha256": "9cb0fcf28056269c3f0cb18b9bc44ebb01309c6cecf1822cd0193f2e61f08364"
+        },
+        {
+          "name": "manifest.json",
+          "size": 6025,
+          "sha256": "0c599c5f6c9be9964738d3a4c946b149e85f1fd931b652e7fe49a033b8963872"
+        }
+      ]
+    },
+    {
+      "tag": "V0.7.1",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.7.1",
+      "sourceCommit": "00574c1e4d38cfd4d0cff282bfbe50e743b68d82",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:35:28Z",
+      "notesSha256": "042fce179dcbce3c1dea0c4c2287fd63b7694aa75cc7c0ae134f54d3b434e15b",
+      "assets": [
+        {
+          "name": "DataSail-V0.7.1-debug.apk",
+          "size": 23997984,
+          "sha256": "9520c3345315cbffbb0961248de6722ea4a1f37a8094378c732af98ac23fe182"
+        },
+        {
+          "name": "DataSail-V0.7.1.zip",
+          "size": 23043183,
+          "sha256": "4c577425e10df68dc76e0976c376a00afad5106d52461104bfd98f187a5802db"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "489fe727f7234acbdca792e2a25e075cf6087edc45ab66266662ecd022674a49"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 6731,
+          "sha256": "16362aafabae1e70200a865a87954749a4d4e926f212834368fcf8743f8a3e01"
+        },
+        {
+          "name": "V0.7.1-verification.json",
+          "size": 472,
+          "sha256": "c51d636038150d2927e832b35c135be5ea179340cb65f95f0b31e9e3260cc573"
+        },
+        {
+          "name": "manifest.json",
+          "size": 5081,
+          "sha256": "5550692bf2f0c80181672aae7e44a9d0f02c4000790019e67ac02a0fd566f130"
+        }
+      ]
+    },
+    {
+      "tag": "V0.7.2",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.7.2",
+      "sourceCommit": "e6d8761e1137b3e6ef0510f7732d65337e8de6c9",
+      "created": true,
+      "prerelease": true,
+      "publishedAt": "2026-10-15T01:35:46Z",
+      "notesSha256": "f353ba60e973747081dd7b82a5668a85c30c7a79223317e3cab4baa3d50edd38",
+      "assets": [
+        {
+          "name": "DataSail-V0.7.2-debug.apk",
+          "size": 24162161,
+          "sha256": "9fe9bcd48b550be7d90781c29dc285bb964e242e5a7cc961f0d6a01cd7fa0619"
+        },
+        {
+          "name": "DataSail-V0.7.2.zip",
+          "size": 23835505,
+          "sha256": "218a5d3fa89d4de4222d3ab97aa3835248759eaa0487078180d241ed1fab5a14"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "59047a1f11d6514bdd4bea919aad4e1bfaf560871253d6b666008a021754fd0c"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 4282,
+          "sha256": "c938322c3921f622d62ebf8814c1b44d625991525168a2265009d2089cf13b50"
+        },
+        {
+          "name": "V0.7.2-verification.json",
+          "size": 472,
+          "sha256": "9eb40ff56d0959ebeaab0aed6ffe9aea21afcb461ea81cb42971746b34429506"
+        },
+        {
+          "name": "manifest.json",
+          "size": 3857,
+          "sha256": "f10c90ba63949a089caf24cc02759cc6cf4b6d2cc9fd7ca21ceee98c0260fcc7"
+        }
+      ]
+    },
+    {
+      "tag": "V0.8.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.8.0",
+      "sourceCommit": "86877a47dedd709446550077f2e862bce813e7f8",
+      "created": false,
+      "prerelease": true,
+      "publishedAt": "2026-10-13T10:48:57Z",
+      "notesSha256": "22ac38f4bc8ad393f3c0e1a458311c1a9504174e9fed02182d98156ad67d8b61",
+      "assets": [
+        {
+          "name": "DataSail-V0.8.0-debug.apk",
+          "size": 23954304,
+          "sha256": "b90e3dba9afdfc882abe6542ec711f585baaa4a2d447953720f19e10802267ec"
+        },
+        {
+          "name": "DataSail-V0.8.0.zip",
+          "size": 25435832,
+          "sha256": "a52b57e70ae802998ad7f09aea97ed940cc28fc7f2b08859c69f825228ea5a10"
+        },
+        {
+          "name": "manifest.json",
+          "size": 4087,
+          "sha256": "0a48947e224af7778825fed030ecf83343e42d5d7bc1c9836b3f59af1b6e47f6"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "6cb0af3d008de7741e2ebe0e80953d8a290abc35b372591ffa39fd8d21136044"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 5623,
+          "sha256": "5c9b4b1dccfbdedaaf9575227d23d085563dbb830c4b6c51a87902e211717ac9"
+        },
+        {
+          "name": "V0.8.0-verification.json",
+          "size": 448,
+          "sha256": "12d15c97f6fca4e4d541d211242022ec346bcca3468e7a0704af206cb759e9ed"
+        }
+      ]
+    },
+    {
+      "tag": "V0.8.1",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.8.1",
+      "sourceCommit": "a7348aeac80e17bc893dccf32a0b9cb07df15cba",
+      "created": false,
+      "prerelease": true,
+      "publishedAt": "2026-10-13T11:37:07Z",
+      "notesSha256": "c4b6d129c724e580b79703221f8d2218d8706d2b91a31af9d56d600599fa5018",
+      "assets": [
+        {
+          "name": "DataSail-V0.8.1-debug.apk",
+          "size": 24366077,
+          "sha256": "41b2060a94f861d095cc2f6b7bdb8ce66c356a49f51a81269cd524160f01b471"
+        },
+        {
+          "name": "DataSail-V0.8.1.zip",
+          "size": 25863356,
+          "sha256": "e68da5c36a0e782b6e24ea01e280d272efbc75aafe8885b1325929f5bd0bcf20"
+        },
+        {
+          "name": "manifest.json",
+          "size": 4156,
+          "sha256": "02204f344832aafa637d84710d58cee19e8c23707e5b7e2dbccc1eb92579719f"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "cb2593f34a3b7a910360c8df4b0e1da435fea69ecf163420c038eb31febf5d8c"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 5954,
+          "sha256": "fa24866943962c7289e87574692b41feedc4be9a55c52b6b232b4c6a0bbc837c"
+        },
+        {
+          "name": "V0.8.1-verification.json",
+          "size": 448,
+          "sha256": "98a423398b53eab9283d5530a6985a616f0f4e60458b0358578cb61c591c8675"
+        }
+      ]
+    },
+    {
+      "tag": "V0.9.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.9.0",
+      "sourceCommit": "164da605829ce8c659a68fb165fee5154a724ec3",
+      "created": false,
+      "prerelease": true,
+      "publishedAt": "2026-10-13T17:47:24Z",
+      "notesSha256": "ca26cc9e212a66f223e40e039b9e9c046abaa3db7a804b97eb1cc908141fff9c",
+      "assets": [
+        {
+          "name": "DataSail-V0.9.0-debug.apk",
+          "size": 24607434,
+          "sha256": "de7ebcb649dd4ca784070e60d12f4626a7787467933e559ba0e6637e6072795f"
+        },
+        {
+          "name": "DataSail-V0.9.0.zip",
+          "size": 28091080,
+          "sha256": "e77a03003df6e65b8c40846f4e39ab405275ae435f27b12c0c6bad84eb7344ee"
+        },
+        {
+          "name": "manifest.json",
+          "size": 4572,
+          "sha256": "0f8f2eb7b8afe295c4b97192255af2e6389777596d7ec89bfdd4fa596ef73f62"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "49c039991b3eb609e905829110003cec9af1d54ce87e23123134235fd1f204f3"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 8975,
+          "sha256": "e5e944160d5ab80a3fd62acee85b128e1b8d2d20f87dcec5a9afec1e452637aa"
+        },
+        {
+          "name": "V0.9.0-verification.json",
+          "size": 449,
+          "sha256": "0fe98fe2b41da4e4b3fb7f870ddca01f94a099ba0be19c3e0218ff698cec267e"
+        }
+      ]
+    },
+    {
+      "tag": "V0.9.1",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.9.1",
+      "sourceCommit": "f0a674b6ac4963f08c97be1acf7cea9e92174671",
+      "created": false,
+      "prerelease": true,
+      "publishedAt": "2026-10-14T03:15:55Z",
+      "notesSha256": "e7e15e55dc520d78b5aa833c698b4a7aef4c051c88cd7abea201626773279496",
+      "assets": [
+        {
+          "name": "DataSail-V0.9.1-debug.apk",
+          "size": 25574067,
+          "sha256": "36280880c9e0f4d76079c856c3c9d3568b1b3cfd20fdf7d091f526255cd43d8b"
+        },
+        {
+          "name": "DataSail-V0.9.1.zip",
+          "size": 31070491,
+          "sha256": "20fdc23cf808fed02d1060a776e289210373bd03c90772b232e05dbdd090ee51"
+        },
+        {
+          "name": "manifest.json",
+          "size": 4440,
+          "sha256": "01d6a59109d0ea36a732ddf175138eed35d3c8a8e75030f5052a51231b333496"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 430,
+          "sha256": "372daff4174573c5d9c8a28b225ad8652260538351aea75e3cbd623323f6c82b"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 8210,
+          "sha256": "657028c4ea3c61527b35025457bde062e9ff5851f4a70629349736a57bc52c4b"
+        },
+        {
+          "name": "V0.9.1-verification.json",
+          "size": 449,
+          "sha256": "16b4b480b34bb23e0cc737fa3f57ff6e1a2caa9b473ccea3d81f36c428d84b1f"
+        }
+      ]
+    },
+    {
+      "tag": "V0.10.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.10.0",
+      "sourceCommit": "3074f6f71eceba5af66a344f63d9eae2363783af",
+      "created": false,
+      "prerelease": true,
+      "publishedAt": "2026-10-14T05:31:27Z",
+      "notesSha256": "71f9e5cd149d7ca1b12d9acad7b6c474a20a84384d5d57042a097102753d48f0",
+      "assets": [
+        {
+          "name": "DataSail-V0.10.0-debug.apk",
+          "size": 24344039,
+          "sha256": "003bcb2d7682a2fe69324fb46040534550b983f9fe83d6c57b4b652b384f66fc"
+        },
+        {
+          "name": "DataSail-V0.10.0.zip",
+          "size": 32211769,
+          "sha256": "7a372e112649b9f27faef84f088597f85d92cc983621273721790ec8430e9963"
+        },
+        {
+          "name": "manifest.json",
+          "size": 5315,
+          "sha256": "b3773438ec0ee1d7ba7086af2f3fa1b3ba6d8e809dabb230456f6f6a08ecb1e6"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 433,
+          "sha256": "eed6a91b7d2ba287f5339cb5e842f245622c1e2852295338083e35892282aae6"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 9746,
+          "sha256": "d218346f071893d7cefe005a573368df554b601c555b6a0630b6974df55aacbf"
+        },
+        {
+          "name": "V0.10.0-verification.json",
+          "size": 450,
+          "sha256": "4e52c4623b1114625d97271bf933e31f78d24e06f9ebb837cd58d42a827442d2"
+        }
+      ]
+    },
+    {
+      "tag": "V0.11.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.11.0",
+      "sourceCommit": "88cb0bbb4fd9030acf7a6035d586f4221db760c0",
+      "created": false,
+      "prerelease": true,
+      "publishedAt": "2026-10-14T07:41:40Z",
+      "notesSha256": "299a839da7f619f3035b40ecc79750843c9e5e024eb0702ed51fe20c502340e4",
+      "assets": [
+        {
+          "name": "DataSail-V0.11.0-debug.apk",
+          "size": 24848526,
+          "sha256": "7472e7c1540f1747faafedd0716235fdc31512cb73e9a5921b0e4cfdecd72ca7"
+        },
+        {
+          "name": "DataSail-V0.11.0.zip",
+          "size": 33528933,
+          "sha256": "98a9ccc4320ddc506732d61eeff154fbe686a3f98a21e6141667924894737544"
+        },
+        {
+          "name": "manifest.json",
+          "size": 5677,
+          "sha256": "e6150ffe133d625be08d8af75cb7377458fdc2cb7dcf5147f0b5a2a1549b5fb5"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 433,
+          "sha256": "8acac2b94638685194d1ffcb340886f28ec177e516e6d9fe715376f19d074187"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 7972,
+          "sha256": "19f90cb2bd3f8fc32b186f005900825f0242742ec2c7ee54cf91188e3ac675ec"
+        },
+        {
+          "name": "V0.11.0-verification.json",
+          "size": 450,
+          "sha256": "c681f30f9243b814cf8dd8f58f714b669c084b1972c9b46eda61279e0be26be5"
+        }
+      ]
+    },
+    {
+      "tag": "V0.12.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.12.0",
+      "sourceCommit": "e59d8f482c456c56e856f691371d9ef2caef52da",
+      "created": false,
+      "prerelease": true,
+      "publishedAt": "2026-10-14T09:17:21Z",
+      "notesSha256": "60ff35f1485e637680d008483e18972f65a129267184f404ec963782c1f8d201",
+      "assets": [
+        {
+          "name": "DataSail-V0.12.0-debug.apk",
+          "size": 24912481,
+          "sha256": "0e14bc6882235af1e116069f8887e7a6f4d49e42671bfc218ba381ddd023c0ae"
+        },
+        {
+          "name": "DataSail-V0.12.0.zip",
+          "size": 34825292,
+          "sha256": "6c8c38db141ee7180d4e77fc2256994d72e8618c989539dc5062b6cefb9fdb54"
+        },
+        {
+          "name": "manifest.json",
+          "size": 5644,
+          "sha256": "72da165cfedaa38c7e048273e265dd6e6020d08be50b394aacfda98a95a3b2b1"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 433,
+          "sha256": "221e69e03fce5a2b8ed7f72fc51324a36a71a4543e435617478987928a1cfebd"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 8525,
+          "sha256": "e9219a5b36023b3b8fa4ddf25b6a7a139cf304287c005e25a764d79fad2d0e42"
+        },
+        {
+          "name": "V0.12.0-verification.json",
+          "size": 450,
+          "sha256": "84790c17d83112532d90d7f5b8445fd681a8f30e871ec3103d608991dc3544a8"
+        }
+      ]
+    },
+    {
+      "tag": "V0.12.1",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.12.1",
+      "sourceCommit": "1181d5a5cdc6f8d32bdf51fee5c170ccff861b95",
+      "created": false,
+      "prerelease": true,
+      "publishedAt": "2026-10-14T10:19:44Z",
+      "notesSha256": "d95c39fb3abf8fd314e6578ff7f3640709097ebbea46feeb90d45aeb00277b06",
+      "assets": [
+        {
+          "name": "DataSail-V0.12.1-debug.apk",
+          "size": 24282080,
+          "sha256": "3c22699e83479f8670f6ec0a7d13d1fe269eecdcb5c43e9a78535b570351dd9c"
+        },
+        {
+          "name": "DataSail-V0.12.1.zip",
+          "size": 36455102,
+          "sha256": "4b2f701f36d36de55306b2c54ae53f321cde1e04dae033eb9a7091884cf61583"
+        },
+        {
+          "name": "manifest.json",
+          "size": 5162,
+          "sha256": "629a29c5fca1b05e64f2f361c3a4a70fc7e320aec087f4c6254947d4140a10ea"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 433,
+          "sha256": "b57d8c69c7f83735a81435b81e97cfba7fb6b5da7f0f5fef7f7b6b61d034c4ac"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 5585,
+          "sha256": "e7f1bef6ba1c3ffaa68d14bb8b674e4972fe0d1fca1f53f4e6aad288e0e5059b"
+        },
+        {
+          "name": "V0.12.1-verification.json",
+          "size": 450,
+          "sha256": "eff1308011b898e47255e1d3578d50a38eef352423e1b97924eeb9c444a9b865"
+        }
+      ]
+    },
+    {
+      "tag": "V0.12.2",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.12.2",
+      "sourceCommit": "93656cadfa7edf7250e85778613e9302f896b25f",
+      "created": false,
+      "prerelease": true,
+      "publishedAt": "2026-10-14T10:50:38Z",
+      "notesSha256": "a5a2d909109e217bc6f1e1588fca36e82ffc0042cc756a033087a88d0049f8d1",
+      "assets": [
+        {
+          "name": "DataSail-V0.12.2-debug.apk",
+          "size": 24282084,
+          "sha256": "4ae5cdd40b72366fc44005ba522ceebb5b735d0770d6513e33b81c2faed56a96"
+        },
+        {
+          "name": "DataSail-V0.12.2.zip",
+          "size": 36773434,
+          "sha256": "219fe368ec94ad14a470654edcec77543a722079fae2bc5e4772efe295e9df74"
+        },
+        {
+          "name": "manifest.json",
+          "size": 4707,
+          "sha256": "4ac69b8016d3d7eb94abc4d5a1f50daab2937aceab3b5d6ec53ebc0352e6e945"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 433,
+          "sha256": "7d49f65f5c0273a5b2b9bb81c7bc28768c0cba0dbfa34712ec0c1d439ed82765"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 5866,
+          "sha256": "483095eeee93e9d6c8c6f3a868d9135e9eae448c77394198cb09645626d28bf8"
+        },
+        {
+          "name": "V0.12.2-verification.json",
+          "size": 450,
+          "sha256": "71e72c7a2d80b5c2a13d8a5d05f985c56b3d3b72d18624e7f8a02b6e49a68c8e"
+        }
+      ]
+    },
+    {
+      "tag": "V0.13.0",
+      "url": "https://github.com/chenwei666/datasail-android/releases/tag/V0.13.0",
+      "sourceCommit": "1bff4d8f1895a23ef970079aa78dacb8cd1b2c01",
+      "created": false,
+      "prerelease": true,
+      "publishedAt": "2026-10-14T13:34:56Z",
+      "notesSha256": "90c7876ff79002120b3692226b9e1da42ca0bdefb5bccfd4ee576b61a6a29151",
+      "assets": [
+        {
+          "name": "DataSail-V0.13.0-debug.apk",
+          "size": 25061855,
+          "sha256": "0f03dbd7408d2c015f0e12fa71a14e0f61403462624723e7e1a309242cdb72f5"
+        },
+        {
+          "name": "DataSail-V0.13.0.zip",
+          "size": 37504374,
+          "sha256": "b51990cf01baa49c2f24a202314045418400296024a655225b20b16f8d1ca3c5"
+        },
+        {
+          "name": "manifest.json",
+          "size": 7745,
+          "sha256": "5c8fa3f0479edfd6a2a1f50adbd2d3dee467159d54c596c385d8b9dacf26b339"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 433,
+          "sha256": "91a37e8f4346de1d240780d7e819f39d7db9f9a366f86c13f6b817fd48fe60ff"
+        },
+        {
+          "name": "TEST_REPORT.md",
+          "size": 9684,
+          "sha256": "421f22352442a22b2ab00727e1a31174adacc5cf8ea5407233b738eeb84a4609"
+        },
+        {
+          "name": "V0.13.0-verification.json",
+          "size": 450,
+          "sha256": "920c3e2ab52f15dca0a3a2d07185533728a331479a56907737a3f8573e0fcfa8"
+        }
+      ]
+    }
+  ],
+  "repositoryPrivate": false,
+  "repositoryUrl": "https://github.com/chenwei666/datasail-android"
+}

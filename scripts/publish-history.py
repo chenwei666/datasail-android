@@ -23,7 +23,7 @@ def gh(*args, output=None):
                             stderr=subprocess.PIPE, timeout=180)
     if result.returncode:
         error = result.stderr if isinstance(result.stderr, str) else result.stderr.decode(errors='replace')
-        raise RuntimeError('GitHub command failed: ' + error.strip()[:1500])
+        raise RuntimeError('GitHub command failed (' + ' '.join(args[:5]) + '): ' + error.strip()[:1500])
     return result.stdout
 
 def api(path, method='GET', data=None):
@@ -98,7 +98,8 @@ def publish(plan, receipt):
             if len(matches) > 1: raise RuntimeError('Duplicate release: ' + tag)
             refs = api(f'repos/{REPO}/git/matching-refs/tags/{tag}')
             exact = [r for r in refs if r['ref'] == 'refs/tags/' + tag]
-            if exact and api(f'repos/{REPO}/commits/{tag}')['sha'] != version['sourceCommit']:
+            if not exact: raise RuntimeError('Original source tag must exist before publication: ' + tag)
+            if api(f'repos/{REPO}/commits/{tag}')['sha'] != version['sourceCommit']:
                 raise RuntimeError('Immutable tag points to different source: ' + tag)
             if api(f"repos/{REPO}/commits/{version['sourceCommit']}")['sha'] != version['sourceCommit']:
                 raise RuntimeError('Source commit unavailable: ' + tag)
@@ -113,7 +114,7 @@ def publish(plan, receipt):
             tag = version['tag']; body = Path(version['notes']).read_text(); created = tag not in existing
             release = existing.get(tag)
             if release is None:
-                release = api(f'repos/{REPO}/releases', 'POST', {'tag_name': tag, 'target_commitish': version['sourceCommit'],
+                release = api(f'repos/{REPO}/releases', 'POST', {'tag_name': tag,
                     'name': version['title'], 'body': body, 'draft': True, 'prerelease': True, 'make_latest': 'false'})
             uploaded = {a['name']: a for a in release['assets']}
             for asset in version['assets']:

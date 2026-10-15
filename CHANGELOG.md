@@ -2,6 +2,7 @@
 
 - 新增中英文功能介绍、21 个版本的双语更新说明和完整历史索引。
 - 核验原始归档、APK 签名与校验值；补齐缺失历史 Release，已有附件不替换。
+- 已确认仓库公开；21 个 Release、126 个附件的匿名下载链接与大小检查通过，最新版 APK 匿名下载的 SHA-256 与原件一致。发布回执见 docs/PUBLICATION_REPORT.md。
 - 本次为文档与分发维护，不产生新 APK，不提升 versionCode；安装版本仍为 V0.13.0 / 21。历史归档中的原始日志保持不变。
 - Added Chinese/English product overviews, bilingual notes for all 21 versions, and a complete history index. Distribution maintenance preserves original artifacts and does not create a new application build or certify production readiness.
 
