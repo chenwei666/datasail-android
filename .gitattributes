@@ -6,3 +6,6 @@
 # Preserve pinned upstream legal notices byte-for-byte, including original whitespace.
 sasl-android/src/main/resources/META-INF/datasail-sasl/LICENSE -text -whitespace
 sasl-android/src/main/resources/META-INF/datasail-sasl/NOTICE -text -whitespace
+
+# Published artifacts retain the exact bytes verified before upload.
+release-production/payload/** -text
