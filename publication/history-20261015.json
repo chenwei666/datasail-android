@@ -1,8 +1,8 @@
 {
   "status": "failed",
-  "runId": "38665489903",
+  "runId": "38665841444",
   "versions": [],
-  "repositoryPrivate": true,
+  "repositoryPrivate": false,
   "repositoryUrl": "https://github.com/chenwei666/datasail-android",
-  "error": "GitHub command failed: gh: Resource not accessible by integration (HTTP 403)"
+  "error": "GitHub command failed (api --method POST repos/chenwei666/datasail-android/releases --input): gh: Resource not accessible by integration (HTTP 403)"
 }
